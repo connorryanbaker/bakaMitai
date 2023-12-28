@@ -6,5 +6,6 @@ import (
 )
 
 func main() {
-  fmt.Println(board.NewBoard())
+  b := board.NewBoard()
+  fmt.Println(b.PieceAt(0))
 }
