@@ -15,16 +15,8 @@ const BLACK_ROOK = 10
 const BLACK_QUEEN = 11
 const BLACK_KING = 12
 
-type Board struct {
-	pieces [120]int
-	castle [2]bool
-	ep     *int
-	// todo:
-	// repetition hash/counter
-	// fifty move rule
-	// move history
-	// move generation
-}
+const WHITE = 0
+const BLACK = 1
 
 var INIT_PIECES = [120]int{
 	OFF_BOARD, OFF_BOARD, OFF_BOARD, OFF_BOARD, OFF_BOARD, OFF_BOARD, OFF_BOARD, OFF_BOARD, OFF_BOARD, OFF_BOARD,
@@ -54,14 +46,70 @@ var MAILBOX_64 = [64]int{
 
 var INIT_CASTLE = [2]bool{true, true}
 
-func NewBoard() Board {
-	return Board{
-		INIT_PIECES,
-		INIT_CASTLE,
-		nil,
-	}
-}
+const (
+  A8 = iota
+  B8 = iota
+  C8 = iota
+  D8 = iota
+  E8 = iota
+  F8 = iota
+  G8 = iota
+  H8 = iota
+  A7 = iota
+  B7 = iota
+  C7 = iota
+  D7 = iota
+  E7 = iota
+  F7 = iota
+  G7 = iota
+  H7 = iota
+  A6 = iota
+  B6 = iota
+  C6 = iota
+  D6 = iota
+  E6 = iota
+  F6 = iota
+  G6 = iota
+  H6 = iota
+  A5 = iota
+  B5 = iota
+  C5 = iota
+  D5 = iota
+  E5 = iota
+  F5 = iota
+  G5 = iota
+  H5 = iota
+  A4 = iota
+  B4 = iota
+  C4 = iota
+  D4 = iota
+  E4 = iota
+  F4 = iota
+  G4 = iota
+  H4 = iota
+  A3 = iota
+  B3 = iota
+  C3 = iota
+  D3 = iota
+  E3 = iota
+  F3 = iota
+  G3 = iota
+  H3 = iota
+  A2 = iota
+  B2 = iota
+  C2 = iota
+  D2 = iota
+  E2 = iota
+  F2 = iota
+  G2 = iota
+  H2 = iota
+  A1 = iota
+  B1 = iota
+  C1 = iota
+  D1 = iota
+  E1 = iota
+  F1 = iota
+  G1 = iota
+  H1 = iota
+)
 
-func (b Board) PieceAt(idx int) int {
-	return b.pieces[MAILBOX_64[idx]]
-}
