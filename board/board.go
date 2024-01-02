@@ -26,6 +26,24 @@ func NewBoard() Board {
 	}
 }
 
+// TODO: consolidate usage here or at least set a standard
+
 func (b Board) PieceAt(idx int) int {
 	return b.pieces[MAILBOX_64[idx]]
+}
+
+func (b Board) PieceAtFromConst(idx int) int {
+  return b.pieces[idx]
+}
+
+func emptyPiecesArray() [120]int {
+  p := [120]int{}
+  for i := 0; i < 120; i++ {
+    if i < 21 || i > 98 {
+      p[i] = OFF_BOARD
+    } else {
+      p[i] = EMPTY_SQUARE
+    }
+  }
+  return p
 }
