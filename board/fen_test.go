@@ -86,7 +86,7 @@ func TestFromFENString(t *testing.T) {
   for _, tt := range tests {
     b := FromFENString(tt.fen)
     for _, expectation := range tt.expectations {
-      received := b.PieceAtFromConst(expectation.sq)
+      received := b.PieceAt(expectation.sq)
       if received != expectation.piece {
         t.Errorf("sq: %d, received %d, expected %d", expectation.sq, received, expectation.piece)
       }

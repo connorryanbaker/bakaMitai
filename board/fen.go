@@ -59,6 +59,7 @@ func parsePieceString(s string) [120]int {
         i += v
       } else {
         b[MAILBOX_64[i]] = FEN_TO_PIECE[string(c)]
+        i += 1
       }
     }
   }
