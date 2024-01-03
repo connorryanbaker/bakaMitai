@@ -11,6 +11,11 @@ func TestFromFENString(t *testing.T) {
   var tests = []struct{
     fen string
     expectations []expectation
+    side int
+    castle [4]bool
+    ep *int
+    hply int
+    ply int
   }{
     {
       "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -80,8 +85,15 @@ func TestFromFENString(t *testing.T) {
         {G1, WHITE_KNIGHT},
         {H1, WHITE_ROOK},
       },
+      0,
+      [4]bool{true,true,true,true},
+      nil,
+      0,
+      0,
     },
   }
+
+  // TODO: more tests obviously
 
   for _, tt := range tests {
     b := FromFENString(tt.fen)
@@ -90,6 +102,21 @@ func TestFromFENString(t *testing.T) {
       if received != expectation.piece {
         t.Errorf("sq: %d, received %d, expected %d", expectation.sq, received, expectation.piece)
       }
+    }
+    if b.side != tt.side {
+        t.Errorf("side - received %d, expected %d", b.side, tt.side)
+    }
+    if b.castle != tt.castle {
+      t.Errorf("castle - received %v, expected %v", b.castle, tt.castle)
+    }
+    if b.ep != tt.ep {
+      t.Errorf("ep - received %p, expected %p", b.ep, tt.ep)
+    }
+    if b.hply != tt.hply {
+      t.Errorf("hply - received %d, expected %d", b.hply, tt.hply)
+    }
+    if b.ply != tt.ply {
+      t.Errorf("ply - received %d, expected %d", b.ply, tt.ply)
     }
   }
 }

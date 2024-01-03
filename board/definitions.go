@@ -44,7 +44,7 @@ var MAILBOX_64 = [64]int{
 	91, 92, 93, 94, 95, 96, 97, 98,
 }
 
-var INIT_CASTLE = [2]bool{true, true}
+var INIT_CASTLE = [4]bool{true, true, true, true}
 
 const (
 	A8 = iota

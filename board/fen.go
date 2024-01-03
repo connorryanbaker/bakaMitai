@@ -15,6 +15,10 @@ import (
 
 // example:
 // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+// r1bqkb1r/pppppppp/1n3n2/8/8/1N3N2/PPPPPPPP/R1BQKB1R w KQkq - 14 8
+// rn1qk1nr/pp2ppbp/2pp2p1/8/2PP4/2N2P2/PP2BPPP/R1BQ1RK1 b kq - 3 7
+// 3k4/8/8/8/8/8/8/R3K3 w Q - 0 1
+// 8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1
 
 var FEN_TO_PIECE = map[string]int{
   "r": BLACK_ROOK,
@@ -35,11 +39,11 @@ func FromFENString(f string) Board {
   b := Board{}
   components := strings.Split(f, " ")
   b.pieces = parsePieceString(components[0])
-  // b.side = parseSideToMove(components[1])
-  // b.castle = parseCastlePermissions(components[2])
-  // b.ep = parseEnPassant(components[3])
-  // b.hply = parseHply(components[4])
-  // b.ply = parsePly(components[1], components[5])
+  b.side = parseSideToMove(components[1])
+  b.castle = parseCastlePermissions(components[2])
+  b.ep = parseEnPassant(components[3])
+  b.hply = parseHply(components[4])
+  b.ply = parsePly(components[1], components[5])
   return b
 }
 
@@ -51,7 +55,7 @@ func parsePieceString(s string) [120]int {
 
   for _, rank := range p {
     for _, c := range rank {
-      if re.MatchString(string(c)) {
+      if re.MatchString(string(c)) { // TODO: cleanup coercion
         v, err := strconv.Atoi(string(c))
         if err != nil {
           panic(err)
@@ -67,5 +71,60 @@ func parsePieceString(s string) [120]int {
   return b
 }
 
+func parseSideToMove(s string) int {
+  if s == "w" {
+    return 0
+  }
+  return 1
+}
 
+func parseCastlePermissions(s string) [4]bool {
+  b := [4]bool{false,false,false,false}
+  keys := "KQkq"
+  for i, c := range keys {
+    if strings.ContainsRune(s, c) {
+      b[i] = true
+    }
+  }
+  return b
+}
 
+func parseEnPassant(s string) *int {
+  if s == "-" {
+    return nil
+  }
+
+  var rankToMailboxStart = map[byte]int{
+    '1': 91,
+    '2': 81,
+    '3': 71,
+    '4': 61,
+    '5': 51,
+    '6': 41,
+    '7': 31,
+    '8': 21,
+  }
+
+  v := rankToMailboxStart[s[1]] + strings.IndexByte("abcdefgh", s[0])
+  return &v
+}
+
+func parseHply(s string) int {
+  i, err := strconv.Atoi(s)
+  if err != nil {
+    panic(err)
+  }
+  return i
+}
+
+func parsePly(side, move string) int {
+  n, err := strconv.Atoi(move)
+  if err != nil {
+    panic(err)
+  }
+  if side == "w" {
+    return (n-1) * 2
+  }
+
+  return (n-1) * 2 + 1
+}

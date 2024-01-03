@@ -2,9 +2,11 @@ package board
 
 type Board struct {
 	pieces [120]int
-	castle [2]bool
+	castle [4]bool
 	ep     *int
 	side   int
+  hply int
+  ply int
 	// todo:
 	// repetition hash/counter
 	// side to move
@@ -23,6 +25,8 @@ func NewBoard() Board {
 		INIT_CASTLE,
 		nil,
 		WHITE,
+    0,
+    0,
 	}
 }
 
