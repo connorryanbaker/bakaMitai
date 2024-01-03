@@ -1,8 +1,9 @@
 package board
+
 import (
-  "regexp"
-  "strconv"
-  "strings"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 // components:
@@ -21,110 +22,110 @@ import (
 // 8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1
 
 var FEN_TO_PIECE = map[string]int{
-  "r": BLACK_ROOK,
-  "n": BLACK_KNIGHT,
-  "b": BLACK_BISHOP,
-  "q": BLACK_QUEEN,
-  "k": BLACK_KING,
-  "p": BLACK_PAWN,
-  "R": WHITE_ROOK,
-  "N": WHITE_KNIGHT,
-  "B": WHITE_BISHOP,
-  "Q": WHITE_QUEEN,
-  "K": WHITE_KING,
-  "P": WHITE_PAWN,
+	"r": BLACK_ROOK,
+	"n": BLACK_KNIGHT,
+	"b": BLACK_BISHOP,
+	"q": BLACK_QUEEN,
+	"k": BLACK_KING,
+	"p": BLACK_PAWN,
+	"R": WHITE_ROOK,
+	"N": WHITE_KNIGHT,
+	"B": WHITE_BISHOP,
+	"Q": WHITE_QUEEN,
+	"K": WHITE_KING,
+	"P": WHITE_PAWN,
 }
 
 func FromFENString(f string) Board {
-  b := Board{}
-  components := strings.Split(f, " ")
-  b.pieces = parsePieceString(components[0])
-  b.side = parseSideToMove(components[1])
-  b.castle = parseCastlePermissions(components[2])
-  b.ep = parseEnPassant(components[3])
-  b.hply = parseHply(components[4])
-  b.ply = parsePly(components[1], components[5])
-  return b
+	b := Board{}
+	components := strings.Split(f, " ")
+	b.pieces = parsePieceString(components[0])
+	b.side = parseSideToMove(components[1])
+	b.castle = parseCastlePermissions(components[2])
+	b.ep = parseEnPassant(components[3])
+	b.hply = parseHply(components[4])
+	b.ply = parsePly(components[1], components[5])
+	return b
 }
 
 func parsePieceString(s string) [120]int {
-  b := emptyPiecesArray()
-  p := strings.Split(s, "/")
-  i := 0
-  re := regexp.MustCompile(`\d`)
+	b := emptyPiecesArray()
+	p := strings.Split(s, "/")
+	i := 0
+	re := regexp.MustCompile(`\d`)
 
-  for _, rank := range p {
-    for _, c := range rank {
-      if re.MatchString(string(c)) { // TODO: cleanup coercion
-        v, err := strconv.Atoi(string(c))
-        if err != nil {
-          panic(err)
-        }
-        i += v
-      } else {
-        b[MAILBOX_64[i]] = FEN_TO_PIECE[string(c)]
-        i += 1
-      }
-    }
-  }
+	for _, rank := range p {
+		for _, c := range rank {
+			if re.MatchString(string(c)) { // TODO: cleanup coercion
+				v, err := strconv.Atoi(string(c))
+				if err != nil {
+					panic(err)
+				}
+				i += v
+			} else {
+				b[MAILBOX_64[i]] = FEN_TO_PIECE[string(c)]
+				i += 1
+			}
+		}
+	}
 
-  return b
+	return b
 }
 
 func parseSideToMove(s string) int {
-  if s == "w" {
-    return 0
-  }
-  return 1
+	if s == "w" {
+		return 0
+	}
+	return 1
 }
 
 func parseCastlePermissions(s string) [4]bool {
-  b := [4]bool{false,false,false,false}
-  keys := "KQkq"
-  for i, c := range keys {
-    if strings.ContainsRune(s, c) {
-      b[i] = true
-    }
-  }
-  return b
+	b := [4]bool{false, false, false, false}
+	keys := "KQkq"
+	for i, c := range keys {
+		if strings.ContainsRune(s, c) {
+			b[i] = true
+		}
+	}
+	return b
 }
 
 func parseEnPassant(s string) *int {
-  if s == "-" {
-    return nil
-  }
+	if s == "-" {
+		return nil
+	}
 
-  var rankToMailboxStart = map[byte]int{
-    '1': 91,
-    '2': 81,
-    '3': 71,
-    '4': 61,
-    '5': 51,
-    '6': 41,
-    '7': 31,
-    '8': 21,
-  }
+	var rankToMailboxStart = map[byte]int{
+		'1': 91,
+		'2': 81,
+		'3': 71,
+		'4': 61,
+		'5': 51,
+		'6': 41,
+		'7': 31,
+		'8': 21,
+	}
 
-  v := rankToMailboxStart[s[1]] + strings.IndexByte("abcdefgh", s[0])
-  return &v
+	v := rankToMailboxStart[s[1]] + strings.IndexByte("abcdefgh", s[0])
+	return &v
 }
 
 func parseHply(s string) int {
-  i, err := strconv.Atoi(s)
-  if err != nil {
-    panic(err)
-  }
-  return i
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		panic(err)
+	}
+	return i
 }
 
 func parsePly(side, move string) int {
-  n, err := strconv.Atoi(move)
-  if err != nil {
-    panic(err)
-  }
-  if side == "w" {
-    return (n-1) * 2
-  }
+	n, err := strconv.Atoi(move)
+	if err != nil {
+		panic(err)
+	}
+	if side == "w" {
+		return (n - 1) * 2
+	}
 
-  return (n-1) * 2 + 1
+	return (n-1)*2 + 1
 }
