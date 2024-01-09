@@ -8,13 +8,13 @@ type Board struct {
 	hply   int
 	ply    int
 	// todo:
-  // move hash for position comparison
-  // https://www.chessprogramming.org/Zobrist_Hashing
+	// move hash for position comparison
+	// https://www.chessprogramming.org/Zobrist_Hashing
 	// fifty move rule
 	// recognize check, checkmate, stalemate
 	// move history: boardstate struct w/ hash, castling, ep, move, incheck?, repetitions
 	// make move fn to maintain all this state
-	// unmake move fn 
+	// unmake move fn
 	// fen parsing to load positions
 	// move generation perhaps separate module
 }
@@ -34,6 +34,10 @@ func (b Board) PieceAt(idx int) int {
 	return b.pieces[MAILBOX_64[idx]]
 }
 
+func (b Board) PieceFromConvertedIdx(idx int) int { // TODO: better name
+  return b.pieces[idx]
+}
+
 func emptyPiecesArray() [120]int {
 	p := [120]int{}
 	for i := 0; i < 120; i++ {
@@ -44,4 +48,3 @@ func emptyPiecesArray() [120]int {
 	}
 	return p
 }
-
