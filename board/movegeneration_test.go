@@ -5,18 +5,18 @@ import "testing"
 func TestWhitePawnMovesOpeningMoveNoCapture(t *testing.T) {
 	b := FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
-  // TODO: failure here indicates need to decide on how to transact w/ squares
-  // passing in 0-63 results in deltas expecting 0 - 119 and using PieceAt will
-  // convert
-  // need means of converting from 120 to 64
+	// TODO: failure here indicates need to decide on how to transact w/ squares
+	// passing in 0-63 results in deltas expecting 0 - 119 and using PieceAt will
+	// convert
+	// need means of converting from 120 to 64
 	var tests = []struct {
 		sq    int
 		moves []Move
 	}{
 		{A2, []Move{
-			  {A2, A3, false, false, false, false, 1, false},
-			  {A2, A4, false, false, false, false, 1, true},
-		  },
+			{A2, A3, false, false, false, false, 1, false},
+			{A2, A4, false, false, false, false, 1, true},
+		},
 		},
 		// {B2, []Move{
 		// 	{B2, B3, false, false, false, false, 1, false},

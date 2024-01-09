@@ -35,7 +35,7 @@ func (b Board) PieceAt(idx int) int {
 }
 
 func (b Board) PieceFromConvertedIdx(idx int) int { // TODO: better name
-  return b.pieces[idx]
+	return b.pieces[idx]
 }
 
 func emptyPiecesArray() [120]int {
