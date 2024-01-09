@@ -56,8 +56,8 @@ func equalMoves(m1, m2 Move) bool {
 	return true
 }
 
-func (b Board) MovesForPieceAtSquare(sq int) ([]Move, error) {
-	piece := b.PieceAt(sq)
+func (b Board) MovesForPieceFromConvertedIdxSquare(sq int) ([]Move, error) {
+	piece := b.PieceFromConvertedIdx(sq)
 	switch piece {
 	case WHITE_PAWN:
 		return b.WhitePawnMoves(sq), nil
@@ -88,8 +88,7 @@ func (b Board) MovesForPieceAtSquare(sq int) ([]Move, error) {
 	}
 }
 
-func (b Board) WhitePawnMoves(sq int) []Move { // pass in A8 - H1
-	sq = MAILBOX_64[sq]
+func (b Board) WhitePawnMoves(sq int) []Move { // pass in MAILBOX_64[A8 - H1]
 	moves := make([]Move, 0) // TODO: len / capacity to avoid all appends
 	for _, d := range WHITE_PAWN_ATTACKS {
 		ns := sq + d
@@ -115,7 +114,7 @@ func (b Board) WhitePawnMoves(sq int) []Move { // pass in A8 - H1
 		}
 	}
 	// opening two sq push
-	if MAILBOX_64[A2] <= sq && sq <= MAILBOX_64[H2] && b.PieceFromConvertedIdx(sq+WHITE_PAWN_DELTAS[1]) == EMPTY_SQUARE {
+	if IA2 <= sq && sq <= IH2 && b.PieceFromConvertedIdx(sq+WHITE_PAWN_DELTAS[1]) == EMPTY_SQUARE {
 		moves = append(moves, Move{sq, sq + WHITE_PAWN_DELTAS[1], false, false, false, false, WHITE_PAWN, true})
 	}
 	return moves
@@ -125,7 +124,7 @@ func (b Board) BlackPawnMoves(sq int) []Move {
 	moves := make([]Move, 0)
 	for _, d := range BLACK_PAWN_ATTACKS {
 		ns := sq + d
-		if b.PieceAt(ns) < 7 && 0 < b.PieceAt(ns) { // white piece
+		if b.PieceFromConvertedIdx(ns) < 7 && 0 < b.PieceFromConvertedIdx(ns) { // white piece
 			if ns >= A1 { // check promotion
 				for _, piece := range BLACK_PROMOTION_PIECES {
 					moves = append(moves, Move{sq, ns, true, false, false, true, piece, false})
@@ -136,7 +135,7 @@ func (b Board) BlackPawnMoves(sq int) []Move {
 		}
 	}
 	// one sq push
-	if b.PieceAt(sq+BLACK_PAWN_DELTAS[0]) == EMPTY_SQUARE {
+	if b.PieceFromConvertedIdx(sq+BLACK_PAWN_DELTAS[0]) == EMPTY_SQUARE {
 		ns := sq + BLACK_PAWN_DELTAS[0]
 		if ns >= A1 { // check promotion
 			for _, piece := range BLACK_PROMOTION_PIECES {
@@ -147,7 +146,7 @@ func (b Board) BlackPawnMoves(sq int) []Move {
 		}
 	}
 	// opening two sq push
-	if A7 <= sq && sq <= H7 && b.PieceAt(sq+BLACK_PAWN_DELTAS[1]) == EMPTY_SQUARE {
+	if IA7 <= sq && sq <= IH7 && b.PieceFromConvertedIdx(sq+BLACK_PAWN_DELTAS[1]) == EMPTY_SQUARE {
 		moves = append(moves, Move{sq, sq + BLACK_PAWN_DELTAS[1], false, false, false, false, BLACK_PAWN, true})
 	}
 	return moves
