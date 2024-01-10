@@ -31,10 +31,6 @@ func NewBoard() Board {
 }
 
 func (b Board) PieceAt(idx int) int {
-	return b.pieces[MAILBOX_64[idx]]
-}
-
-func (b Board) PieceFromConvertedIdx(idx int) int { // TODO: better name
 	return b.pieces[idx]
 }
 

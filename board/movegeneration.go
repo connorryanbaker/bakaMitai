@@ -58,13 +58,13 @@ func equalMoves(m1, m2 Move) bool {
 	return true
 }
 
-func (b Board) MovesForPieceFromConvertedIdxSquare(sq int) ([]Move, error) {
-	piece := b.PieceFromConvertedIdx(sq)
+func (b Board) MovesForPiece(sq int) ([]Move, error) {
+	piece := b.PieceAt(sq)
 	switch piece {
 	case WHITE_PAWN:
 		return b.WhitePawnMoves(sq), nil
-	// case WHITE_KNIGHT:
-	//   return b.WhiteKnightMoves(sq), nil
+	case WHITE_KNIGHT:
+		return b.WhiteKnightMoves(sq), nil
 	// case WHITE_BISHOP:
 	//   return b.WhiteBishopMoves(sq), nil
 	// case WHITE_ROOK:
@@ -75,8 +75,8 @@ func (b Board) MovesForPieceFromConvertedIdxSquare(sq int) ([]Move, error) {
 	//   return b.WhiteKingMoves(sq), nil
 	case BLACK_PAWN:
 		return b.BlackPawnMoves(sq), nil
-	// case BLACK_KNIGHT:
-	//   return b.WhiteKnightMoves(sq), nil
+	case BLACK_KNIGHT:
+		return b.BlackKnightMoves(sq), nil
 	// case BLACK_BISHOP:
 	//   return b.WhiteBishopMoves(sq), nil
 	// case BLACK_ROOK:
@@ -90,71 +90,116 @@ func (b Board) MovesForPieceFromConvertedIdxSquare(sq int) ([]Move, error) {
 	}
 }
 
-// TODO: EP
-func (b Board) WhitePawnMoves(sq int) []Move { // pass in MAILBOX_64[A8 - H1]
-	moves := make([]Move, 0) // TODO: len / capacity to avoid all appends
+func (b Board) WhitePawnMoves(sq int) []Move {
+	moves := make([]Move, 14, 14)
+	mi := 0
 	for _, d := range WHITE_PAWN_ATTACKS {
 		ns := sq + d
-		if b.PieceFromConvertedIdx(ns) > 6 { // black piece
+		if b.PieceAt(ns) > 6 { // black piece
 			if ns <= IH8 { // check promotion
 				for _, piece := range WHITE_PROMOTION_PIECES {
-					moves = append(moves, Move{sq, ns, true, false, false, true, piece, false})
+					moves[mi] = Move{sq, ns, true, false, false, true, piece, false}
+					mi += 1
 				}
 			} else {
-				moves = append(moves, Move{sq, ns, true, false, false, false, WHITE_PAWN, false})
+				moves[mi] = Move{sq, ns, true, false, false, false, WHITE_PAWN, false}
+				mi += 1
 			}
 		} else if b.ep != nil && *b.ep == ns {
-			moves = append(moves, Move{sq, ns, true, false, false, false, WHITE_PAWN, false})
+			moves[mi] = Move{sq, ns, true, false, false, false, WHITE_PAWN, false}
+			mi += 1
 		}
-	}
-	// one sq push
-	if b.PieceFromConvertedIdx(sq+WHITE_PAWN_DELTAS[0]) == EMPTY_SQUARE {
+	} // one sq push
+	if b.PieceAt(sq+WHITE_PAWN_DELTAS[0]) == EMPTY_SQUARE {
 		ns := sq + WHITE_PAWN_DELTAS[0]
 		if ns <= IH8 { // check promotion
 			for _, piece := range WHITE_PROMOTION_PIECES {
-				moves = append(moves, Move{sq, ns, false, false, false, true, piece, false})
+				moves[mi] = Move{sq, ns, false, false, false, true, piece, false}
+				mi += 1
 			}
 		} else {
-			moves = append(moves, Move{sq, ns, false, false, false, false, WHITE_PAWN, false})
-			if IA2 <= sq && sq <= IH2 && b.PieceFromConvertedIdx(sq+WHITE_PAWN_DELTAS[1]) == EMPTY_SQUARE {
-				moves = append(moves, Move{sq, sq + WHITE_PAWN_DELTAS[1], false, false, false, false, WHITE_PAWN, true})
+			moves[mi] = Move{sq, ns, false, false, false, false, WHITE_PAWN, false}
+			mi += 1
+			if IA2 <= sq && sq <= IH2 && b.PieceAt(sq+WHITE_PAWN_DELTAS[1]) == EMPTY_SQUARE {
+				moves[mi] = Move{sq, sq + WHITE_PAWN_DELTAS[1], false, false, false, false, WHITE_PAWN, true}
+				mi += 1
 			}
 		}
-	}
-	// opening two sq push
-	return moves
+	} // opening two sq push
+	return moves[:mi]
 }
 
 func (b Board) BlackPawnMoves(sq int) []Move {
-	moves := make([]Move, 0)
+	moves := make([]Move, 14, 14)
+	mi := 0
 	for _, d := range BLACK_PAWN_ATTACKS {
 		ns := sq + d
-		if b.PieceFromConvertedIdx(ns) < 7 && 0 < b.PieceFromConvertedIdx(ns) { // white piece
+		if b.PieceAt(ns) < 7 && 0 < b.PieceAt(ns) { // white piece
 			if ns >= IA1 { // check promotion
 				for _, piece := range BLACK_PROMOTION_PIECES {
-					moves = append(moves, Move{sq, ns, true, false, false, true, piece, false})
+					moves[mi] = Move{sq, ns, true, false, false, true, piece, false}
+					mi += 1
 				}
 			} else {
-				moves = append(moves, Move{sq, ns, true, false, false, false, BLACK_PAWN, false})
+				moves[mi] = Move{sq, ns, true, false, false, false, BLACK_PAWN, false}
+				mi += 1
 			}
 		} else if b.ep != nil && *b.ep == ns {
-			moves = append(moves, Move{sq, ns, true, false, false, false, BLACK_PAWN, false})
+			moves[mi] = Move{sq, ns, true, false, false, false, BLACK_PAWN, false}
+			mi += 1
 		}
-	}
-	// one sq push
-	if b.PieceFromConvertedIdx(sq+BLACK_PAWN_DELTAS[0]) == EMPTY_SQUARE {
+	} // one sq push
+	if b.PieceAt(sq+BLACK_PAWN_DELTAS[0]) == EMPTY_SQUARE {
 		ns := sq + BLACK_PAWN_DELTAS[0]
 		if ns >= IA1 { // check promotion
 			for _, piece := range BLACK_PROMOTION_PIECES {
-				moves = append(moves, Move{sq, ns, false, false, false, true, piece, false})
+				moves[mi] = Move{sq, ns, false, false, false, true, piece, false}
+				mi += 1
 			}
 		} else {
-			moves = append(moves, Move{sq, ns, false, false, false, false, BLACK_PAWN, false})
-			if IA7 <= sq && sq <= IH7 && b.PieceFromConvertedIdx(sq+BLACK_PAWN_DELTAS[1]) == EMPTY_SQUARE {
-				moves = append(moves, Move{sq, sq + BLACK_PAWN_DELTAS[1], false, false, false, false, BLACK_PAWN, true})
+			moves[mi] = Move{sq, ns, false, false, false, false, BLACK_PAWN, false}
+			mi += 1
+			if IA7 <= sq && sq <= IH7 && b.PieceAt(sq+BLACK_PAWN_DELTAS[1]) == EMPTY_SQUARE {
+				moves[mi] = Move{sq, sq + BLACK_PAWN_DELTAS[1], false, false, false, false, BLACK_PAWN, true}
+				mi += 1
 			}
 		}
+	} // opening two sq push
+	return moves[:mi]
+}
+
+func (b Board) WhiteKnightMoves(sq int) []Move {
+	moves := make([]Move, 0, 8)
+	mi := 0
+	for _, d := range KNIGHT_DELTAS {
+		ns := d + sq
+		p := b.PieceAt(ns)
+		if p > 6 {
+			moves[mi] = Move{sq, ns, true, false, false, false, WHITE_KNIGHT, false}
+			mi += 1
+		} else if p == 0 {
+			moves[mi] = Move{sq, ns, false, false, false, false, WHITE_KNIGHT, false}
+			mi += 1
+		}
 	}
-	// opening two sq push
-	return moves
+
+	return moves[:mi]
+}
+
+func (b Board) BlackKnightMoves(sq int) []Move {
+	moves := make([]Move, 0, 8)
+	mi := 0
+	for _, d := range KNIGHT_DELTAS {
+		ns := d + sq
+		p := b.PieceAt(ns)
+		if p > 0 && p < 6 {
+			moves[mi] = Move{sq, ns, true, false, false, false, BLACK_KNIGHT, false}
+			mi += 1
+		} else if p == 0 {
+			moves[mi] = Move{sq, ns, false, false, false, false, BLACK_KNIGHT, false}
+			mi += 1
+		}
+	}
+
+	return moves[:mi]
 }
