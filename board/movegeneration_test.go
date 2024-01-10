@@ -119,3 +119,265 @@ func TestBlackPawnMovesOpeningMoveNoCapture(t *testing.T) {
 		}
 	}
 }
+
+func TestWhitePawnCapturesOriginalSquare(t *testing.T) {
+	b := FromFENString("rnbqkbnr/8/8/8/8/pppppppp/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IA2, []Move{
+			{IA2, IB3, true, false, false, false, 1, false},
+		},
+		},
+		{IB2, []Move{
+			{IB2, IA3, true, false, false, false, 1, false},
+			{IB2, IC3, true, false, false, false, 1, false},
+		},
+		},
+		{IC2, []Move{
+			{IC2, IB3, true, false, false, false, 1, false},
+			{IC2, ID3, true, false, false, false, 1, false},
+		},
+		},
+		{ID2, []Move{
+			{ID2, IC3, true, false, false, false, 1, false},
+			{ID2, IE3, true, false, false, false, 1, false},
+		},
+		},
+		{IE2, []Move{
+			{IE2, ID3, true, false, false, false, 1, false},
+			{IE2, IF3, true, false, false, false, 1, false},
+		},
+		},
+		{IF2, []Move{
+			{IF2, IE3, true, false, false, false, 1, false},
+			{IF2, IG3, true, false, false, false, 1, false},
+		},
+		},
+		{IG2, []Move{
+			{IG2, IF3, true, false, false, false, 1, false},
+			{IG2, IH3, true, false, false, false, 1, false},
+		},
+		},
+		{IH2, []Move{
+			{IH2, IG3, true, false, false, false, 1, false},
+		},
+		},
+	}
+	for _, tt := range tests {
+		moves := b.WhitePawnMoves(tt.sq)
+		for i, m := range tt.moves {
+			if !equalMoves(moves[i], m) {
+				t.Errorf("SQ: %d, received: %v, expected: %v", tt.sq, moves, tt.moves)
+			}
+		}
+	}
+}
+
+func TestBlackPawnCapturesOriginalSquare(t *testing.T) {
+	b := FromFENString("rnbqkbnr/pppppppp/PPPPPPPP/8/8/8/8/RNBQKBNR w KQkq - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IA7, []Move{
+			{IA7, IB6, true, false, false, false, 7, false},
+		},
+		},
+		{IB7, []Move{
+			{IB7, IC6, true, false, false, false, 7, false},
+			{IB7, IA6, true, false, false, false, 7, false},
+		},
+		},
+		{IC7, []Move{
+			{IC7, ID6, true, false, false, false, 7, false},
+			{IC7, IB6, true, false, false, false, 7, false},
+		},
+		},
+		{ID7, []Move{
+			{ID7, IE6, true, false, false, false, 7, false},
+			{ID7, IC6, true, false, false, false, 7, false},
+		},
+		},
+		{IE7, []Move{
+			{IE7, IF6, true, false, false, false, 7, false},
+			{IE7, ID6, true, false, false, false, 7, false},
+		},
+		},
+		{IF7, []Move{
+			{IF7, IG6, true, false, false, false, 7, false},
+			{IF7, IE6, true, false, false, false, 7, false},
+		},
+		},
+		{IG7, []Move{
+			{IG7, IH6, true, false, false, false, 7, false},
+			{IG7, IF6, true, false, false, false, 7, false},
+		},
+		},
+		{IH7, []Move{
+			{IH7, IG6, true, false, false, false, 7, false},
+		},
+		},
+	}
+	for _, tt := range tests {
+		moves := b.BlackPawnMoves(tt.sq)
+		for i, m := range tt.moves {
+			if !equalMoves(moves[i], m) {
+				t.Errorf("SQ: %d, received: %v, expected: %v", tt.sq, moves, tt.moves)
+			}
+		}
+	}
+}
+
+func TestWhiteCaptureAndPushPromotions(t *testing.T) {
+	b := FromFENString("1n1q1bn1/P1P4P/5k2/8/8/8/1P1PPPP1/RNBQKBNR w KQ - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IA7, []Move{
+			{IA7, IB8, true, false, false, true, WHITE_QUEEN, false},
+			{IA7, IB8, true, false, false, true, WHITE_ROOK, false},
+			{IA7, IB8, true, false, false, true, WHITE_BISHOP, false},
+			{IA7, IB8, true, false, false, true, WHITE_KNIGHT, false},
+			{IA7, IA8, false, false, false, true, WHITE_QUEEN, false},
+			{IA7, IA8, false, false, false, true, WHITE_ROOK, false},
+			{IA7, IA8, false, false, false, true, WHITE_BISHOP, false},
+			{IA7, IA8, false, false, false, true, WHITE_KNIGHT, false},
+		},
+		},
+		{IC7, []Move{
+			{IC7, IB8, true, false, false, true, WHITE_QUEEN, false},
+			{IC7, IB8, true, false, false, true, WHITE_ROOK, false},
+			{IC7, IB8, true, false, false, true, WHITE_BISHOP, false},
+			{IC7, IB8, true, false, false, true, WHITE_KNIGHT, false},
+			{IC7, ID8, true, false, false, true, WHITE_QUEEN, false},
+			{IC7, ID8, true, false, false, true, WHITE_ROOK, false},
+			{IC7, ID8, true, false, false, true, WHITE_BISHOP, false},
+			{IC7, ID8, true, false, false, true, WHITE_KNIGHT, false},
+			{IC7, IC8, false, false, false, true, WHITE_QUEEN, false},
+			{IC7, IC8, false, false, false, true, WHITE_ROOK, false},
+			{IC7, IC8, false, false, false, true, WHITE_BISHOP, false},
+			{IC7, IC8, false, false, false, true, WHITE_KNIGHT, false},
+		},
+		},
+		{IH7, []Move{
+			{IH7, IG8, true, false, false, true, WHITE_QUEEN, false},
+			{IH7, IG8, true, false, false, true, WHITE_ROOK, false},
+			{IH7, IG8, true, false, false, true, WHITE_BISHOP, false},
+			{IH7, IG8, true, false, false, true, WHITE_KNIGHT, false},
+			{IH7, IH8, false, false, false, true, WHITE_QUEEN, false},
+			{IH7, IH8, false, false, false, true, WHITE_ROOK, false},
+			{IH7, IH8, false, false, false, true, WHITE_BISHOP, false},
+			{IH7, IH8, false, false, false, true, WHITE_KNIGHT, false},
+		},
+		},
+	}
+	for _, tt := range tests {
+		moves := b.WhitePawnMoves(tt.sq)
+		for i, m := range tt.moves {
+			if !equalMoves(moves[i], m) {
+				t.Errorf("SQ: %d, received: %v, expected: %v", tt.sq, moves[i], tt.moves[i])
+			}
+		}
+	}
+}
+
+func TestBlackCaptureAndPushPromotions(t *testing.T) {
+	b := FromFENString("rnbqkbnr/1p1pppp1/8/8/8/4K3/p1pPP2p/1N1Q1BN1 w kq - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IA2, []Move{
+			{IA2, IB1, true, false, false, true, BLACK_QUEEN, false},
+			{IA2, IB1, true, false, false, true, BLACK_ROOK, false},
+			{IA2, IB1, true, false, false, true, BLACK_BISHOP, false},
+			{IA2, IB1, true, false, false, true, BLACK_KNIGHT, false},
+			{IA2, IA1, false, false, false, true, BLACK_QUEEN, false},
+			{IA2, IA1, false, false, false, true, BLACK_ROOK, false},
+			{IA2, IA1, false, false, false, true, BLACK_BISHOP, false},
+			{IA2, IA1, false, false, false, true, BLACK_KNIGHT, false},
+		},
+		},
+		{IC2, []Move{
+			{IC2, ID1, true, false, false, true, BLACK_QUEEN, false},
+			{IC2, ID1, true, false, false, true, BLACK_ROOK, false},
+			{IC2, ID1, true, false, false, true, BLACK_BISHOP, false},
+			{IC2, ID1, true, false, false, true, BLACK_KNIGHT, false},
+			{IC2, IB1, true, false, false, true, BLACK_QUEEN, false},
+			{IC2, IB1, true, false, false, true, BLACK_ROOK, false},
+			{IC2, IB1, true, false, false, true, BLACK_BISHOP, false},
+			{IC2, IB1, true, false, false, true, BLACK_KNIGHT, false},
+			{IC2, IC1, false, false, false, true, BLACK_QUEEN, false},
+			{IC2, IC1, false, false, false, true, BLACK_ROOK, false},
+			{IC2, IC1, false, false, false, true, BLACK_BISHOP, false},
+			{IC2, IC1, false, false, false, true, BLACK_KNIGHT, false},
+		},
+		},
+		{IH2, []Move{
+			{IH2, IG1, true, false, false, true, BLACK_QUEEN, false},
+			{IH2, IG1, true, false, false, true, BLACK_ROOK, false},
+			{IH2, IG1, true, false, false, true, BLACK_BISHOP, false},
+			{IH2, IG1, true, false, false, true, BLACK_KNIGHT, false},
+			{IH2, IH1, false, false, false, true, BLACK_QUEEN, false},
+			{IH2, IH1, false, false, false, true, BLACK_ROOK, false},
+			{IH2, IH1, false, false, false, true, BLACK_BISHOP, false},
+			{IH2, IH1, false, false, false, true, BLACK_KNIGHT, false},
+		},
+		},
+	}
+	for _, tt := range tests {
+		moves := b.BlackPawnMoves(tt.sq)
+		for i, m := range tt.moves {
+			if !equalMoves(moves[i], m) {
+				t.Errorf("SQ: %d, received: %v, expected: %v", tt.sq, moves[i], tt.moves[i])
+			}
+		}
+	}
+}
+
+func TestWhiteCaptureEP(t *testing.T) {
+	b := FromFENString("rnbqkbnr/p1p1pppp/1p6/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IE5, []Move{
+			{IE5, ID6, true, false, false, false, WHITE_PAWN, false},
+			{IE5, IE6, false, false, false, false, WHITE_PAWN, false},
+		},
+		},
+	}
+	for _, tt := range tests {
+		moves := b.WhitePawnMoves(tt.sq)
+		for i, m := range tt.moves {
+			if !equalMoves(moves[i], m) {
+				t.Errorf("SQ: %d, received: %v, expected: %v", tt.sq, moves[i], tt.moves[i])
+			}
+		}
+	}
+}
+
+func TestBlackCaptureEP(t *testing.T) {
+	b := FromFENString("rnbqkbnr/ppp1pppp/8/8/3pP3/1P3N2/P1PP1PPP/RNBQKB1R b KQkq e3 0 3")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{ID4, []Move{
+			{ID4, IE3, true, false, false, false, BLACK_PAWN, false},
+			{ID4, ID3, false, false, false, false, BLACK_PAWN, false},
+		},
+		},
+	}
+	for _, tt := range tests {
+		moves := b.BlackPawnMoves(tt.sq)
+		for i, m := range tt.moves {
+			if !equalMoves(moves[i], m) {
+				t.Errorf("SQ: %d, received: %v, expected: %v", tt.sq, moves[i], tt.moves[i])
+			}
+		}
+	}
+}
