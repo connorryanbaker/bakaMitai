@@ -599,3 +599,29 @@ func TestBlackKnightCannotCaptureKing(t *testing.T) {
 		}
 	}
 }
+
+func TestWhiteBishopInitialSquare(t *testing.T) {
+	b := FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+
+	c1Moves := b.WhiteBishopMoves(IC1)
+	f1Moves := b.WhiteBishopMoves(IF1)
+	if len(c1Moves) != 0 {
+		t.Errorf("C1: expected 0 moves, received: %v", c1Moves)
+	}
+	if len(f1Moves) != 0 {
+		t.Errorf("F1: expected 0 moves, received: %v", f1Moves)
+	}
+}
+
+func TestBlackBishopInitialSquare(t *testing.T) {
+	b := FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+
+	c8Moves := b.BlackBishopMoves(IC8)
+	f8Moves := b.BlackBishopMoves(IF8)
+	if len(c8Moves) != 0 {
+		t.Errorf("C8: expected 0 moves, received: %v", c8Moves)
+	}
+	if len(f8Moves) != 0 {
+		t.Errorf("F8: expected 0 moves, received: %v", f8Moves)
+	}
+}
