@@ -95,7 +95,8 @@ func (b Board) WhitePawnMoves(sq int) []Move {
 	mi := 0
 	for _, d := range WHITE_PAWN_ATTACKS {
 		ns := sq + d
-		if b.PieceAt(ns) > 6 { // black piece
+		p := b.PieceAt(ns)
+		if 6 < p && p < 12 { // black piece
 			if ns <= IH8 { // check promotion
 				for _, piece := range WHITE_PROMOTION_PIECES {
 					moves[mi] = Move{sq, ns, true, false, false, true, piece, false}
@@ -134,7 +135,8 @@ func (b Board) BlackPawnMoves(sq int) []Move {
 	mi := 0
 	for _, d := range BLACK_PAWN_ATTACKS {
 		ns := sq + d
-		if b.PieceAt(ns) < 7 && 0 < b.PieceAt(ns) { // white piece
+		p := b.PieceAt(ns)
+		if 0 < p && p < 6 { // white piece
 			if ns >= IA1 { // check promotion
 				for _, piece := range BLACK_PROMOTION_PIECES {
 					moves[mi] = Move{sq, ns, true, false, false, true, piece, false}
@@ -169,15 +171,15 @@ func (b Board) BlackPawnMoves(sq int) []Move {
 }
 
 func (b Board) WhiteKnightMoves(sq int) []Move {
-	moves := make([]Move, 0, 8)
+	moves := make([]Move, 8, 8)
 	mi := 0
 	for _, d := range KNIGHT_DELTAS {
 		ns := d + sq
 		p := b.PieceAt(ns)
-		if p > 6 {
+		if 6 < p && p < 12 {
 			moves[mi] = Move{sq, ns, true, false, false, false, WHITE_KNIGHT, false}
 			mi += 1
-		} else if p == 0 {
+		} else if p == EMPTY_SQUARE {
 			moves[mi] = Move{sq, ns, false, false, false, false, WHITE_KNIGHT, false}
 			mi += 1
 		}
@@ -187,15 +189,15 @@ func (b Board) WhiteKnightMoves(sq int) []Move {
 }
 
 func (b Board) BlackKnightMoves(sq int) []Move {
-	moves := make([]Move, 0, 8)
+	moves := make([]Move, 8, 8)
 	mi := 0
 	for _, d := range KNIGHT_DELTAS {
 		ns := d + sq
 		p := b.PieceAt(ns)
-		if p > 0 && p < 6 {
+		if 0 < p && p < 6 {
 			moves[mi] = Move{sq, ns, true, false, false, false, BLACK_KNIGHT, false}
 			mi += 1
-		} else if p == 0 {
+		} else if p == EMPTY_SQUARE {
 			moves[mi] = Move{sq, ns, false, false, false, false, BLACK_KNIGHT, false}
 			mi += 1
 		}
