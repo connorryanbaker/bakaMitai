@@ -382,6 +382,54 @@ func TestBlackCaptureEP(t *testing.T) {
 	}
 }
 
+func TestWhitePawnCannotCaptureKing(t *testing.T) {
+	b := FromFENString("rnbqkbnr/pppppPpp/8/8/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IF7, []Move{
+			{IF7, IG8, true, false, false, true, WHITE_QUEEN, false},
+			{IF7, IG8, true, false, false, true, WHITE_ROOK, false},
+			{IF7, IG8, true, false, false, true, WHITE_BISHOP, false},
+			{IF7, IG8, true, false, false, true, WHITE_KNIGHT, false},
+		},
+		},
+	}
+	for _, tt := range tests {
+		moves := b.WhitePawnMoves(tt.sq)
+		for i, m := range tt.moves {
+			if !equalMoves(moves[i], m) {
+				t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[tt.sq], moves[i], tt.moves[i])
+			}
+		}
+	}
+}
+
+func TestBlackPawnCannotCaptureKing(t *testing.T) {
+	b := FromFENString("rnbqkbnr/ppppp2p/8/8/8/8/PPPPPpPP/RNBQKBNR w KQkq - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IF2, []Move{
+			{IF2, IG1, true, false, false, true, BLACK_QUEEN, false},
+			{IF2, IG1, true, false, false, true, BLACK_ROOK, false},
+			{IF2, IG1, true, false, false, true, BLACK_BISHOP, false},
+			{IF2, IG1, true, false, false, true, BLACK_KNIGHT, false},
+		},
+		},
+	}
+	for _, tt := range tests {
+		moves := b.BlackPawnMoves(tt.sq)
+		for i, m := range tt.moves {
+			if !equalMoves(moves[i], m) {
+				t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[tt.sq], moves[i], tt.moves[i])
+			}
+		}
+	}
+}
+
 func TestWhiteKnightMovesStartPosition(t *testing.T) {
 	b := FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
