@@ -625,3 +625,102 @@ func TestBlackBishopInitialSquare(t *testing.T) {
 		t.Errorf("F8: expected 0 moves, received: %v", f8Moves)
 	}
 }
+
+func TestWhiteBishopInitialSquareCenterPawnsMoved(t *testing.T) {
+	b := FromFENString("rnbqkbnr/pppppppp/8/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IC1, []Move{
+			{IC1, ID2, false, false, false, false, WHITE_BISHOP, false},
+			{IC1, IE3, false, false, false, false, WHITE_BISHOP, false},
+			{IC1, IF4, false, false, false, false, WHITE_BISHOP, false},
+			{IC1, IG5, false, false, false, false, WHITE_BISHOP, false},
+			{IC1, IH6, false, false, false, false, WHITE_BISHOP, false},
+		},
+		},
+		{IF1, []Move{
+			{IF1, IE2, false, false, false, false, WHITE_BISHOP, false},
+			{IF1, ID3, false, false, false, false, WHITE_BISHOP, false},
+			{IF1, IC4, false, false, false, false, WHITE_BISHOP, false},
+			{IF1, IB5, false, false, false, false, WHITE_BISHOP, false},
+			{IF1, IA6, false, false, false, false, WHITE_BISHOP, false},
+		},
+		},
+	}
+
+	for _, tt := range tests {
+		moves := b.WhiteBishopMoves(tt.sq)
+		for i, _ := range moves {
+			if !equalMoves(moves[i], tt.moves[i]) {
+				t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[tt.sq], moves[i], tt.moves[i])
+			}
+		}
+	}
+}
+
+func TestBlackBishopInitialSquareCenterPawnsMoved(t *testing.T) {
+	b := FromFENString("rnbqkbnr/ppp2ppp/8/3pp3/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IC8, []Move{
+			{IC8, ID7, false, false, false, false, BLACK_BISHOP, false},
+			{IC8, IE6, false, false, false, false, BLACK_BISHOP, false},
+			{IC8, IF5, false, false, false, false, BLACK_BISHOP, false},
+			{IC8, IG4, false, false, false, false, BLACK_BISHOP, false},
+			{IC8, IH3, false, false, false, false, BLACK_BISHOP, false},
+		},
+		},
+		{IF8, []Move{
+			{IF8, IE7, false, false, false, false, BLACK_BISHOP, false},
+			{IF8, ID6, false, false, false, false, BLACK_BISHOP, false},
+			{IF8, IC5, false, false, false, false, BLACK_BISHOP, false},
+			{IF8, IB4, false, false, false, false, BLACK_BISHOP, false},
+			{IF8, IA3, false, false, false, false, BLACK_BISHOP, false},
+		},
+		},
+	}
+
+	for _, tt := range tests {
+		moves := b.BlackBishopMoves(tt.sq)
+		for i, _ := range moves {
+			if !equalMoves(moves[i], tt.moves[i]) {
+				t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[tt.sq], moves[i], tt.moves[i])
+			}
+		}
+	}
+}
+
+func TestWhiteBishopFourCaptures(t *testing.T) {
+	b := FromFENString("r3k3/pp5p/8/2nbpn2/3BB3/2qpbr2/PPPPPPPP/RN1QK1NR w KQq - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IE4, []Move{
+			{IE4, ID5, true, false, false, false, WHITE_BISHOP, false},
+			{IE4, IF5, true, false, false, false, WHITE_BISHOP, false},
+			{IE4, ID3, true, false, false, false, WHITE_BISHOP, false},
+			{IE4, IF3, true, false, false, false, WHITE_BISHOP, false},
+		},
+		},
+		{ID4, []Move{
+			{ID4, IC5, true, false, false, false, WHITE_BISHOP, false},
+			{ID4, IE5, true, false, false, false, WHITE_BISHOP, false},
+			{ID4, IC3, true, false, false, false, WHITE_BISHOP, false},
+			{ID4, IE3, true, false, false, false, WHITE_BISHOP, false},
+		},
+		},
+	}
+	for _, tt := range tests {
+		moves := b.WhiteBishopMoves(tt.sq)
+		for i, _ := range moves {
+			if !equalMoves(moves[i], tt.moves[i]) {
+				t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[tt.sq], moves[i], tt.moves[i])
+			}
+		}
+	}
+}
