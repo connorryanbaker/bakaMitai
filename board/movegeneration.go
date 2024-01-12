@@ -243,3 +243,57 @@ func (b Board) BlackBishopMoves(sq int) []Move {
 	}
 	return moves[:mi]
 }
+
+func (b Board) WhiteRookMoves(sq int) []Move {
+	moves := make([]Move, 14, 14)
+	mi := 0
+	for _, d := range ROOK_DELTAS {
+		ns := d + sq
+		for b.PieceAt(ns) == EMPTY_SQUARE {
+			moves[mi] = Move{sq, ns, false, false, false, false, WHITE_ROOK, false}
+			mi += 1
+			ns += d
+		}
+		p := b.PieceAt(ns)
+		if 6 < p && p < 12 {
+			moves[mi] = Move{sq, ns, true, false, false, false, WHITE_ROOK, false}
+			mi += 1
+		}
+	}
+	return moves[:mi]
+}
+
+func (b Board) BlackRookMoves(sq int) []Move {
+	moves := make([]Move, 14, 14)
+	mi := 0
+	for _, d := range ROOK_DELTAS {
+		ns := d + sq
+		for b.PieceAt(ns) == EMPTY_SQUARE {
+			moves[mi] = Move{sq, ns, false, false, false, false, BLACK_ROOK, false}
+			mi += 1
+			ns += d
+		}
+		p := b.PieceAt(ns)
+		if 0 < p && p < 6 {
+			moves[mi] = Move{sq, ns, true, false, false, false, BLACK_ROOK, false}
+			mi += 1
+		}
+	}
+	return moves[:mi]
+}
+
+func (b Board) WhiteQueenMoves(sq int) []Move {
+	moves := append(b.WhiteBishopMoves(sq), b.WhiteRookMoves(sq)...)
+	for i, _ := range moves {
+		moves[i].promotionPiece = WHITE_QUEEN // might as well lean into this silly convention
+	}
+	return moves
+}
+
+func (b Board) BlackQueenMoves(sq int) []Move {
+	moves := append(b.BlackBishopMoves(sq), b.BlackRookMoves(sq)...)
+	for i, _ := range moves {
+		moves[i].promotionPiece = BLACK_QUEEN
+	}
+	return moves
+}
