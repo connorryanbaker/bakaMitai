@@ -799,3 +799,196 @@ func TestBishopsCannotCaptureKing(t *testing.T) {
 		}
 	}
 }
+
+func TestRookMovesInitialSquares(t *testing.T) {
+	b := FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	sqs := []int{IA1, IH1, IA8, IH8}
+	for _, sq := range sqs[:2] {
+		if len(b.WhiteRookMoves(sq)) != 0 {
+			t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[sq], b.WhiteRookMoves(sq), []Move{})
+		}
+	}
+	for _, sq := range sqs[2:] {
+		if len(b.BlackRookMoves(sq)) != 0 {
+			t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[sq], b.BlackRookMoves(sq), []Move{})
+		}
+	}
+}
+
+func TestQueenMovesInitialSquares(t *testing.T) {
+	b := FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	if len(b.WhiteQueenMoves(ID1)) != 0 {
+		t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[ID1], b.WhiteQueenMoves(ID1), []Move{})
+	}
+	if len(b.BlackQueenMoves(ID8)) != 0 {
+		t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[ID8], b.BlackQueenMoves(ID8), []Move{})
+	}
+}
+
+func TestRookMovesCentralSquares(t *testing.T) {
+	b := FromFENString("1nbqkbnr/pppppppp/8/3r4/4R3/8/PPPPPPPP/RNBQKBN1 w Qk - 0 1")
+
+	var tests = []struct {
+		sq    int
+		moves []Move
+		fn    func(int) []Move
+	}{
+		{
+			IE4,
+			[]Move{
+				{IE4, IE5, false, false, false, false, WHITE_ROOK, false},
+				{IE4, IE6, false, false, false, false, WHITE_ROOK, false},
+				{IE4, IE7, true, false, false, false, WHITE_ROOK, false},
+				{IE4, ID4, false, false, false, false, WHITE_ROOK, false},
+				{IE4, IC4, false, false, false, false, WHITE_ROOK, false},
+				{IE4, IB4, false, false, false, false, WHITE_ROOK, false},
+				{IE4, IA4, false, false, false, false, WHITE_ROOK, false},
+				{IE4, IF4, false, false, false, false, WHITE_ROOK, false},
+				{IE4, IG4, false, false, false, false, WHITE_ROOK, false},
+				{IE4, IH4, false, false, false, false, WHITE_ROOK, false},
+				{IE4, IE3, false, false, false, false, WHITE_ROOK, false},
+			},
+			b.WhiteRookMoves,
+		},
+		{
+			ID5,
+			[]Move{
+				{ID5, ID6, false, false, false, false, BLACK_ROOK, false},
+				{ID5, IC5, false, false, false, false, BLACK_ROOK, false},
+				{ID5, IB5, false, false, false, false, BLACK_ROOK, false},
+				{ID5, IA5, false, false, false, false, BLACK_ROOK, false},
+				{ID5, IE5, false, false, false, false, BLACK_ROOK, false},
+				{ID5, IF5, false, false, false, false, BLACK_ROOK, false},
+				{ID5, IG5, false, false, false, false, BLACK_ROOK, false},
+				{ID5, IH5, false, false, false, false, BLACK_ROOK, false},
+				{ID5, ID4, false, false, false, false, BLACK_ROOK, false},
+				{ID5, ID3, false, false, false, false, BLACK_ROOK, false},
+				{ID5, ID2, true, false, false, false, BLACK_ROOK, false},
+			},
+			b.BlackRookMoves,
+		},
+	}
+
+	for _, tt := range tests {
+		moves := tt.fn(tt.sq)
+		for i, _ := range moves {
+			if !equalMoves(moves[i], tt.moves[i]) {
+				t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[tt.sq], moves[i], tt.moves[i])
+			}
+		}
+	}
+}
+
+func TestRooksCannotCaptureKings(t *testing.T) {
+	b := FromFENString("1nbqkbnr/pppp1ppp/8/4R3/4r3/8/PPPP1PPP/RNBQKBN1 w Qk - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+		fn    func(int) []Move
+	}{
+		{
+			IE5,
+			[]Move{
+				{IE5, IE6, false, false, false, false, WHITE_ROOK, false},
+				{IE5, IE7, false, false, false, false, WHITE_ROOK, false},
+				{IE5, ID5, false, false, false, false, WHITE_ROOK, false},
+				{IE5, IC5, false, false, false, false, WHITE_ROOK, false},
+				{IE5, IB5, false, false, false, false, WHITE_ROOK, false},
+				{IE5, IA5, false, false, false, false, WHITE_ROOK, false},
+				{IE5, IF5, false, false, false, false, WHITE_ROOK, false},
+				{IE5, IG5, false, false, false, false, WHITE_ROOK, false},
+				{IE5, IH5, false, false, false, false, WHITE_ROOK, false},
+				{IE5, IE4, true, false, false, false, WHITE_ROOK, false},
+			},
+			b.WhiteRookMoves,
+		},
+		{
+			IE4,
+			[]Move{
+				{IE4, IE5, true, false, false, false, BLACK_ROOK, false},
+				{IE4, ID4, false, false, false, false, BLACK_ROOK, false},
+				{IE4, IC4, false, false, false, false, BLACK_ROOK, false},
+				{IE4, IB4, false, false, false, false, BLACK_ROOK, false},
+				{IE4, IA4, false, false, false, false, BLACK_ROOK, false},
+				{IE4, IF4, false, false, false, false, BLACK_ROOK, false},
+				{IE4, IG4, false, false, false, false, BLACK_ROOK, false},
+				{IE4, IH4, false, false, false, false, BLACK_ROOK, false},
+				{IE4, IE3, false, false, false, false, BLACK_ROOK, false},
+				{IE4, IE2, false, false, false, false, BLACK_ROOK, false},
+			},
+			b.BlackRookMoves,
+		},
+	}
+
+	for _, tt := range tests {
+		moves := tt.fn(tt.sq)
+		for i, _ := range moves {
+			if !equalMoves(moves[i], tt.moves[i]) {
+				t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[tt.sq], moves[i], tt.moves[i])
+			}
+		}
+	}
+}
+
+func TestWhiteQueenCentralSquares(t *testing.T) {
+	b := FromFENString("rnbqkbnr/pppp1ppp/8/8/4Q3/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1")
+	moves := b.WhiteQueenMoves(IE4)
+	expectedMoves := []Move{
+		{IE4, ID5, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IC6, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IB7, true, false, false, false, WHITE_QUEEN, false},
+		{IE4, IF5, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IG6, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IH7, true, false, false, false, WHITE_QUEEN, false},
+		{IE4, ID3, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IF3, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IE5, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IE6, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IE7, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, ID4, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IC4, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IB4, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IA4, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IF4, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IG4, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IH4, false, false, false, false, WHITE_QUEEN, false},
+		{IE4, IE3, false, false, false, false, WHITE_QUEEN, false},
+	}
+	for i, _ := range moves {
+		if !equalMoves(moves[i], expectedMoves[i]) {
+			t.Errorf("SQ: %s, received: %v, expected: %v", "E4", moves[i], expectedMoves[i])
+		}
+	}
+}
+
+func TestBlackQueenCentralSquares(t *testing.T) {
+	b := FromFENString("rnb1kbnr/pppp1ppp/8/4q3/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1")
+	moves := b.BlackQueenMoves(IE5)
+	expectedMoves := []Move{
+		{IE5, ID6, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IF6, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, ID4, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IC3, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IB2, true, false, false, false, BLACK_QUEEN, false},
+		{IE5, IF4, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IG3, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IH2, true, false, false, false, BLACK_QUEEN, false},
+		{IE5, IE6, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IE7, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, ID5, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IC5, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IB5, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IA5, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IF5, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IG5, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IH5, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IE4, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IE3, false, false, false, false, BLACK_QUEEN, false},
+		{IE5, IE2, false, false, false, false, BLACK_QUEEN, false},
+	}
+	for i, _ := range moves {
+		if !equalMoves(moves[i], expectedMoves[i]) {
+			t.Errorf("SQ: %s, received: %v, expected: %v", "E4", moves[i], expectedMoves[i])
+		}
+	}
+}
