@@ -724,3 +724,78 @@ func TestWhiteBishopFourCaptures(t *testing.T) {
 		}
 	}
 }
+
+func TestBlackBishopFourCaptures(t *testing.T) {
+	b := FromFENString("rn1qk1nr/pppppppp/8/2QNBR2/3bb3/2NPPB2/PPP2PPP/R3K3 w Qkq - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IE4, []Move{
+			{IE4, ID5, true, false, false, false, BLACK_BISHOP, false},
+			{IE4, IF5, true, false, false, false, BLACK_BISHOP, false},
+			{IE4, ID3, true, false, false, false, BLACK_BISHOP, false},
+			{IE4, IF3, true, false, false, false, BLACK_BISHOP, false},
+		},
+		},
+		{ID4, []Move{
+			{ID4, IC5, true, false, false, false, BLACK_BISHOP, false},
+			{ID4, IE5, true, false, false, false, BLACK_BISHOP, false},
+			{ID4, IC3, true, false, false, false, BLACK_BISHOP, false},
+			{ID4, IE3, true, false, false, false, BLACK_BISHOP, false},
+		},
+		},
+	}
+	for _, tt := range tests {
+		moves := b.BlackBishopMoves(tt.sq)
+		for i, _ := range moves {
+			if !equalMoves(moves[i], tt.moves[i]) {
+				t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[tt.sq], moves[i], tt.moves[i])
+			}
+		}
+	}
+}
+
+func TestBishopsCannotCaptureKing(t *testing.T) {
+	b := FromFENString("rnbqk1nr/1pp2ppp/p3p3/1B1p4/1b1P4/P3P3/1PP2PPP/RNBQK1NR w KQkq - 0 1")
+	var tests = []struct {
+		sq    int
+		moves []Move
+	}{
+		{IB5, []Move{
+			{IB5, IA6, true, false, false, false, WHITE_BISHOP, false},
+			{IB5, IC6, false, false, false, false, WHITE_BISHOP, false},
+			{IB5, ID7, false, false, false, false, WHITE_BISHOP, false},
+			{IB5, IA4, false, false, false, false, WHITE_BISHOP, false},
+			{IB5, IC4, false, false, false, false, WHITE_BISHOP, false},
+			{IB5, ID3, false, false, false, false, WHITE_BISHOP, false},
+			{IB5, IE2, false, false, false, false, WHITE_BISHOP, false},
+			{IB5, IF1, false, false, false, false, WHITE_BISHOP, false},
+		},
+		},
+		{IB4, []Move{
+			{IB4, IA5, false, false, false, false, BLACK_BISHOP, false},
+			{IB4, IC5, false, false, false, false, BLACK_BISHOP, false},
+			{IB4, ID6, false, false, false, false, BLACK_BISHOP, false},
+			{IB4, IE7, false, false, false, false, BLACK_BISHOP, false},
+			{IB4, IF8, false, false, false, false, BLACK_BISHOP, false},
+			{IB4, IA3, true, false, false, false, BLACK_BISHOP, false},
+			{IB4, IC3, false, false, false, false, BLACK_BISHOP, false},
+			{IB4, ID2, false, false, false, false, BLACK_BISHOP, false},
+		},
+		},
+	}
+
+	whiteMoves := b.WhiteBishopMoves(tests[0].sq)
+	blackMoves := b.BlackBishopMoves(tests[1].sq)
+	for i, _ := range whiteMoves {
+		if !equalMoves(whiteMoves[i], tests[0].moves[i]) {
+			t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[IB5], whiteMoves[i], tests[0].moves[i])
+		}
+	}
+	for i, _ := range blackMoves {
+		if !equalMoves(blackMoves[i], tests[1].moves[i]) {
+			t.Errorf("SQ: %s, received: %v, expected: %v", SQ_NUM_TO_NAME[IB4], blackMoves[i], tests[1].moves[i])
+		}
+	}
+}
