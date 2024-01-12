@@ -82,3 +82,80 @@ func TestPieceAtNewBoard(t *testing.T) {
 		}
 	}
 }
+
+func TestInCheck(t *testing.T) {
+	var tests = []struct {
+		b           Board
+		side        int
+		inCheck     bool
+		description string
+	}{
+		{
+			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			WHITE,
+			false,
+			"init",
+		},
+		{
+			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			BLACK,
+			false,
+			"init",
+		},
+		{
+			FromFENString("rnbqk1nr/ppp2ppp/4p3/3p4/1b1P4/4PN2/PPP2PPP/RNBQKB1R w KQkq - 0 1"),
+			WHITE,
+			true,
+			"bishop b4 check",
+		},
+		{
+			FromFENString("rnbqkbnr/ppp2ppp/4p3/1B1p4/3P4/4P3/PPP2PPP/RNBQK1NR w KQkq - 0 1"),
+			BLACK,
+			true,
+			"bishop b5 check",
+		},
+		{
+			FromFENString("rnbqkb1r/ppp2ppp/4p3/3p4/3P4/4Pn2/PPP2PPP/RNBQKBNR w KQkq - 0 1"),
+			WHITE,
+			true,
+			"knight f3 check",
+		},
+		{
+			FromFENString("rnbqkbnr/ppN2ppp/4p3/3p4/3P4/4P3/PPP2PPP/R1BQKBNR b KQkq - 0 1"),
+			BLACK,
+			true,
+			"knight c7 check",
+		},
+		{
+			FromFENString("1nbqkbnr/pp2rppp/8/3p4/3P4/8/PPP2PPP/RNBQKBNR w KQk - 0 1"),
+			WHITE,
+			true,
+			"rook e7 check",
+		},
+		{
+			FromFENString("rnbqkbnr/pp3ppp/8/3p4/3P4/8/PPP1RPPP/RNBQKBN1 b Qk - 0 1"),
+			BLACK,
+			true,
+			"rook e2 check",
+		},
+		{
+			FromFENString("rnb1kbnr/pp3ppp/8/3p4/3P3q/5P2/PPP3PP/RNBQKBNR b KQkq - 0 1"),
+			WHITE,
+			true,
+			"queen h4 check",
+		},
+		{
+			FromFENString("rnbqkpnr/pp4pp/8/3p3Q/3P4/8/PPP2PPP/RNB1KBNR b KQkq - 0 1"),
+			BLACK,
+			true,
+			"queen h5 check",
+		},
+	}
+
+	for _, tt := range tests {
+		received := tt.b.InCheck(tt.side)
+		if received != tt.inCheck {
+			t.Errorf("dsc: %s, received %t, expected %t", tt.description, received, tt.inCheck)
+		}
+	}
+}

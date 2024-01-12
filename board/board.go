@@ -36,6 +36,28 @@ func (b Board) PieceAt(idx int) int {
 	return b.pieces[idx]
 }
 
+// this could / should(?) use side struct field
+// taking param now for easier testing
+func (b Board) InCheck(side int) bool {
+	if side == WHITE {
+		kingPos := b.pieceSquares[WHITE_KING][0]
+		for _, sq := range b.SquaresAttackedByBlackPieces() {
+			if sq == kingPos {
+				return true
+			}
+		}
+		return false
+	}
+
+	kingPos := b.pieceSquares[BLACK_KING][0]
+	for _, sq := range b.SquaresAttackedByWhitePieces() {
+		if sq == kingPos {
+			return true
+		}
+	}
+	return false
+}
+
 func emptyPiecesArray() [120]int {
 	p := [120]int{}
 	for i := 0; i < 120; i++ {
