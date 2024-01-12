@@ -297,3 +297,37 @@ func (b Board) BlackQueenMoves(sq int) []Move {
 	}
 	return moves
 }
+
+// TODO: castling / legal move generation
+
+func (b Board) WhiteKingMoves(sq int) []Move {
+	moves := make([]Move, 8, 8)
+	mi := 0
+	for _, d := range QUEEN_DELTAS {
+		p := b.PieceAt(sq + d)
+		if p == EMPTY_SQUARE {
+			moves[mi] = Move{sq, sq + d, false, false, false, false, WHITE_KING, false}
+			mi += 1
+		} else if 6 < p && p < 12 {
+			moves[mi] = Move{sq, sq + d, true, false, false, false, WHITE_KING, false}
+			mi += 1
+		}
+	}
+	return moves[:mi]
+}
+
+func (b Board) BlackKingMoves(sq int) []Move {
+	moves := make([]Move, 8, 8)
+	mi := 0
+	for _, d := range QUEEN_DELTAS {
+		p := b.PieceAt(sq + d)
+		if p == EMPTY_SQUARE {
+			moves[mi] = Move{sq, sq + d, false, false, false, false, BLACK_KING, false}
+			mi += 1
+		} else if 0 < p && p < 6 {
+			moves[mi] = Move{sq, sq + d, true, false, false, false, BLACK_KING, false}
+			mi += 1
+		}
+	}
+	return moves[:mi]
+}
