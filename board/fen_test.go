@@ -7,6 +7,20 @@ type expectation struct {
 	piece int
 }
 
+func equalIntSlices(s1, s2 []int) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+
+	for i, _ := range s1 {
+		if s1[i] != s2[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
 func TestFromFENString(t *testing.T) {
 	var tests = []struct {
 		fen          string
@@ -16,6 +30,7 @@ func TestFromFENString(t *testing.T) {
 		ep           *int
 		hply         int
 		ply          int
+		pieceSquares map[int][]int
 	}{
 		{
 			"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -90,10 +105,93 @@ func TestFromFENString(t *testing.T) {
 			nil,
 			0,
 			0,
+			INIT_PIECE_SQUARES,
+		},
+		{
+			"r7/2b5/7P/1k1p4/5K2/6N1/8/7R w - - 0 1", // completely arbitrary position, more to come
+			[]expectation{
+				{IA8, BLACK_ROOK},
+				{IB8, EMPTY_SQUARE},
+				{IC8, EMPTY_SQUARE},
+				{ID8, EMPTY_SQUARE},
+				{IE8, EMPTY_SQUARE},
+				{IF8, EMPTY_SQUARE},
+				{IG8, EMPTY_SQUARE},
+				{IH8, EMPTY_SQUARE},
+				{IA7, EMPTY_SQUARE},
+				{IB7, EMPTY_SQUARE},
+				{IC7, BLACK_BISHOP},
+				{ID7, EMPTY_SQUARE},
+				{IE7, EMPTY_SQUARE},
+				{IF7, EMPTY_SQUARE},
+				{IG7, EMPTY_SQUARE},
+				{IH7, EMPTY_SQUARE},
+				{IA6, EMPTY_SQUARE},
+				{IB6, EMPTY_SQUARE},
+				{IC6, EMPTY_SQUARE},
+				{ID6, EMPTY_SQUARE},
+				{IE6, EMPTY_SQUARE},
+				{IF6, EMPTY_SQUARE},
+				{IG6, EMPTY_SQUARE},
+				{IH6, WHITE_PAWN},
+				{IA5, EMPTY_SQUARE},
+				{IB5, BLACK_KING},
+				{IC5, EMPTY_SQUARE},
+				{ID5, BLACK_PAWN},
+				{IE5, EMPTY_SQUARE},
+				{IF5, EMPTY_SQUARE},
+				{IG5, EMPTY_SQUARE},
+				{IH5, EMPTY_SQUARE},
+				{IA4, EMPTY_SQUARE},
+				{IB4, EMPTY_SQUARE},
+				{IC4, EMPTY_SQUARE},
+				{ID4, EMPTY_SQUARE},
+				{IE4, EMPTY_SQUARE},
+				{IF4, WHITE_KING},
+				{IG4, EMPTY_SQUARE},
+				{IH4, EMPTY_SQUARE},
+				{IA3, EMPTY_SQUARE},
+				{IB3, EMPTY_SQUARE},
+				{IC3, EMPTY_SQUARE},
+				{ID3, EMPTY_SQUARE},
+				{IE3, EMPTY_SQUARE},
+				{IF3, EMPTY_SQUARE},
+				{IG3, WHITE_KNIGHT},
+				{IH3, EMPTY_SQUARE},
+				{IA2, EMPTY_SQUARE},
+				{IB2, EMPTY_SQUARE},
+				{IC2, EMPTY_SQUARE},
+				{ID2, EMPTY_SQUARE},
+				{IE2, EMPTY_SQUARE},
+				{IF2, EMPTY_SQUARE},
+				{IG2, EMPTY_SQUARE},
+				{IH2, EMPTY_SQUARE},
+				{IA1, EMPTY_SQUARE},
+				{IB1, EMPTY_SQUARE},
+				{IC1, EMPTY_SQUARE},
+				{ID1, EMPTY_SQUARE},
+				{IE1, EMPTY_SQUARE},
+				{IF1, EMPTY_SQUARE},
+				{IG1, EMPTY_SQUARE},
+				{IH1, WHITE_ROOK},
+			},
+			0,
+			[4]bool{false, false, false, false},
+			nil,
+			0,
+			0,
+			map[int][]int{
+				BLACK_ROOK:   []int{IA8},
+				BLACK_BISHOP: []int{IC7},
+				BLACK_KING:   []int{IB5},
+				BLACK_PAWN:   []int{ID5},
+				WHITE_ROOK:   []int{IH1},
+				WHITE_KNIGHT: []int{IG3},
+				WHITE_KING:   []int{IF4},
+				WHITE_PAWN:   []int{IH6},
+			},
 		},
 	}
-
-	// TODO: more tests obviously
 
 	for _, tt := range tests {
 		b := FromFENString(tt.fen)
@@ -117,6 +215,12 @@ func TestFromFENString(t *testing.T) {
 		}
 		if b.ply != tt.ply {
 			t.Errorf("ply - received %d, expected %d", b.ply, tt.ply)
+		}
+
+		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+			if !equalIntSlices(b.pieceSquares[i], tt.pieceSquares[i]) {
+				t.Errorf("pieceSquares sq: %d - received %v, expected %v", i, b.pieceSquares[i], tt.pieceSquares[i])
+			}
 		}
 	}
 }

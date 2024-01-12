@@ -331,3 +331,8 @@ func (b Board) BlackKingMoves(sq int) []Move {
 	}
 	return moves[:mi]
 }
+
+// going to try maintaining positions of pieces in a map in board state
+
+//func (b Board) SquaresAttackedByWhitePieces() {
+//}
