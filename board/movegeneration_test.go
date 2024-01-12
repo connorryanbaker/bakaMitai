@@ -1100,82 +1100,283 @@ func TestKingsEightMoves(t *testing.T) {
 }
 
 func TestSquaresAttackedByWhitePieces(t *testing.T) {
-  var tests = []struct {
-    attacks []int
-    b Board
-    description string
-  }{
-    {
-      []int{
-        IB3, // pawns
-        IA3,
-        IC3,
-        IB3,
-        ID3,
-        IC3,
-        IE3,
-        ID3,
-        IF3,
-        IE3,
-        IG3,
-        IF3,
-        IH3,
-        IG3,
-        IA3, // knights
-        IC3,
-        ID2,
-        IF3,
-        IH3,
-        IE2,
-        IB2, // bishops
-        ID2,
-        IE2,
-        IG2,
-        IA2, // rooks
-        IB1,
-        IH2,
-        IG1,
-        IC2, // queen
-        IE2,
-        ID2,
-        IC1,
-        IE1,
-        ID2, // king
-        IE2,
-        IF2,
-        ID1,
-        IF1,
-      },
-      FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
-      "initial position",
-    },
-  }
+	var tests = []struct {
+		attacks     []int
+		b           Board
+		description string
+	}{
+		{
+			[]int{
+				IB3, // pawns
+				IA3,
+				IC3,
+				IB3,
+				ID3,
+				IC3,
+				IE3,
+				ID3,
+				IF3,
+				IE3,
+				IG3,
+				IF3,
+				IH3,
+				IG3,
+				IA3, // knights
+				IC3,
+				ID2,
+				IF3,
+				IH3,
+				IE2,
+				IB2, // bishops
+				ID2,
+				IE2,
+				IG2,
+				IA2, // rooks
+				IB1,
+				IH2,
+				IG1,
+				IC2, // queen
+				IE2,
+				ID2,
+				IC1,
+				IE1,
+				ID2, // king
+				IE2,
+				IF2,
+				ID1,
+				IF1,
+			},
+			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			"initial position",
+		},
+		{
+			[]int{
+				ID5,
+				IF5,
+				IG3,
+				IF7,
+				IH7,
+				IE6,
+				IH3,
+				IF3,
+				IE4,
+				IA6,
+				IC6,
+				ID7,
+				IE8,
+				IA4,
+				IC4,
+				ID3,
+				IE2,
+				IF1,
+				IB4,
+				IC5,
+				ID6,
+				IE7,
+				IF8,
+				IB2,
+				IC1,
+				IA2,
+				IA3,
+				IB1,
+				IC1,
+				ID1,
+				IH2,
+				IG1,
+				IF1,
+				IE1,
+				IC2,
+				IB3,
+				IA4,
+				IE2,
+				IF3,
+				IG4,
+				IH5,
+				ID2,
+				ID3,
+				ID4,
+				ID5,
+				ID6,
+				ID7,
+				ID8,
+				IC1,
+				IB1,
+				IA1,
+				IE1,
+				ID2,
+				IE2,
+				IF2,
+				ID1,
+				IF1,
+			},
+			FromFENString("rnbqkbnr/5ppp/8/1B2p1N1/4P3/B7/7P/R2QK2R w KQkq - 0 1"),
+			"ls bishop check",
+		},
+	}
 
-  for _, tt := range tests {
-    res := tt.b.SquaresAttackedByWhitePieces()
-    if !equalIntSlices(res, tt.attacks) {
-      diffIdx := firstDiffIdx(res, tt.attacks)
-      t.Errorf("%s: received: %v, expected: %v, diffIdx: %d", tt.description, res, tt.attacks, diffIdx)
-    }
-  }
+	for _, tt := range tests {
+		res := tt.b.SquaresAttackedByWhitePieces()
+		if !equalIntSlices(res, tt.attacks) {
+			diffIdx := firstDiffIdx(res, tt.attacks)
+			t.Errorf("%s: received: %v, expected: %v, diffIdx: %d", tt.description, mapSqIdxToSqNames(res), mapSqIdxToSqNames(tt.attacks), diffIdx)
+		}
+	}
+}
+
+// in the future the individual piece methods should be tested should
+// regressions arise
+func TestSquaresAttackedByBlackPieces(t *testing.T) {
+	var tests = []struct {
+		attacks     []int
+		b           Board
+		description string
+	}{
+		{
+			[]int{
+				IB6, // pawns
+				IC6,
+				IA6,
+				ID6,
+				IB6,
+				IE6,
+				IC6,
+				IF6,
+				ID6,
+				IG6,
+				IE6,
+				IH6,
+				IF6,
+				IG6,
+				ID7, // knights
+				IC6,
+				IA6,
+				IH6,
+				IF6,
+				IE7,
+				IB7, // bishops
+				ID7,
+				IE7,
+				IG7,
+				IB8, // rooks
+				IA7,
+				IG8,
+				IH7,
+				IC7, // queen
+				IE7,
+				IC8,
+				IE8,
+				ID7,
+				ID8, // king
+				IF8,
+				ID7,
+				IE7,
+				IF7,
+			},
+			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			"initial position",
+		},
+		{
+			[]int{
+				IB6,
+				IH6,
+				IF6,
+				IG6,
+				IE4,
+				IC4,
+				IE8,
+				IG8,
+				ID7,
+				IH7,
+				IH5,
+				IG4,
+				IE4,
+				ID5,
+				ID6,
+				IF6,
+				IC5,
+				IG5,
+				IG3,
+				IF2,
+				ID2,
+				IC3,
+				IB7,
+				IA6,
+				ID7,
+				IE6,
+				IF5,
+				IG4,
+				IH3,
+				IE7,
+				ID6,
+				IC5,
+				IB4,
+				IA3,
+				IG7,
+				IB8,
+				IC8,
+				IA7,
+				IG8,
+				IF8,
+				IH7,
+				IB6,
+				IC7,
+				ID8,
+				IB4,
+				IC3,
+				ID2,
+				IE1,
+				IA6,
+				IA7,
+				IB5,
+				IC5,
+				ID5,
+				IA4,
+				IA3,
+				IA2,
+				ID8,
+				IF8,
+				ID7,
+				IE7,
+				IF7,
+			},
+			FromFENString("r1b1kb1r/p5pp/5n2/q2p4/3Pn3/7P/PP2PPP1/RNBQKBNR w KQkq - 0 1"),
+			"queen a5 check",
+		},
+	}
+
+	for _, tt := range tests {
+		res := tt.b.SquaresAttackedByBlackPieces()
+		if !equalIntSlices(res, tt.attacks) {
+			diffIdx := firstDiffIdx(res, tt.attacks)
+			t.Errorf("%s: received: %v, expected: %v, diffIdx: %d", tt.description, mapSqIdxToSqNames(res), mapSqIdxToSqNames(tt.attacks), diffIdx)
+		}
+	}
+}
+
+func mapSqIdxToSqNames(s []int) []string {
+	r := make([]string, len(s), len(s))
+	i := 0
+
+	for i < len(s) {
+		r[i] = SQ_NUM_TO_NAME[s[i]]
+		i += 1
+	}
+	return r
 }
 
 func firstDiffIdx(s1, s2 []int) int {
-  var l int
-  if len(s1) < len(s2) {
-    l = len(s1)
-  } else {
-    l = len(s2)
-  }
-  i := 0
-  for i < l {
-    if s1[i] != s2[i] {
-      return i
-    }
-    i += 1
-  }
-  return i
+	var l int
+	if len(s1) < len(s2) {
+		l = len(s1)
+	} else {
+		l = len(s2)
+	}
+	i := 0
+	for i < l {
+		if s1[i] != s2[i] {
+			return i
+		}
+		i += 1
+	}
+	return i
 }
-
-//func TestSquaresAttackedByBlackPieces(t *testing.T) {
-//}
