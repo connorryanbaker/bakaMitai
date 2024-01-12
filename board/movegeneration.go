@@ -205,3 +205,41 @@ func (b Board) BlackKnightMoves(sq int) []Move {
 
 	return moves[:mi]
 }
+
+func (b Board) WhiteBishopMoves(sq int) []Move {
+	moves := make([]Move, 13, 13)
+	mi := 0
+	for _, d := range BISHOP_DELTAS {
+		ns := d + sq
+		for b.PieceAt(ns) == EMPTY_SQUARE {
+			moves[mi] = Move{sq, ns, false, false, false, false, WHITE_BISHOP, false}
+			mi += 1
+			ns += d
+		}
+		p := b.PieceAt(ns)
+		if 6 < p && p < 12 {
+			moves[mi] = Move{sq, ns, true, false, false, false, WHITE_BISHOP, false}
+			mi += 1
+		}
+	}
+	return moves[:mi]
+}
+
+func (b Board) BlackBishopMoves(sq int) []Move {
+	moves := make([]Move, 13, 13)
+	mi := 0
+	for _, d := range BISHOP_DELTAS {
+		ns := d + sq
+		for b.PieceAt(ns) == EMPTY_SQUARE {
+			moves[mi] = Move{sq, ns, false, false, false, false, BLACK_BISHOP, false}
+			mi += 1
+			ns += d
+		}
+		p := b.PieceAt(ns)
+		if 0 < p && p < 6 {
+			moves[mi] = Move{sq, ns, true, false, false, false, BLACK_BISHOP, false}
+			mi += 1
+		}
+	}
+	return moves[:mi]
+}
