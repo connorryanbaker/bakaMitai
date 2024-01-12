@@ -992,3 +992,109 @@ func TestBlackQueenCentralSquares(t *testing.T) {
 		}
 	}
 }
+
+func TestKingMovesInitialPosition(t *testing.T) {
+	b := FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	if len(b.WhiteKingMoves(IE1)) != 0 {
+		t.Errorf("White king is unable to move in intial pos")
+	}
+	if len(b.BlackKingMoves(IE8)) != 0 {
+		t.Errorf("Black king is unable to move in intial pos")
+	}
+}
+
+func TestKingsEightCaptures(t *testing.T) {
+	b := FromFENString("3q4/pppp4/RNP5/BkP1rpn1/RBN1bKn1/4rbp1/PP2PPPP/3Q4 w - - 0 1")
+
+	var tests = []struct {
+		sq    int
+		moves []Move
+		fn    func(int) []Move
+	}{
+		{
+			IF4,
+			[]Move{
+				{IF4, IE5, true, false, false, false, WHITE_KING, false},
+				{IF4, IF5, true, false, false, false, WHITE_KING, false},
+				{IF4, IG5, true, false, false, false, WHITE_KING, false},
+				{IF4, IE4, true, false, false, false, WHITE_KING, false},
+				{IF4, IG4, true, false, false, false, WHITE_KING, false},
+				{IF4, IE3, true, false, false, false, WHITE_KING, false},
+				{IF4, IF3, true, false, false, false, WHITE_KING, false},
+				{IF4, IG3, true, false, false, false, WHITE_KING, false},
+			},
+			b.WhiteKingMoves,
+		},
+		{
+			IB5,
+			[]Move{
+				{IB5, IA6, true, false, false, false, BLACK_KING, false},
+				{IB5, IB6, true, false, false, false, BLACK_KING, false},
+				{IB5, IC6, true, false, false, false, BLACK_KING, false},
+				{IB5, IA5, true, false, false, false, BLACK_KING, false},
+				{IB5, IC5, true, false, false, false, BLACK_KING, false},
+				{IB5, IA4, true, false, false, false, BLACK_KING, false},
+				{IB5, IB4, true, false, false, false, BLACK_KING, false},
+				{IB5, IC4, true, false, false, false, BLACK_KING, false},
+			},
+			b.BlackKingMoves,
+		},
+	}
+
+	for _, tt := range tests {
+		moves := tt.fn(tt.sq)
+		for i, _ := range moves {
+			if !equalMoves(moves[i], tt.moves[i]) {
+				t.Errorf("SQ: %s, expected: %v, received: %v", SQ_NUM_TO_NAME[tt.sq], tt.moves[i], moves[i])
+			}
+		}
+	}
+}
+
+func TestKingsEightMoves(t *testing.T) {
+	b := FromFENString("rnbq1bnr/pppppppp/8/1k6/5K2/8/PPPPPPPP/RNBQ1BNR w - - 0 1")
+
+	var tests = []struct {
+		sq    int
+		moves []Move
+		fn    func(int) []Move
+	}{
+		{
+			IF4,
+			[]Move{
+				{IF4, IE5, false, false, false, false, WHITE_KING, false},
+				{IF4, IF5, false, false, false, false, WHITE_KING, false},
+				{IF4, IG5, false, false, false, false, WHITE_KING, false},
+				{IF4, IE4, false, false, false, false, WHITE_KING, false},
+				{IF4, IG4, false, false, false, false, WHITE_KING, false},
+				{IF4, IE3, false, false, false, false, WHITE_KING, false},
+				{IF4, IF3, false, false, false, false, WHITE_KING, false},
+				{IF4, IG3, false, false, false, false, WHITE_KING, false},
+			},
+			b.WhiteKingMoves,
+		},
+		{
+			IB5,
+			[]Move{
+				{IB5, IA6, false, false, false, false, BLACK_KING, false},
+				{IB5, IB6, false, false, false, false, BLACK_KING, false},
+				{IB5, IC6, false, false, false, false, BLACK_KING, false},
+				{IB5, IA5, false, false, false, false, BLACK_KING, false},
+				{IB5, IC5, false, false, false, false, BLACK_KING, false},
+				{IB5, IA4, false, false, false, false, BLACK_KING, false},
+				{IB5, IB4, false, false, false, false, BLACK_KING, false},
+				{IB5, IC4, false, false, false, false, BLACK_KING, false},
+			},
+			b.BlackKingMoves,
+		},
+	}
+
+	for _, tt := range tests {
+		moves := tt.fn(tt.sq)
+		for i, _ := range moves {
+			if !equalMoves(moves[i], tt.moves[i]) {
+				t.Errorf("SQ: %s, expected: %v, received: %v", SQ_NUM_TO_NAME[tt.sq], tt.moves[i], moves[i])
+			}
+		}
+	}
+}
