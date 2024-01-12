@@ -46,6 +46,21 @@ var MAILBOX_64 = [64]int{
 
 var INIT_CASTLE = [4]bool{true, true, true, true}
 
+var INIT_PIECE_SQUARES = map[int][]int{
+	WHITE_PAWN:   []int{IA2, IB2, IC2, ID2, IE2, IF2, IG2, IH2},
+	WHITE_KNIGHT: []int{IB1, IG1},
+	WHITE_BISHOP: []int{IC1, IF1},
+	WHITE_ROOK:   []int{IA1, IH1},
+	WHITE_QUEEN:  []int{ID1},
+	WHITE_KING:   []int{IE1},
+	BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IE7, IF7, IG7, IH7},
+	BLACK_KNIGHT: []int{IB8, IG8},
+	BLACK_BISHOP: []int{IC8, IF8},
+	BLACK_ROOK:   []int{IA8, IH8},
+	BLACK_QUEEN:  []int{ID8},
+	BLACK_KING:   []int{IE8},
+}
+
 const (
 	A8 = iota
 	B8 = iota

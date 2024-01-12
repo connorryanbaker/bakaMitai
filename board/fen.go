@@ -39,7 +39,9 @@ var FEN_TO_PIECE = map[string]int{
 func FromFENString(f string) Board {
 	b := Board{}
 	components := strings.Split(f, " ")
-	b.pieces = parsePieceString(components[0])
+	pieces, pieceSquares := parsePieceString(components[0])
+	b.pieces = pieces
+	b.pieceSquares = pieceSquares
 	b.side = parseSideToMove(components[1])
 	b.castle = parseCastlePermissions(components[2])
 	b.ep = parseEnPassant(components[3])
@@ -48,8 +50,9 @@ func FromFENString(f string) Board {
 	return b
 }
 
-func parsePieceString(s string) [120]int {
+func parsePieceString(s string) ([120]int, map[int][]int) {
 	b := emptyPiecesArray()
+	pieceSquares := make(map[int][]int)
 	p := strings.Split(s, "/")
 	i := 0
 	re := regexp.MustCompile(`\d`)
@@ -63,13 +66,23 @@ func parsePieceString(s string) [120]int {
 				}
 				i += v
 			} else {
-				b[MAILBOX_64[i]] = FEN_TO_PIECE[string(c)]
+				p := FEN_TO_PIECE[string(c)]
+				sq := MAILBOX_64[i]
+				b[sq] = p
+				sqs, ok := pieceSquares[p]
+				if !ok {
+					a := make([]int, 1)
+					a[0] = sq
+					pieceSquares[p] = a
+				} else {
+					pieceSquares[p] = append(sqs, sq)
+				}
 				i += 1
 			}
 		}
 	}
 
-	return b
+	return b, pieceSquares
 }
 
 func parseSideToMove(s string) int {

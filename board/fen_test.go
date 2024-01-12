@@ -7,6 +7,20 @@ type expectation struct {
 	piece int
 }
 
+func equalIntSlices(s1, s2 []int) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+
+	for i, _ := range s1 {
+		if s1[i] != s2[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
 func TestFromFENString(t *testing.T) {
 	var tests = []struct {
 		fen          string
@@ -16,6 +30,7 @@ func TestFromFENString(t *testing.T) {
 		ep           *int
 		hply         int
 		ply          int
+		pieceSquares map[int][]int
 	}{
 		{
 			"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -90,10 +105,9 @@ func TestFromFENString(t *testing.T) {
 			nil,
 			0,
 			0,
+			INIT_PIECE_SQUARES,
 		},
 	}
-
-	// TODO: more tests obviously
 
 	for _, tt := range tests {
 		b := FromFENString(tt.fen)
@@ -117,6 +131,12 @@ func TestFromFENString(t *testing.T) {
 		}
 		if b.ply != tt.ply {
 			t.Errorf("ply - received %d, expected %d", b.ply, tt.ply)
+		}
+
+		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+			if !equalIntSlices(b.pieceSquares[i], tt.pieceSquares[i]) {
+				t.Errorf("pieceSquares sq: %d - received %v, expected %v", i, b.pieceSquares[i], tt.pieceSquares[i])
+			}
 		}
 	}
 }

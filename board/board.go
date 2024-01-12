@@ -1,12 +1,13 @@
 package board
 
 type Board struct {
-	pieces [120]int
-	castle [4]bool
-	ep     *int
-	side   int
-	hply   int
-	ply    int
+	pieces       [120]int
+	castle       [4]bool
+	ep           *int
+	side         int
+	hply         int
+	ply          int
+	pieceSquares map[int][]int
 	// todo:
 	// move hash for position comparison
 	// https://www.chessprogramming.org/Zobrist_Hashing
@@ -27,6 +28,7 @@ func NewBoard() Board {
 		WHITE,
 		0,
 		0,
+		INIT_PIECE_SQUARES, // we'll see if this works
 	}
 }
 
