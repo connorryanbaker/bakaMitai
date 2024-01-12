@@ -18,6 +18,7 @@ var BLACK_PROMOTION_PIECES = [4]int{BLACK_QUEEN, BLACK_ROOK, BLACK_BISHOP, BLACK
 // let's just get on the board
 // easy to get trapped in analysis paralysis
 // this is obviously suboptimal but we go again
+// should go without saying that these methods can be consolidated
 
 type Move struct {
 	from            int
@@ -332,7 +333,135 @@ func (b Board) BlackKingMoves(sq int) []Move {
 	return moves[:mi]
 }
 
-// going to try maintaining positions of pieces in a map in board state
+func (b Board) SquaresAttackedByWhitePieces() []int {
+  attackedSquares := make([]int,0)
+  for i := WHITE_PAWN; i <= WHITE_KING; i++ {
+    sqs, ok := b.pieceSquares[i]
+    if ok {
+      for _, sq := range sqs {
+        switch i {
+        case WHITE_PAWN:
+          attackedSquares = append(attackedSquares, b.PawnAttacks(sq, WHITE_PAWN_ATTACKS)...)
+        case WHITE_KNIGHT:
+          attackedSquares = append(attackedSquares, b.KnightAttacks(sq)...)
+        case WHITE_BISHOP:
+          attackedSquares = append(attackedSquares, b.BishopAttacks(sq)...)
+        case WHITE_ROOK:
+          attackedSquares = append(attackedSquares, b.RookAttacks(sq)...)
+        case WHITE_QUEEN:
+          attackedSquares = append(attackedSquares, b.QueenAttacks(sq)...)
+        case WHITE_KING:
+          attackedSquares = append(attackedSquares, b.KingAttacks(sq)...)
+        }
+      }
+    }
+  }
 
-//func (b Board) SquaresAttackedByWhitePieces() {
-//}
+  return attackedSquares
+}
+
+func (b Board) SquaresAttackedByBlackPieces() []int {
+  attackedSquares := make([]int,0)
+  for i := BLACK_PAWN; i <= BLACK_KING; i++ {
+    sqs, ok := b.pieceSquares[i]
+    if ok {
+      for _, sq := range sqs {
+        switch i {
+        case BLACK_PAWN:
+          attackedSquares = append(attackedSquares, b.PawnAttacks(sq, BLACK_PAWN_ATTACKS)...)
+        case BLACK_KNIGHT:
+          attackedSquares = append(attackedSquares, b.KnightAttacks(sq)...)
+        case BLACK_BISHOP:
+          attackedSquares = append(attackedSquares, b.BishopAttacks(sq)...)
+        case BLACK_ROOK:
+          attackedSquares = append(attackedSquares, b.RookAttacks(sq)...)
+        case BLACK_QUEEN:
+          attackedSquares = append(attackedSquares, b.QueenAttacks(sq)...)
+        case BLACK_KING:
+          attackedSquares = append(attackedSquares, b.KingAttacks(sq)...)
+        }
+      }
+    }
+  }
+
+  return attackedSquares
+}
+
+func (b Board) PawnAttacks(sq int, deltas [2]int) []int {
+  attacks := make([]int, 2, 2)
+  mi := 0
+  for _, d := range deltas {
+    ns := d + sq
+    if b.PieceAt(ns) != OFF_BOARD {
+      attacks[mi] = ns
+      mi += 1
+    }
+  }
+  return attacks[:mi]
+}
+
+func (b Board) KnightAttacks(sq int) []int {
+  attacks := make([]int, 8, 8)
+  mi := 0
+  for _, d := range KNIGHT_DELTAS {
+    ns := d + sq
+    if b.PieceAt(ns) != OFF_BOARD {
+      attacks[mi] = ns
+      mi += 1
+    }
+  }
+  return attacks[:mi]
+}
+
+func (b Board) BishopAttacks(sq int) []int {
+  attacks := make([]int, 13, 13)
+  mi := 0
+  for _, d := range BISHOP_DELTAS {
+    ns := d + sq
+    for b.PieceAt(ns) == EMPTY_SQUARE {
+      attacks[mi] = ns
+      mi += 1
+      ns += d
+    }
+    if b.PieceAt(ns) != OFF_BOARD {
+      attacks[mi] = ns
+      mi += 1
+    }
+  }
+  return attacks[:mi]
+}
+
+func (b Board) RookAttacks(sq int) []int {
+  attacks := make([]int, 14, 14)
+  mi := 0
+  for _, d := range ROOK_DELTAS {
+    ns := d + sq
+    for b.PieceAt(ns) == EMPTY_SQUARE {
+      attacks[mi] = ns
+      mi += 1
+      ns += d
+    }
+    if b.PieceAt(ns) != OFF_BOARD {
+      attacks[mi] = ns
+      mi += 1
+    }
+  }
+  return attacks[:mi]
+}
+
+func (b Board) QueenAttacks(sq int) []int {
+  return append(b.BishopAttacks(sq), b.RookAttacks(sq)...)
+}
+
+func (b Board) KingAttacks(sq int) []int {
+  attacks := make([]int, 8, 8)
+  mi := 0
+  for _, d := range QUEEN_DELTAS {
+    ns := sq + d
+    if b.PieceAt(ns) != OFF_BOARD {
+      attacks[mi] = ns
+      mi += 1
+    }
+  }
+  return attacks[:mi]
+}

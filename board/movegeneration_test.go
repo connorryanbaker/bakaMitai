@@ -1098,3 +1098,84 @@ func TestKingsEightMoves(t *testing.T) {
 		}
 	}
 }
+
+func TestSquaresAttackedByWhitePieces(t *testing.T) {
+  var tests = []struct {
+    attacks []int
+    b Board
+    description string
+  }{
+    {
+      []int{
+        IB3, // pawns
+        IA3,
+        IC3,
+        IB3,
+        ID3,
+        IC3,
+        IE3,
+        ID3,
+        IF3,
+        IE3,
+        IG3,
+        IF3,
+        IH3,
+        IG3,
+        IA3, // knights
+        IC3,
+        ID2,
+        IF3,
+        IH3,
+        IE2,
+        IB2, // bishops
+        ID2,
+        IE2,
+        IG2,
+        IA2, // rooks
+        IB1,
+        IH2,
+        IG1,
+        IC2, // queen
+        IE2,
+        ID2,
+        IC1,
+        IE1,
+        ID2, // king
+        IE2,
+        IF2,
+        ID1,
+        IF1,
+      },
+      FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+      "initial position",
+    },
+  }
+
+  for _, tt := range tests {
+    res := tt.b.SquaresAttackedByWhitePieces()
+    if !equalIntSlices(res, tt.attacks) {
+      diffIdx := firstDiffIdx(res, tt.attacks)
+      t.Errorf("%s: received: %v, expected: %v, diffIdx: %d", tt.description, res, tt.attacks, diffIdx)
+    }
+  }
+}
+
+func firstDiffIdx(s1, s2 []int) int {
+  var l int
+  if len(s1) < len(s2) {
+    l = len(s1)
+  } else {
+    l = len(s2)
+  }
+  i := 0
+  for i < l {
+    if s1[i] != s2[i] {
+      return i
+    }
+    i += 1
+  }
+  return i
+}
+
+//func TestSquaresAttackedByBlackPieces(t *testing.T) {
+//}
