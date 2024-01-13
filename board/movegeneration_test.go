@@ -1345,6 +1345,83 @@ func TestSquaresAttackedByBlackPieces(t *testing.T) {
 	}
 }
 
+func TestCastling(t *testing.T) {
+	var tests = []struct {
+		b           Board
+		side        int
+		moves       []Move
+		description string
+	}{
+		{
+			FromFENString("4k3/8/8/8/8/8/8/RN2K2R w KQ - 0 1"),
+			WHITE,
+			[]Move{
+				{IE1, ID2, false, false, false, false, WHITE_KING, false},
+				{IE1, IE2, false, false, false, false, WHITE_KING, false},
+				{IE1, IF2, false, false, false, false, WHITE_KING, false},
+				{IE1, ID1, false, false, false, false, WHITE_KING, false},
+				{IE1, IF1, false, false, false, false, WHITE_KING, false},
+				{IE1, IG1, false, true, false, false, WHITE_KING, false},
+			},
+			"check white ck, no attacks, qs blocked",
+		},
+		{
+			FromFENString("r3k2r/8/8/1Q6/8/8/8/4K3 b kq - 0 1"),
+			BLACK,
+			[]Move{
+				{IE8, ID8, false, false, false, false, BLACK_KING, false},
+				{IE8, IF8, false, false, false, false, BLACK_KING, false},
+				{IE8, IE7, false, false, false, false, BLACK_KING, false},
+				{IE8, IF7, false, false, false, false, BLACK_KING, false},
+			},
+			"black king in check Qb5",
+		},
+		{
+			FromFENString("4k3/8/2q5/8/8/8/8/R3K2R w KQ - 0 1"),
+			WHITE,
+			[]Move{
+				{IE1, ID2, false, false, false, false, WHITE_KING, false},
+				{IE1, IE2, false, false, false, false, WHITE_KING, false},
+				{IE1, IF2, false, false, false, false, WHITE_KING, false},
+				{IE1, ID1, false, false, false, false, WHITE_KING, false},
+				{IE1, IF1, false, false, false, false, WHITE_KING, false},
+				{IE1, IG1, false, true, false, false, WHITE_KING, false},
+			},
+			"Qc5 attacks h1 rook white castle qs",
+		},
+		{
+			FromFENString("r3k2r/8/8/8/5Q2/8/8/4K3 b kq - 0 1"),
+			BLACK,
+			[]Move{
+				{IE8, ID8, false, false, false, false, BLACK_KING, false},
+				{IE8, ID7, false, false, false, false, BLACK_KING, false},
+				{IE8, IE7, false, false, false, false, BLACK_KING, false},
+				{IE8, IC8, false, false, true, false, BLACK_KING, false},
+			},
+			"wQf4 prevents black kc, can cq",
+		},
+	}
+
+	for _, tt := range tests {
+		var moves []Move
+		if tt.side == WHITE {
+			moves = tt.b.WhiteKingMoves(tt.b.pieceSquares[WHITE_KING][0])
+		} else {
+			moves = tt.b.BlackKingMoves(tt.b.pieceSquares[BLACK_KING][0])
+		}
+
+		if len(moves) != len(tt.moves) {
+			t.Errorf("%s: generated %d moves, expected %d", tt.description, len(moves), len(tt.moves))
+		}
+
+		for i, _ := range moves {
+			if !equalMoves(moves[i], tt.moves[i]) {
+				t.Errorf("%s: received: %v, expected: %v", tt.description, moves[i], tt.moves[i])
+			}
+		}
+	}
+}
+
 func mapSqIdxToSqNames(s []int) []string {
 	r := make([]string, len(s), len(s))
 	i := 0
