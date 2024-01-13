@@ -299,12 +299,15 @@ func (b Board) BlackQueenMoves(sq int) []Move {
 	return moves
 }
 
-// TODO: castling / legal move generation
-
 func (b Board) WhiteKingMoves(sq int) []Move {
-	moves := make([]Move, 8, 8)
+	attackedSquares := toLookupMap(b.SquaresAttackedByBlackPieces())
+	moves := make([]Move, 10, 10)
 	mi := 0
 	for _, d := range QUEEN_DELTAS {
+		if attackedSquares[sq+d] {
+			continue
+		}
+
 		p := b.PieceAt(sq + d)
 		if p == EMPTY_SQUARE {
 			moves[mi] = Move{sq, sq + d, false, false, false, false, WHITE_KING, false}
@@ -314,13 +317,64 @@ func (b Board) WhiteKingMoves(sq int) []Move {
 			mi += 1
 		}
 	}
+	if b.checkWhiteCastleKingside(attackedSquares) {
+		moves[mi] = Move{sq, sq + 2, false, true, false, false, WHITE_KING, false}
+		mi += 1
+	}
+	if b.checkWhiteCastleQueenside(attackedSquares) {
+		moves[mi] = Move{sq, sq - 2, false, false, true, false, WHITE_KING, false}
+		mi += 1
+	}
 	return moves[:mi]
 }
 
+func (b Board) checkWhiteCastleKingside(attackedSquares map[int]bool) bool {
+	if !b.castle[0] {
+		return false
+	}
+
+	if b.PieceAt(IF1) != EMPTY_SQUARE || b.PieceAt(IG1) != EMPTY_SQUARE {
+		return false
+	}
+
+	for i := IE1; i < IH1; i++ {
+		if attackedSquares[i] == true {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (b Board) checkWhiteCastleQueenside(attackedSquares map[int]bool) bool {
+	if !b.castle[1] {
+		return false
+	}
+
+	for i := IB1; i < IE1; i++ {
+		if b.PieceAt(i) != EMPTY_SQUARE {
+			return false
+		}
+	}
+
+	for i := IC1; i < IF1; i++ {
+		if attackedSquares[i] == true {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (b Board) BlackKingMoves(sq int) []Move {
-	moves := make([]Move, 8, 8)
+	attackedSquares := toLookupMap(b.SquaresAttackedByWhitePieces())
+	moves := make([]Move, 10, 10)
 	mi := 0
 	for _, d := range QUEEN_DELTAS {
+		if attackedSquares[sq+d] {
+			continue
+		}
+
 		p := b.PieceAt(sq + d)
 		if p == EMPTY_SQUARE {
 			moves[mi] = Move{sq, sq + d, false, false, false, false, BLACK_KING, false}
@@ -330,7 +384,53 @@ func (b Board) BlackKingMoves(sq int) []Move {
 			mi += 1
 		}
 	}
+	if b.checkBlackCastleKingside(attackedSquares) {
+		moves[mi] = Move{sq, sq + 2, false, true, false, false, BLACK_KING, false}
+		mi += 1
+	}
+	if b.checkBlackCastleQueenside(attackedSquares) {
+		moves[mi] = Move{sq, sq - 2, false, false, true, false, BLACK_KING, false}
+		mi += 1
+	}
 	return moves[:mi]
+}
+
+func (b Board) checkBlackCastleKingside(attackedSquares map[int]bool) bool {
+	if !b.castle[2] {
+		return false
+	}
+
+	if b.PieceAt(IF8) != EMPTY_SQUARE || b.PieceAt(IG8) != EMPTY_SQUARE {
+		return false
+	}
+
+	for i := IE8; i < IH8; i++ {
+		if attackedSquares[i] == true {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (b Board) checkBlackCastleQueenside(attackedSquares map[int]bool) bool {
+	if !b.castle[3] {
+		return false
+	}
+
+	for i := IB8; i < ID8; i++ {
+		if b.PieceAt(i) != EMPTY_SQUARE {
+			return false
+		}
+	}
+
+	for i := IC8; i < IF8; i++ {
+		if attackedSquares[i] == true {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (b Board) SquaresAttackedByWhitePieces() []int {
@@ -464,4 +564,13 @@ func (b Board) KingAttacks(sq int) []int {
 		}
 	}
 	return attacks[:mi]
+}
+
+// TODO: generic
+func toLookupMap(sqs []int) map[int]bool {
+	m := make(map[int]bool)
+	for _, s := range sqs {
+		m[s] = true
+	}
+	return m
 }

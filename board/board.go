@@ -2,7 +2,7 @@ package board
 
 type Board struct {
 	pieces       [120]int
-	castle       [4]bool
+	castle       [4]bool // wck,wcq,bck,bcq
 	ep           *int
 	side         int
 	hply         int
@@ -41,21 +41,13 @@ func (b Board) PieceAt(idx int) int {
 func (b Board) InCheck(side int) bool {
 	if side == WHITE {
 		kingPos := b.pieceSquares[WHITE_KING][0]
-		for _, sq := range b.SquaresAttackedByBlackPieces() {
-			if sq == kingPos {
-				return true
-			}
-		}
-		return false
+		attackedSquares := toLookupMap(b.SquaresAttackedByBlackPieces())
+		return attackedSquares[kingPos] == true
 	}
 
 	kingPos := b.pieceSquares[BLACK_KING][0]
-	for _, sq := range b.SquaresAttackedByWhitePieces() {
-		if sq == kingPos {
-			return true
-		}
-	}
-	return false
+	attackedSquares := toLookupMap(b.SquaresAttackedByWhitePieces())
+	return attackedSquares[kingPos] == true
 }
 
 func emptyPiecesArray() [120]int {

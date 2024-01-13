@@ -1003,8 +1003,8 @@ func TestKingMovesInitialPosition(t *testing.T) {
 	}
 }
 
-func TestKingsEightCaptures(t *testing.T) {
-	b := FromFENString("3q4/pppp4/RNP5/BkP1rpn1/RBN1bKn1/4rbp1/PP2PPPP/3Q4 w - - 0 1")
+func TestKingsFourCaptures(t *testing.T) {
+	b := FromFENString("3q4/pppp4/N1N5/1k2n1n1/N1N2K2/4n1n1/PP2PPPP/3Q4 w - - 0 1")
 
 	var tests = []struct {
 		sq    int
@@ -1015,13 +1015,9 @@ func TestKingsEightCaptures(t *testing.T) {
 			IF4,
 			[]Move{
 				{IF4, IE5, true, false, false, false, WHITE_KING, false},
-				{IF4, IF5, true, false, false, false, WHITE_KING, false},
-				{IF4, IG5, true, false, false, false, WHITE_KING, false},
-				{IF4, IE4, true, false, false, false, WHITE_KING, false},
-				{IF4, IG4, true, false, false, false, WHITE_KING, false},
 				{IF4, IE3, true, false, false, false, WHITE_KING, false},
-				{IF4, IF3, true, false, false, false, WHITE_KING, false},
 				{IF4, IG3, true, false, false, false, WHITE_KING, false},
+				{IF4, IG5, true, false, false, false, WHITE_KING, false},
 			},
 			b.WhiteKingMoves,
 		},
@@ -1029,13 +1025,9 @@ func TestKingsEightCaptures(t *testing.T) {
 			IB5,
 			[]Move{
 				{IB5, IA6, true, false, false, false, BLACK_KING, false},
-				{IB5, IB6, true, false, false, false, BLACK_KING, false},
 				{IB5, IC6, true, false, false, false, BLACK_KING, false},
-				{IB5, IA5, true, false, false, false, BLACK_KING, false},
-				{IB5, IC5, true, false, false, false, BLACK_KING, false},
-				{IB5, IA4, true, false, false, false, BLACK_KING, false},
-				{IB5, IB4, true, false, false, false, BLACK_KING, false},
 				{IB5, IC4, true, false, false, false, BLACK_KING, false},
+				{IB5, IA4, true, false, false, false, BLACK_KING, false},
 			},
 			b.BlackKingMoves,
 		},
