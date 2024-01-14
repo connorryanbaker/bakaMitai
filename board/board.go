@@ -51,13 +51,25 @@ func (b Board) MakeMove(m Move) bool { // should this return (bool, Board) w/ a 
 	if b.PieceColor(movingPiece) != b.side {
 		return false
 	}
-	// this is just for simple cases
-	// need to handle castling, ep, promotion
+
 	if m.castleKingside {
-		return b.castleKingside(m)
+		b.castleKingside(m)
+		return true
 	}
 
-	// this is 'typical' case
+	if m.castleQueenside {
+		b.castleQueenside(m)
+		return true
+	}
+
+	if m.capture && (movingPiece == WHITE_PAWN || movingPiece == BLACK_PAWN) && m.to == *b.ep {
+		return b.handleEPCapture(m)
+	}
+
+	if m.capture {
+		return b.handleCapture(m)
+	}
+
 	pieceAtDestSq := b.PieceAt(m.to)
 	b.pieces[m.to] = movingPiece
 	b.pieces[m.from] = EMPTY_SQUARE
@@ -66,9 +78,130 @@ func (b Board) MakeMove(m Move) bool { // should this return (bool, Board) w/ a 
 		b.pieces[m.to] = pieceAtDestSq
 		return false
 	}
+
+	if m.doublePawnPush {
+		if b.side == WHITE {
+			s := m.to + 10
+			b.ep = &s
+		} else {
+			s := m.to - 10
+			b.ep = &s
+		}
+	}
+
+	b.updateCastlePermissions(m, movingPiece)
+	if movingPiece == WHITE_PAWN || movingPiece == BLACK_PAWN {
+		b.hply = 0
+	} else {
+		b.hply += 1
+	}
+	if b.side == BLACK {
+		b.ply += 1
+	}
+	b.side ^= 1
+	return true
 }
 
-func (b Board) castleKingside(m Move) bool {
+func (b Board) handleCapture(m Move) bool {
+	movingPiece := b.PieceAt(m.from)
+	capturedPiece := b.PieceAt(m.to)
+	b.pieces[m.to] = movingPiece
+	b.pieces[m.from] = EMPTY_SQUARE
+	b.updatePieceSquares()
+	if b.InCheck(b.side) {
+		b.pieces[m.to] = capturedPiece
+		b.pieces[m.from] = movingPiece
+		b.updatePieceSquares()
+		return false
+	}
+	b.updateCastlePermissions(m, movingPiece)
+	b.ep = nil
+	b.hply = 0
+	if b.side == BLACK {
+		b.ply += 1
+	}
+	b.side ^= 1
+	return true
+}
+
+func (b Board) updateCastlePermissions(m Move, p int) {
+	if b.side == WHITE {
+		if !b.castle[0] && !b.castle[1] {
+			return
+		}
+		if p != WHITE_ROOK && p != WHITE_KING {
+			return
+		}
+		if p == WHITE_KING {
+			b.castle[0] = false
+			b.castle[1] = false
+			return
+		}
+		if m.from == IA1 {
+			b.castle[1] = false
+			return
+		}
+		if m.from == IH1 {
+			b.castle[0] = false
+		}
+	} else {
+		if !b.castle[2] && !b.castle[3] {
+			return
+		}
+		if p != BLACK_ROOK && p != BLACK_KING {
+			return
+		}
+		if p == BLACK_KING {
+			b.castle[2] = false
+			b.castle[3] = false
+			return
+		}
+		if m.from == IA8 {
+			b.castle[3] = false
+			return
+		}
+		if m.from == IH8 {
+			b.castle[2] = false
+		}
+	}
+}
+
+func (b Board) handleEPCapture(m Move) bool {
+	if b.side == WHITE {
+		b.pieces[m.to] = WHITE_PAWN
+		b.pieces[m.from] = EMPTY_SQUARE
+		b.pieces[m.to-10] = EMPTY_SQUARE
+		b.updatePieceSquares()
+		if b.InCheck(b.side) {
+			b.pieces[m.to-10] = BLACK_PAWN
+			b.pieces[m.to] = EMPTY_SQUARE
+			b.pieces[m.from] = WHITE_PAWN
+			b.updatePieceSquares()
+			return false
+		}
+	} else {
+		b.pieces[m.to] = BLACK_PAWN
+		b.pieces[m.from] = EMPTY_SQUARE
+		b.pieces[m.to+10] = EMPTY_SQUARE
+		b.updatePieceSquares()
+		if b.InCheck(b.side) {
+			b.pieces[m.to+10] = WHITE_PAWN
+			b.pieces[m.to] = EMPTY_SQUARE
+			b.pieces[m.from] = BLACK_PAWN
+			b.updatePieceSquares()
+			return false
+		}
+	}
+	b.hply = 0
+	b.ep = nil
+	if b.side == BLACK {
+		b.ply += 1
+	}
+	b.side ^= 1
+	return true
+}
+
+func (b Board) castleKingside(m Move) {
 	if b.side == WHITE {
 		b.pieces[IG1] = WHITE_KING
 		b.pieces[IF1] = WHITE_ROOK
@@ -76,32 +209,50 @@ func (b Board) castleKingside(m Move) bool {
 		b.pieces[IH1] = EMPTY_SQUARE
 		b.castle[0] = false
 		b.castle[1] = false
-		b.pieceSquares[WHITE_KING][0] = IG1
-		for i, sq := range b.pieceSquares[WHITE_ROOK] {
-			if sq == IH1 {
-				b.pieceSquares[WHITE_ROOK][i] = IF1
-			}
-		}
 	} else {
-		b.pieces[IG8] = WHITE_KING
-		b.pieces[IF8] = WHITE_ROOK
+		b.pieces[IG8] = BLACK_KING
+		b.pieces[IF8] = BLACK_ROOK
 		b.pieces[IE8] = EMPTY_SQUARE
 		b.pieces[IH8] = EMPTY_SQUARE
 		b.castle[2] = false
 		b.castle[3] = false
-		b.pieceSquares[BLACK_KING][0] = IG8
-		for i, sq := range b.pieceSquares[BLACK_ROOK] {
-			if sq == IH8 {
-				b.pieceSquares[BLACK_ROOK][i] = IF8
-			}
-		}
 	}
-	return true
+	b.updatePieceSquares()
+	b.ep = nil
+	b.hply += 1
+	if b.side == BLACK {
+		b.ply += 1
+	}
+	b.side ^= 1
+}
+
+func (b Board) castleQueenside(m Move) {
+	if b.side == WHITE {
+		b.pieces[IC1] = WHITE_KING
+		b.pieces[ID1] = WHITE_ROOK
+		b.pieces[IE1] = EMPTY_SQUARE
+		b.pieces[IH1] = EMPTY_SQUARE
+		b.castle[0] = false
+		b.castle[1] = false
+	} else {
+		b.pieces[IC8] = BLACK_KING
+		b.pieces[ID8] = BLACK_ROOK
+		b.pieces[IE8] = EMPTY_SQUARE
+		b.pieces[IH8] = EMPTY_SQUARE
+		b.castle[2] = false
+		b.castle[3] = false
+	}
+	b.updatePieceSquares()
+	b.ep = nil
+	b.hply += 1
+	if b.side == BLACK {
+		b.ply += 1
+	}
+	b.side ^= 1
 }
 
 func (b Board) PieceColor(p int) int {
-	// todo: this obviously could use improvement
-	// return error if invalid, error handling
+	// todo: return error if invalid, error handling
 	if EMPTY_SQUARE < p && p < BLACK_PAWN {
 		return WHITE
 	}
@@ -112,8 +263,6 @@ func (b Board) PieceAt(idx int) int {
 	return b.pieces[idx]
 }
 
-// this could / should(?) use side struct field
-// taking param now for easier testing
 func (b Board) InCheck(side int) bool {
 	if side == WHITE {
 		kingPos := b.pieceSquares[WHITE_KING][0]
@@ -124,6 +273,31 @@ func (b Board) InCheck(side int) bool {
 	kingPos := b.pieceSquares[BLACK_KING][0]
 	attackedSquares := toLookupMap(b.SquaresAttackedByWhitePieces())
 	return attackedSquares[kingPos] == true
+}
+
+func (b Board) updatePieceSquares() {
+	nps := make(map[int][]int)
+	for i := IA1; i <= IH8; i++ {
+		if b.pieces[i] == EMPTY_SQUARE {
+			continue
+		}
+
+		p := b.pieces[i]
+		if nps[p] == nil {
+			nps[p] = append(nps[p], i)
+		} else {
+			switch p {
+			case WHITE_PAWN, BLACK_PAWN:
+				nps[p] = make([]int, 8, 8)
+			case WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK:
+				nps[p] = make([]int, 2, 2)
+			case WHITE_QUEEN, WHITE_KING, BLACK_QUEEN, BLACK_KING:
+				nps[p] = make([]int, 1, 1)
+			}
+			nps[p][0] = i
+		}
+	}
+	b.pieceSquares = nps
 }
 
 func emptyPiecesArray() [120]int {
