@@ -280,3 +280,87 @@ func TestMakeMoveCastleKingsideWhite(t *testing.T) {
 		}
 	}
 }
+
+func TestMakeMoveCastleKingsideBlack(t *testing.T) {
+	b := FromFENString("r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 b kq - 0 1")
+	m := Move{
+		IE8,
+		IG8,
+		false,
+		true,
+		false,
+		false,
+		BLACK_KING,
+		false,
+	}
+	res := b.MakeMove(m)
+	if res != true {
+		t.Errorf("makemove returned false for legal castle kingside")
+	}
+
+	if b.castle[2] == true || b.castle[3] == true {
+		t.Errorf("castle kingside should disable castle permissions, %v", b.castle)
+	}
+
+	if b.ep != nil {
+		t.Errorf("castle kingside should nullify ep, %d", *b.ep)
+	}
+
+	if b.side != WHITE {
+		t.Errorf("castle kingside should flip side to play, %d", b.side)
+	}
+
+	if b.hply != 1 {
+		t.Errorf("castle kingside should increment hply, %d", b.ply)
+	}
+
+	if b.ply != 2 {
+		t.Errorf("castle kingside should increment ply after black move, %d", b.ply)
+	}
+
+	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+		sqs := b.pieceSquares[i]
+		var expected []int
+		switch i {
+		case WHITE_PAWN:
+			expected = []int{IE4, ID3, IA2, IB2, IC2, IF2, IG2, IH2}
+		case WHITE_KNIGHT:
+			expected = []int{IF3, IB1}
+		case WHITE_BISHOP:
+			expected = []int{IC4, IC1}
+		case WHITE_ROOK:
+			expected = []int{IA1, IF1}
+		case WHITE_QUEEN:
+			expected = []int{ID1}
+		case WHITE_KING:
+			expected = []int{IG1}
+		case BLACK_PAWN:
+			expected = []int{IA7, IB7, IC7, ID7, IF7, IG7, IH7, IE5}
+		case BLACK_KNIGHT:
+			expected = []int{IC6, IF6}
+		case BLACK_BISHOP:
+			expected = []int{IC8, IC5}
+		case BLACK_ROOK:
+			expected = []int{IA8, IF8}
+		case BLACK_QUEEN:
+			expected = []int{ID8}
+		case BLACK_KING:
+			expected = []int{IG8}
+		}
+		if len(expected) != len(sqs) {
+			t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v", i, sqs, expected)
+		}
+		for j, _ := range expected {
+			if expected[j] != sqs[j] {
+				t.Errorf("p: %d, expected and pieceSquares have different values: %v %v", i, sqs, expected)
+			}
+		}
+	}
+}
+
+// todo:
+// test castle queenside w b
+// test legal & illegal ep capture (when capture moves pinned piece)
+// test legal & illegal capture
+// test legal & illegal quiet move
+// test double pawn push
