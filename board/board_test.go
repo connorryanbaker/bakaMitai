@@ -159,3 +159,124 @@ func TestInCheck(t *testing.T) {
 		}
 	}
 }
+
+func TestMakeMoveWrongColor(t *testing.T) {
+	var tests = []struct {
+		b        Board
+		m        Move
+		expected bool
+	}{
+		{
+			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			Move{
+				IE7,
+				IE5,
+				false,
+				false,
+				false,
+				false,
+				BLACK_PAWN,
+				true,
+			},
+			false,
+		},
+		{
+			FromFENString("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"),
+			Move{
+				ID2,
+				ID4,
+				false,
+				false,
+				false,
+				false,
+				WHITE_PAWN,
+				true,
+			},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		received := tt.b.MakeMove(tt.m)
+		if received != tt.expected {
+			t.Errorf("illegal move allowed, expected: %t, received: %t", tt.expected, received)
+		}
+	}
+}
+
+func TestMakeMoveCastleKingsideWhite(t *testing.T) {
+	b := FromFENString("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1")
+	m := Move{
+		IE1,
+		IG1,
+		false,
+		true,
+		false,
+		false,
+		WHITE_KING,
+		false,
+	}
+	res := b.MakeMove(m)
+	if res != true {
+		t.Errorf("makemove returned false for legal castle kingside")
+	}
+
+	if b.castle[0] == true || b.castle[1] == true {
+		t.Errorf("castle kingside should disable castle permissions, %v", b.castle)
+	}
+
+	if b.ep != nil {
+		t.Errorf("castle kingside should nullify ep, %d", *b.ep)
+	}
+
+	if b.side != BLACK {
+		t.Errorf("castle kingside should flip side to play, %d", b.side)
+	}
+
+	if b.hply != 1 {
+		t.Errorf("castle kingside should increment hply, %d", b.ply)
+	}
+
+	if b.ply != 0 {
+		t.Errorf("castle kingside should not increment ply after white move, %d", b.ply)
+	}
+
+	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+		sqs := b.pieceSquares[i]
+		var expected []int
+		switch i {
+		case WHITE_PAWN:
+			expected = []int{IE4, IA2, IB2, IC2, ID2, IF2, IG2, IH2}
+		case WHITE_KNIGHT:
+			expected = []int{IF3, IB1}
+		case WHITE_BISHOP:
+			expected = []int{IC4, IC1}
+		case WHITE_ROOK:
+			expected = []int{IA1, IF1}
+		case WHITE_QUEEN:
+			expected = []int{ID1}
+		case WHITE_KING:
+			expected = []int{IG1}
+		case BLACK_PAWN:
+			expected = []int{IA7, IB7, IC7, ID7, IF7, IG7, IH7, IE5}
+		case BLACK_KNIGHT:
+			expected = []int{IG8, IC6}
+		case BLACK_BISHOP:
+			expected = []int{IC8, IC5}
+		case BLACK_ROOK:
+			expected = []int{IA8, IH8}
+		case BLACK_QUEEN:
+			expected = []int{ID8}
+		case BLACK_KING:
+			expected = []int{IE8}
+		}
+		if len(expected) != len(sqs) {
+			t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v", i, sqs, expected)
+		}
+		for j, _ := range expected {
+			if expected[j] != sqs[j] {
+				t.Errorf("p: %d, expected and pieceSquares have different values: %v %v", i, sqs, expected)
+			}
+		}
+	}
+}
