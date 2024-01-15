@@ -358,9 +358,248 @@ func TestMakeMoveCastleKingsideBlack(t *testing.T) {
 	}
 }
 
+func TestMakeMoveCastleQueensideWhite(t *testing.T) {
+	b := FromFENString("r2qkb1r/pppbpppp/2n2n2/3p4/3P4/2N1B3/PPPQPPPP/R3KBNR w KQkq - 0 1")
+	m := Move{
+		IE1,
+		IC1,
+		false,
+		false,
+		true,
+		false,
+		WHITE_KING,
+		false,
+	}
+	res := b.MakeMove(m)
+	if res != true {
+		t.Errorf("makemove returned false for legal castle queenside")
+	}
+
+	if b.castle[0] == true || b.castle[1] == true {
+		t.Errorf("castle queenside should disable castle permissions, %v", b.castle)
+	}
+
+	if b.ep != nil {
+		t.Errorf("castle queenside should nullify ep, %d", *b.ep)
+	}
+
+	if b.side != BLACK {
+		t.Errorf("castle queenside should flip side to play, %d", b.side)
+	}
+
+	if b.hply != 1 {
+		t.Errorf("castle queenside should increment hply, %d", b.ply)
+	}
+
+	if b.ply != 0 {
+		t.Errorf("castle queenside should not increment ply after white move, %d", b.ply)
+	}
+	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+		sqs := b.pieceSquares[i]
+		var expected []int
+		switch i {
+		case WHITE_PAWN:
+			expected = []int{ID4, IA2, IB2, IC2, IE2, IF2, IG2, IH2}
+		case WHITE_KNIGHT:
+			expected = []int{IC3, IG1}
+		case WHITE_BISHOP:
+			expected = []int{IE3, IF1}
+		case WHITE_ROOK:
+			expected = []int{ID1, IH1}
+		case WHITE_QUEEN:
+			expected = []int{ID2}
+		case WHITE_KING:
+			expected = []int{IC1}
+		case BLACK_PAWN:
+			expected = []int{IA7, IB7, IC7, IE7, IF7, IG7, IH7, ID5}
+		case BLACK_KNIGHT:
+			expected = []int{IC6, IF6}
+		case BLACK_BISHOP:
+			expected = []int{IF8, ID7}
+		case BLACK_ROOK:
+			expected = []int{IA8, IH8}
+		case BLACK_QUEEN:
+			expected = []int{ID8}
+		case BLACK_KING:
+			expected = []int{IE8}
+		}
+		if len(expected) != len(sqs) {
+			t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v", i, sqs, expected)
+		}
+		for j, _ := range expected {
+			if expected[j] != sqs[j] {
+				t.Errorf("p: %d, expected and pieceSquares have different values: %v %v", i, sqs, expected)
+			}
+		}
+	}
+}
+
+func TestMakeMoveCastleQueensideBlack(t *testing.T) {
+	b := FromFENString("r3kb1r/pppbqppp/2n1pn2/3p4/3P3P/2N1BN2/PPPQPPP1/2KR1B1R b kq - 0 1")
+	m := Move{
+		IE8,
+		IC8,
+		false,
+		false,
+		true,
+		false,
+		BLACK_KING,
+		false,
+	}
+	res := b.MakeMove(m)
+	if res != true {
+		t.Errorf("makemove returned false for legal castle queenside")
+	}
+
+	if b.castle[2] == true || b.castle[3] == true {
+		t.Errorf("castle queenside should disable castle permissions, %v", b.castle)
+	}
+
+	if b.ep != nil {
+		t.Errorf("castle queenside should nullify ep, %d", *b.ep)
+	}
+
+	if b.side != WHITE {
+		t.Errorf("castle queenside should flip side to play, %d", b.side)
+	}
+
+	if b.hply != 1 {
+		t.Errorf("castle queenside should increment hply, %d", b.hply)
+	}
+
+	if b.ply != 2 {
+		t.Errorf("castle queenside should increment ply after black move, %d", b.ply)
+	}
+	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+		sqs := b.pieceSquares[i]
+		var expected []int
+		switch i {
+		case WHITE_PAWN:
+			expected = []int{ID4, IH4, IA2, IB2, IC2, IE2, IF2, IG2}
+		case WHITE_KNIGHT:
+			expected = []int{IC3, IF3}
+		case WHITE_BISHOP:
+			expected = []int{IE3, IF1}
+		case WHITE_ROOK:
+			expected = []int{ID1, IH1}
+		case WHITE_QUEEN:
+			expected = []int{ID2}
+		case WHITE_KING:
+			expected = []int{IC1}
+		case BLACK_PAWN:
+			expected = []int{IA7, IB7, IC7, IF7, IG7, IH7, IE6, ID5}
+		case BLACK_KNIGHT:
+			expected = []int{IC6, IF6}
+		case BLACK_BISHOP:
+			expected = []int{IF8, ID7}
+		case BLACK_ROOK:
+			expected = []int{ID8, IH8}
+		case BLACK_QUEEN:
+			expected = []int{IE7}
+		case BLACK_KING:
+			expected = []int{IC8}
+		}
+		if len(expected) != len(sqs) {
+			t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v", i, sqs, expected)
+		}
+		for j, _ := range expected {
+			if expected[j] != sqs[j] {
+				t.Errorf("p: %d, expected and pieceSquares have different values: %v %v", i, sqs, expected)
+			}
+		}
+	}
+}
+
+func TestMakeMoveEPCapture(t *testing.T) {
+	var tests = []struct {
+		b            Board
+		m            Move
+		res          bool
+		castle       [4]bool
+		ep           *int
+		side         int
+		hply         int
+		ply          int
+		pieceSquares map[int][]int
+		d            string
+	}{
+		{
+			FromFENString("rnbqkbnr/p1p1pppp/1p6/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 1"),
+			Move{
+				IE5,
+				ID6,
+				true,
+				false,
+				false,
+				false,
+				WHITE_PAWN,
+				false,
+			},
+			true,
+			[4]bool{true, true, true, true},
+			nil,
+			BLACK,
+			0,
+			0,
+			map[int][]int{
+				WHITE_PAWN:   []int{ID6, IA2, IB2, IC2, ID2, IF2, IG2, IH2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IC1, IF1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IA7, IC7, IE7, IF7, IG7, IH7, IB6},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IF8},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"legal white ep capture d5->e6",
+		},
+	}
+
+	for _, tt := range tests {
+		res := tt.b.MakeMove(tt.m)
+		if res != tt.res {
+			t.Errorf("%s MakeMove returned unexpected result: %t, expected %t", tt.d, res, tt.res)
+		}
+		for i, v := range tt.castle {
+			if tt.b.castle[i] != v {
+				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.castle, tt.castle)
+			}
+		}
+		if tt.b.ep != tt.ep {
+			t.Errorf("%s MakeMove resulted in unexpected ep: %p, expected %p", tt.d, tt.b.ep, tt.ep)
+		}
+		if tt.b.side != tt.side {
+			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.side, tt.side)
+		}
+		if tt.b.hply != tt.hply {
+			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.hply, tt.hply)
+		}
+		if tt.b.ply != tt.ply {
+			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
+		}
+		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+			sqs := tt.b.pieceSquares[i]
+			if len(sqs) != len(tt.pieceSquares[i]) {
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+			}
+			for j, _ := range sqs {
+				if sqs[j] != tt.pieceSquares[i][j] {
+					t.Errorf("p: %d, expected and pieceSquares have different values: %v %v", i, sqs, tt.pieceSquares[i])
+				}
+			}
+		}
+	}
+}
+
 // todo:
-// test castle queenside w b
 // test legal & illegal ep capture (when capture moves pinned piece)
+// test legal & illegal promotion
 // test legal & illegal capture
 // test legal & illegal quiet move
+// test moving rook updates castle permissions
+// test moving king updates castle permissions
 // test double pawn push

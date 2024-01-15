@@ -60,6 +60,10 @@ func (b *Board) MakeMove(m Move) bool { // should this return (bool, Board) w/ a
 		return true
 	}
 
+	if m.promote {
+		return b.handlePromotion(m)
+	}
+
 	if m.capture && (movingPiece == WHITE_PAWN || movingPiece == BLACK_PAWN) && m.to == *b.ep {
 		return b.handleEPCapture(m)
 	}
@@ -122,6 +126,27 @@ func (b *Board) handleCapture(m Move) bool {
 	return true
 }
 
+func (b *Board) handlePromotion(m Move) bool {
+	prevSq := b.PieceAt(m.to)
+	movingPiece := b.PieceAt(m.from)
+	b.pieces[m.to] = m.promotionPiece
+	b.pieces[m.from] = EMPTY_SQUARE
+	b.updatePieceSquares()
+	if b.InCheck(b.side) {
+		b.pieces[m.to] = prevSq
+		b.pieces[m.from] = movingPiece
+		b.updatePieceSquares()
+		return false
+	}
+	b.ep = nil
+	b.hply = 0
+	if b.side == BLACK {
+		b.ply += 1
+	}
+	b.side ^= 1
+	return true
+}
+
 func (b *Board) updateCastlePermissions(m Move, p int) {
 	if b.side == WHITE {
 		if !b.castle[0] && !b.castle[1] {
@@ -168,10 +193,10 @@ func (b *Board) handleEPCapture(m Move) bool {
 	if b.side == WHITE {
 		b.pieces[m.to] = WHITE_PAWN
 		b.pieces[m.from] = EMPTY_SQUARE
-		b.pieces[m.to-10] = EMPTY_SQUARE
+		b.pieces[m.to+10] = EMPTY_SQUARE
 		b.updatePieceSquares()
 		if b.InCheck(b.side) {
-			b.pieces[m.to-10] = BLACK_PAWN
+			b.pieces[m.to+10] = BLACK_PAWN
 			b.pieces[m.to] = EMPTY_SQUARE
 			b.pieces[m.from] = WHITE_PAWN
 			b.updatePieceSquares()
@@ -180,10 +205,10 @@ func (b *Board) handleEPCapture(m Move) bool {
 	} else {
 		b.pieces[m.to] = BLACK_PAWN
 		b.pieces[m.from] = EMPTY_SQUARE
-		b.pieces[m.to+10] = EMPTY_SQUARE
+		b.pieces[m.to-10] = EMPTY_SQUARE
 		b.updatePieceSquares()
 		if b.InCheck(b.side) {
-			b.pieces[m.to+10] = WHITE_PAWN
+			b.pieces[m.to-10] = WHITE_PAWN
 			b.pieces[m.to] = EMPTY_SQUARE
 			b.pieces[m.from] = BLACK_PAWN
 			b.updatePieceSquares()
@@ -229,14 +254,14 @@ func (b *Board) castleQueenside(m Move) {
 		b.pieces[IC1] = WHITE_KING
 		b.pieces[ID1] = WHITE_ROOK
 		b.pieces[IE1] = EMPTY_SQUARE
-		b.pieces[IH1] = EMPTY_SQUARE
+		b.pieces[IA1] = EMPTY_SQUARE
 		b.castle[0] = false
 		b.castle[1] = false
 	} else {
 		b.pieces[IC8] = BLACK_KING
 		b.pieces[ID8] = BLACK_ROOK
 		b.pieces[IE8] = EMPTY_SQUARE
-		b.pieces[IH8] = EMPTY_SQUARE
+		b.pieces[IA8] = EMPTY_SQUARE
 		b.castle[2] = false
 		b.castle[3] = false
 	}
