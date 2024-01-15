@@ -237,7 +237,7 @@ func TestMakeMoveCastleKingsideWhite(t *testing.T) {
 		t.Errorf("castle kingside should increment hply, %d", b.ply)
 	}
 
-	if b.ply != 0 {
+	if b.ply != 1 {
 		t.Errorf("castle kingside should not increment ply after white move, %d", b.ply)
 	}
 
@@ -391,7 +391,7 @@ func TestMakeMoveCastleQueensideWhite(t *testing.T) {
 		t.Errorf("castle queenside should increment hply, %d", b.ply)
 	}
 
-	if b.ply != 0 {
+	if b.ply != 1 {
 		t.Errorf("castle queenside should not increment ply after white move, %d", b.ply)
 	}
 	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
@@ -540,7 +540,7 @@ func TestMakeMoveEPCapture(t *testing.T) {
 			nil,
 			BLACK,
 			0,
-			0,
+			1,
 			map[int][]int{
 				WHITE_PAWN:   []int{ID6, IA2, IB2, IC2, ID2, IF2, IG2, IH2},
 				WHITE_KNIGHT: []int{IB1, IG1},
@@ -557,6 +557,94 @@ func TestMakeMoveEPCapture(t *testing.T) {
 			},
 			"legal white ep capture d5->e6",
 		},
+		{
+			FromFENString("rnbqkbnr/ppp1pppp/8/8/3pP3/6P1/PPPP1PBP/RNBQK1NR b KQkq e3 0 1"),
+			Move{
+				ID4,
+				IE3,
+				true,
+				false,
+				false,
+				false,
+				BLACK_PAWN,
+				false,
+			},
+			true,
+			[4]bool{true, true, true, true},
+			nil,
+			WHITE,
+			0,
+			2,
+			map[int][]int{
+				WHITE_PAWN:   []int{IG3, IA2, IB2, IC2, ID2, IF2, IH2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IG2, IC1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IA7, IB7, IC7, IE7, IF7, IG7, IH7, IE3},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IF8},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"legal black ep capture d4->e3",
+		},
+		{
+			FromFENString("4k3/6b1/8/3pP3/8/2K5/8/8 w - d6 0 1"),
+			Move{
+				IE5,
+				ID6,
+				true,
+				false,
+				false,
+				false,
+				WHITE_PAWN,
+				false,
+			},
+			false,
+			[4]bool{false, false, false, false},
+			&ID6,
+			WHITE,
+			0,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{IE5},
+				WHITE_KING:   []int{IC3},
+				BLACK_PAWN:   []int{ID5},
+				BLACK_BISHOP: []int{IG7},
+				BLACK_KING:   []int{IE8},
+			},
+			"illegal white ep capture wp e5 pinned",
+		},
+		{
+			FromFENString("8/5k2/8/8/2pP4/8/B3K3/8 b - d3 0 1"),
+			Move{
+				IC4,
+				ID3,
+				true,
+				false,
+				false,
+				false,
+				BLACK_PAWN,
+				false,
+			},
+			false,
+			[4]bool{false, false, false, false},
+			&ID3,
+			BLACK,
+			0,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{ID4},
+				WHITE_BISHOP: []int{IA2},
+				WHITE_KING:   []int{IE2},
+				BLACK_PAWN:   []int{IC4},
+				BLACK_KING:   []int{IF7},
+			},
+			"illegal black ep capture bp c4 pinned",
+		},
 	}
 
 	for _, tt := range tests {
@@ -569,8 +657,385 @@ func TestMakeMoveEPCapture(t *testing.T) {
 				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.castle, tt.castle)
 			}
 		}
-		if tt.b.ep != tt.ep {
-			t.Errorf("%s MakeMove resulted in unexpected ep: %p, expected %p", tt.d, tt.b.ep, tt.ep)
+		if tt.b.ep != nil && tt.ep != nil && *tt.b.ep != *tt.ep {
+			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.ep, *tt.ep)
+		}
+		if tt.b.side != tt.side {
+			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.side, tt.side)
+		}
+		if tt.b.hply != tt.hply {
+			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.hply, tt.hply)
+		}
+		if tt.b.ply != tt.ply {
+			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
+		}
+		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+			sqs := tt.b.pieceSquares[i]
+			if len(sqs) != len(tt.pieceSquares[i]) {
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+			}
+			for j, _ := range sqs {
+				if sqs[j] != tt.pieceSquares[i][j] {
+					t.Errorf("p: %d, expected and pieceSquares have different values: %v %v", i, sqs, tt.pieceSquares[i])
+				}
+			}
+		}
+	}
+}
+
+func TestMakeMovePromotion(t *testing.T) {
+	var tests = []struct {
+		b            Board
+		m            Move
+		res          bool
+		castle       [4]bool
+		ep           *int
+		side         int
+		hply         int
+		ply          int
+		pieceSquares map[int][]int
+		d            string
+	}{
+		{
+			FromFENString("8/3P1k2/8/8/2p5/8/B3K3/8 w - - 0 1"),
+			Move{
+				ID7,
+				ID8,
+				false,
+				false,
+				false,
+				true,
+				WHITE_QUEEN,
+				false,
+			},
+			true,
+			[4]bool{false, false, false, false},
+			nil,
+			BLACK,
+			0,
+			1,
+			map[int][]int{
+				WHITE_BISHOP: []int{IA2},
+				WHITE_QUEEN:  []int{ID8},
+				WHITE_KING:   []int{IE2},
+				BLACK_PAWN:   []int{IC4},
+				BLACK_KING:   []int{IF7},
+			},
+			"wp legal promotion d8Q",
+		},
+		{
+			FromFENString("8/5k2/8/8/8/8/2p1K3/1B6 b - - 0 1"),
+			Move{
+				IC2,
+				IB1,
+				true,
+				false,
+				false,
+				true,
+				BLACK_QUEEN,
+				false,
+			},
+			true,
+			[4]bool{false, false, false, false},
+			nil,
+			WHITE,
+			0,
+			2,
+			map[int][]int{
+				WHITE_KING:  []int{IE2},
+				BLACK_QUEEN: []int{IB1},
+				BLACK_KING:  []int{IF7},
+			},
+			"legal promotion capture cxb1Q",
+		},
+		{
+			FromFENString("8/8/8/8/4K3/8/R1p1k3/1B6 b - - 0 1"),
+			Move{
+				IC2,
+				IB1,
+				true,
+				false,
+				false,
+				true,
+				BLACK_QUEEN,
+				false,
+			},
+			false,
+			[4]bool{false, false, false, false},
+			nil,
+			BLACK,
+			0,
+			1,
+			map[int][]int{
+				WHITE_BISHOP: []int{IB1},
+				WHITE_ROOK:   []int{IA2},
+				WHITE_KING:   []int{IE4},
+				BLACK_PAWN:   []int{IC2},
+				BLACK_KING:   []int{IE2},
+			},
+			"illegal promotion capture cxb1Q cpawn pinned",
+		},
+		{
+			FromFENString("8/3P4/8/8/r3K3/8/4k3/8 w - - 0 1"),
+			Move{
+				ID7,
+				ID8,
+				false,
+				false,
+				false,
+				true,
+				WHITE_QUEEN,
+				false,
+			},
+			false,
+			[4]bool{false, false, false, false},
+			nil,
+			WHITE,
+			0,
+			1,
+			map[int][]int{
+				WHITE_PAWN: []int{ID7},
+				WHITE_KING: []int{IE4},
+				BLACK_ROOK: []int{IA4},
+				BLACK_KING: []int{IE2},
+			},
+			"illegal promotion white king in check",
+		},
+	}
+
+	for _, tt := range tests {
+		res := tt.b.MakeMove(tt.m)
+		if res != tt.res {
+			t.Errorf("%s MakeMove returned unexpected result: %t, expected %t", tt.d, res, tt.res)
+		}
+		for i, v := range tt.castle {
+			if tt.b.castle[i] != v {
+				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.castle, tt.castle)
+			}
+		}
+		if tt.b.ep != nil && tt.ep != nil && *tt.b.ep != *tt.ep {
+			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.ep, *tt.ep)
+		}
+		if tt.b.side != tt.side {
+			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.side, tt.side)
+		}
+		if tt.b.hply != tt.hply {
+			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.hply, tt.hply)
+		}
+		if tt.b.ply != tt.ply {
+			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
+		}
+		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+			sqs := tt.b.pieceSquares[i]
+			if len(sqs) != len(tt.pieceSquares[i]) {
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+			}
+			for j, _ := range sqs {
+				if sqs[j] != tt.pieceSquares[i][j] {
+					t.Errorf("p: %d, expected and pieceSquares have different values: %v %v", i, sqs, tt.pieceSquares[i])
+				}
+			}
+		}
+	}
+}
+
+func TestMakeMoveCapture(t *testing.T) {
+	var tests = []struct {
+		b            Board
+		m            Move
+		res          bool
+		castle       [4]bool
+		ep           *int
+		side         int
+		hply         int
+		ply          int
+		pieceSquares map[int][]int
+		d            string
+	}{
+		{
+			FromFENString("rnbqkb1r/pppp1ppp/8/8/8/4n3/PPPPPpPP/RNBQKBNR w KQkq - 0 1"),
+			Move{
+				IE1,
+				IF2,
+				true,
+				false,
+				false,
+				false,
+				WHITE_KING,
+				false,
+			},
+			true,
+			[4]bool{false, false, true, true},
+			nil,
+			BLACK,
+			0,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{IA2, IB2, IC2, ID2, IE2, IG2, IH2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IC1, IF1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IF2},
+				BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IF7, IG7, IH7},
+				BLACK_KNIGHT: []int{IB8, IE3},
+				BLACK_BISHOP: []int{IC8, IF8},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"wk legal capture pf7",
+		},
+		{
+			FromFENString("rnbqkb1r/pppp1ppp/8/8/8/4n3/PPPPPpPP/RNBQKBNR w KQkq - 0 1"),
+			Move{
+				ID2,
+				IE3,
+				true,
+				false,
+				false,
+				false,
+				WHITE_PAWN,
+				false,
+			},
+			false,
+			[4]bool{true, true, true, true},
+			nil,
+			WHITE,
+			0,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{IA2, IB2, IC2, ID2, IE2, IG2, IH2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IC1, IF1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IF7, IG7, IH7, IF2},
+				BLACK_KNIGHT: []int{IB8, IE3},
+				BLACK_BISHOP: []int{IC8, IF8},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"illegal capture dxe3 wk in check",
+		},
+		{
+			FromFENString("rnbqkb1r/pppp1ppp/8/8/8/8/PPPPPPPn/RNBQKBNR w KQkq - 0 1"),
+			Move{
+				IH1,
+				IH2,
+				true,
+				false,
+				false,
+				false,
+				WHITE_ROOK,
+				false,
+			},
+			true,
+			[4]bool{false, true, true, true},
+			nil,
+			BLACK,
+			0,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{IA2, IB2, IC2, ID2, IE2, IF2, IG2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IC1, IF1},
+				WHITE_ROOK:   []int{IH2, IA1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IF7, IG7, IH7},
+				BLACK_KNIGHT: []int{IB8},
+				BLACK_BISHOP: []int{IC8, IF8},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"legal rook capture, should rm ck perm",
+		},
+		{
+			FromFENString("rnbqkbnr/Rppp1ppp/8/8/8/8/1PPPPPPP/1NBQKBNR b Kkq - 0 1"),
+			Move{
+				IA8,
+				IA7,
+				true,
+				false,
+				false,
+				false,
+				BLACK_ROOK,
+				false,
+			},
+			true,
+			[4]bool{true, false, true, false},
+			nil,
+			WHITE,
+			0,
+			2,
+			map[int][]int{
+				WHITE_PAWN:   []int{IB2, IC2, ID2, IE2, IF2, IG2, IH2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IC1, IF1},
+				WHITE_ROOK:   []int{IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IB7, IC7, ID7, IF7, IG7, IH7},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IF8},
+				BLACK_ROOK:   []int{IH8, IA7},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"legal black rook capture a7, rm bcq perm",
+		},
+		{
+			FromFENString("rnbqkbnr/pppp1ppp/4P3/1B6/8/8/PPPP1PPP/RNBQK1NR b KQkq - 0 1"),
+			Move{
+				ID7,
+				IE6,
+				true,
+				false,
+				false,
+				false,
+				WHITE_PAWN,
+				false,
+			},
+			false,
+			[4]bool{true, true, true, true},
+			nil,
+			BLACK,
+			0,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{IE6, IA2, IB2, IC2, ID2, IF2, IG2, IH2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IB5, IC1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IF7, IG7, IH7},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IF8},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"illegal dxe6, pawn pinned",
+		},
+	}
+
+	for _, tt := range tests {
+		res := tt.b.MakeMove(tt.m)
+		if res != tt.res {
+			t.Errorf("%s MakeMove returned unexpected result: %t, expected %t", tt.d, res, tt.res)
+		}
+		for i, v := range tt.castle {
+			if tt.b.castle[i] != v {
+				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.castle, tt.castle)
+			}
+		}
+		if tt.b.ep != nil && tt.ep != nil && *tt.b.ep != *tt.ep {
+			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.ep, *tt.ep)
 		}
 		if tt.b.side != tt.side {
 			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.side, tt.side)
@@ -596,9 +1061,6 @@ func TestMakeMoveEPCapture(t *testing.T) {
 }
 
 // todo:
-// test legal & illegal ep capture (when capture moves pinned piece)
-// test legal & illegal promotion
-// test legal & illegal capture
 // test legal & illegal quiet move
 // test moving rook updates castle permissions
 // test moving king updates castle permissions

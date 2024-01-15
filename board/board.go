@@ -36,6 +36,19 @@ func NewBoard() Board {
 	}
 }
 
+func (b Board) isEPCapture(m Move) bool {
+	if b.ep == nil {
+		return false
+	}
+	mp := b.PieceAt(m.from)
+
+	if mp != WHITE_PAWN && mp != BLACK_PAWN {
+		return false
+	}
+
+	return m.to == *b.ep
+}
+
 // again - let's just get something going
 // if legal move, update internal state and return true
 // otherwise, return false and maintain current state
@@ -64,7 +77,7 @@ func (b *Board) MakeMove(m Move) bool { // should this return (bool, Board) w/ a
 		return b.handlePromotion(m)
 	}
 
-	if m.capture && (movingPiece == WHITE_PAWN || movingPiece == BLACK_PAWN) && m.to == *b.ep {
+	if b.isEPCapture(m) {
 		return b.handleEPCapture(m)
 	}
 

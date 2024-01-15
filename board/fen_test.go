@@ -104,7 +104,7 @@ func TestFromFENString(t *testing.T) {
 			[4]bool{true, true, true, true},
 			nil,
 			0,
-			0,
+			1,
 			INIT_PIECE_SQUARES,
 		},
 		{
@@ -179,7 +179,7 @@ func TestFromFENString(t *testing.T) {
 			[4]bool{false, false, false, false},
 			nil,
 			0,
-			0,
+			1,
 			map[int][]int{
 				BLACK_ROOK:   []int{IA8},
 				BLACK_BISHOP: []int{IC7},
