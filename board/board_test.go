@@ -1449,4 +1449,3 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 		}
 	}
 }
-
