@@ -241,6 +241,32 @@ func TestMakeMoveCastleKingsideWhite(t *testing.T) {
 		t.Errorf("castle kingside should not increment ply after white move, %d", b.ply)
 	}
 
+	if len(b.history) != 1 {
+		t.Errorf("history length should be 1")
+	}
+
+	h := b.history[0]
+	if h.move != m {
+		t.Errorf("history move does not match; received: %v, expected: %v", h.move, m)
+	}
+	if h.previousSquareOccupant != EMPTY_SQUARE {
+		t.Errorf("history pso does not match; received: %d, expected: %d", h.previousSquareOccupant, EMPTY_SQUARE)
+	}
+	if h.ep != nil {
+		t.Errorf("history ep does not match; received: %p, expected: nil", h.ep)
+	}
+	if h.hply != 0 {
+		t.Errorf("history hply does not match; received: %d, expected: %d", h.hply, 0)
+	}
+	if h.ply != 1 {
+		t.Errorf("history ply does not match; received: %d, expected: %d", h.ply, 1)
+	}
+	for i := 0; i < 4; i++ {
+		if h.castle[i] != true {
+			t.Errorf("history castle does not match; received: %v, expected: %v", h.castle, [4]bool{true, true, true, true})
+		}
+	}
+
 	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 		sqs := b.pieceSquares[i]
 		var expected []int
@@ -316,6 +342,33 @@ func TestMakeMoveCastleKingsideBlack(t *testing.T) {
 
 	if b.ply != 2 {
 		t.Errorf("castle kingside should increment ply after black move, %d", b.ply)
+	}
+
+	if len(b.history) != 1 {
+		t.Errorf("history length should be 1")
+	}
+
+	h := b.history[0]
+	if h.move != m {
+		t.Errorf("history move does not match; received: %v, expected: %v", h.move, m)
+	}
+	if h.previousSquareOccupant != EMPTY_SQUARE {
+		t.Errorf("history pso does not match; received: %d, expected: %d", h.previousSquareOccupant, EMPTY_SQUARE)
+	}
+	if h.ep != nil {
+		t.Errorf("history ep does not match; received: %p, expected: nil", h.ep)
+	}
+	if h.hply != 0 {
+		t.Errorf("history hply does not match; received: %d, expected: %d", h.hply, 0)
+	}
+	if h.ply != 1 {
+		t.Errorf("history ply does not match; received: %d, expected: %d", h.ply, 1)
+	}
+	expected := [4]bool{false, false, true, true}
+	for i := 0; i < 4; i++ {
+		if h.castle[i] != expected[i] {
+			t.Errorf("history castle does not match; received: %v, expected: %v", h.castle, [4]bool{true, true, true, true})
+		}
 	}
 
 	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
@@ -394,6 +447,33 @@ func TestMakeMoveCastleQueensideWhite(t *testing.T) {
 	if b.ply != 1 {
 		t.Errorf("castle queenside should not increment ply after white move, %d", b.ply)
 	}
+
+	if len(b.history) != 1 {
+		t.Errorf("history length should be 1")
+	}
+
+	h := b.history[0]
+	if h.move != m {
+		t.Errorf("history move does not match; received: %v, expected: %v", h.move, m)
+	}
+	if h.previousSquareOccupant != EMPTY_SQUARE {
+		t.Errorf("history pso does not match; received: %d, expected: %d", h.previousSquareOccupant, EMPTY_SQUARE)
+	}
+	if h.ep != nil {
+		t.Errorf("history ep does not match; received: %p, expected: nil", h.ep)
+	}
+	if h.hply != 0 {
+		t.Errorf("history hply does not match; received: %d, expected: %d", h.hply, 0)
+	}
+	if h.ply != 1 {
+		t.Errorf("history ply does not match; received: %d, expected: %d", h.ply, 1)
+	}
+	expected := [4]bool{true, true, true, true}
+	for i := 0; i < 4; i++ {
+		if h.castle[i] != expected[i] {
+			t.Errorf("history castle does not match; received: %v, expected: %v", h.castle, [4]bool{true, true, true, true})
+		}
+	}
 	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 		sqs := b.pieceSquares[i]
 		var expected []int
@@ -469,6 +549,32 @@ func TestMakeMoveCastleQueensideBlack(t *testing.T) {
 
 	if b.ply != 2 {
 		t.Errorf("castle queenside should increment ply after black move, %d", b.ply)
+	}
+	if len(b.history) != 1 {
+		t.Errorf("history length should be 1")
+	}
+
+	h := b.history[0]
+	if h.move != m {
+		t.Errorf("history move does not match; received: %v, expected: %v", h.move, m)
+	}
+	if h.previousSquareOccupant != EMPTY_SQUARE {
+		t.Errorf("history pso does not match; received: %d, expected: %d", h.previousSquareOccupant, EMPTY_SQUARE)
+	}
+	if h.ep != nil {
+		t.Errorf("history ep does not match; received: %p, expected: nil", h.ep)
+	}
+	if h.hply != 0 {
+		t.Errorf("history hply does not match; received: %d, expected: %d", h.hply, 0)
+	}
+	if h.ply != 1 {
+		t.Errorf("history ply does not match; received: %d, expected: %d", h.ply, 1)
+	}
+	expected := [4]bool{false, false, true, true}
+	for i := 0; i < 4; i++ {
+		if h.castle[i] != expected[i] {
+			t.Errorf("history castle does not match; received: %v, expected: %v", h.castle, [4]bool{true, true, true, true})
+		}
 	}
 	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 		sqs := b.pieceSquares[i]
