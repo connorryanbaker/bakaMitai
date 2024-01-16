@@ -46,7 +46,7 @@ func FromFENString(f string) Board {
 	b.castle = parseCastlePermissions(components[2])
 	b.ep = parseEnPassant(components[3])
 	b.hply = parseHply(components[4])
-	b.ply = parsePly(components[1], components[5])
+	b.ply = parsePly(components[5])
 	return b
 }
 
@@ -131,14 +131,11 @@ func parseHply(s string) int {
 	return i
 }
 
-func parsePly(side, move string) int {
+func parsePly(move string) int {
 	n, err := strconv.Atoi(move)
 	if err != nil {
 		panic(err)
 	}
-	if side == "w" {
-		return (n - 1) * 2
-	}
 
-	return (n-1)*2 + 1
+	return n
 }
