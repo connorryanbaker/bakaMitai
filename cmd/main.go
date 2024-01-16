@@ -7,5 +7,5 @@ import (
 
 func main() {
 	b := board.NewBoard()
-	fmt.Println(b.PieceAt(board.A8))
+	fmt.Println(b.PieceAt(board.IA8))
 }
