@@ -1060,8 +1060,393 @@ func TestMakeMoveCapture(t *testing.T) {
 	}
 }
 
-// todo:
-// test legal & illegal quiet move
-// test moving rook updates castle permissions
-// test moving king updates castle permissions
-// test double pawn push
+func TestMakeMoveQuietMoves(t *testing.T) {
+	var tests = []struct {
+		b            Board
+		m            Move
+		res          bool
+		castle       [4]bool
+		ep           *int
+		side         int
+		hply         int
+		ply          int
+		pieceSquares map[int][]int
+		d            string
+	}{
+		{
+			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			Move{
+				IE2,
+				IE4,
+				false,
+				false,
+				false,
+				false,
+				WHITE_PAWN,
+				true,
+			},
+			true,
+			[4]bool{true, true, true, true},
+			&IE3,
+			BLACK,
+			0,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{IE4, IA2, IB2, IC2, ID2, IF2, IG2, IH2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IC1, IF1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IE7, IF7, IG7, IH7},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IF8},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"legal opening move updates ep square",
+		},
+		{
+			FromFENString("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"),
+			Move{
+				IE7,
+				IE5,
+				false,
+				false,
+				false,
+				false,
+				BLACK_PAWN,
+				true,
+			},
+			true,
+			[4]bool{true, true, true, true},
+			&IE6,
+			WHITE,
+			0,
+			2,
+			map[int][]int{
+				WHITE_PAWN:   []int{IE4, IA2, IB2, IC2, ID2, IF2, IG2, IH2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IC1, IF1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IF7, IG7, IH7, IE5},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IF8},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"legal black opening move updates ep square e6",
+		},
+		{
+			FromFENString("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1"),
+			Move{
+				IE1,
+				IE2,
+				false,
+				false,
+				false,
+				false,
+				WHITE_KING,
+				false,
+			},
+			true,
+			[4]bool{false, false, true, true},
+			nil,
+			BLACK,
+			1,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{IE4, IA2, IB2, IC2, ID2, IF2, IG2, IH2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IC1, IF1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE2},
+				BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IF7, IG7, IH7, IE5},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IF8},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"legal bongcloud updates castle permissions",
+		},
+		{
+			FromFENString("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPPKPPP/RNBQ1BNR b kq - 0 1"),
+			Move{
+				IE8,
+				IE7,
+				false,
+				false,
+				false,
+				false,
+				BLACK_KING,
+				false,
+			},
+			true,
+			[4]bool{false, false, false, false},
+			nil,
+			WHITE,
+			1,
+			2,
+			map[int][]int{
+				WHITE_PAWN:   []int{IE4, IA2, IB2, IC2, ID2, IF2, IG2, IH2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IC1, IF1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE2},
+				BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IF7, IG7, IH7, IE5},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IF8},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE7},
+			},
+			"legal bongcloud updates castle permissions black ke7",
+		},
+		{
+			FromFENString("rnbqk1nr/1ppp1pp1/8/pB2p2p/Pb2P2P/8/1PPP1PP1/RNBQK1NR w KQkq - 0 1"),
+			Move{
+				IH1,
+				IH2,
+				false,
+				false,
+				false,
+				false,
+				WHITE_ROOK,
+				false,
+			},
+			true,
+			[4]bool{false, true, true, true},
+			nil,
+			BLACK,
+			1,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{IA4, IE4, IH4, IB2, IC2, ID2, IF2, IG2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IB5, IC1},
+				WHITE_ROOK:   []int{IH2, IA1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IB7, IC7, ID7, IF7, IG7, IA5, IE5, IH5},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IB4},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"legal kings rook move updates castle permissions",
+		},
+		{
+			FromFENString("rnbqk1nr/1ppp1pp1/8/pB2p2p/Pb2P2P/8/1PPP1PP1/RNBQK1NR w KQkq - 0 1"),
+			Move{
+				IA1,
+				IA2,
+				false,
+				false,
+				false,
+				false,
+				WHITE_ROOK,
+				false,
+			},
+			true,
+			[4]bool{true, false, true, true},
+			nil,
+			BLACK,
+			1,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{IA4, IE4, IH4, IB2, IC2, ID2, IF2, IG2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IB5, IC1},
+				WHITE_ROOK:   []int{IA2, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IB7, IC7, ID7, IF7, IG7, IA5, IE5, IH5},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IB4},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"legal queens rook move updates castle permissions",
+		},
+		{
+			FromFENString("rnbqk1nr/1ppp1pp1/8/pB2p2p/Pb2P2P/8/1PPP1PP1/RNBQK1NR b KQkq - 0 1"),
+			Move{
+				IH8,
+				IH7,
+				false,
+				false,
+				false,
+				false,
+				BLACK_ROOK,
+				false,
+			},
+			true,
+			[4]bool{true, true, false, true},
+			nil,
+			WHITE,
+			1,
+			2,
+			map[int][]int{
+				WHITE_PAWN:   []int{IA4, IE4, IH4, IB2, IC2, ID2, IF2, IG2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IB5, IC1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IB7, IC7, ID7, IF7, IG7, IA5, IE5, IH5},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IB4},
+				BLACK_ROOK:   []int{IA8, IH7},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"legal kings rook move updates castle permissions",
+		},
+		{
+			FromFENString("rnbqk1nr/1ppp1pp1/8/pB2p2p/Pb2P2P/8/1PPP1PP1/RNBQK1NR b KQkq - 0 1"),
+			Move{
+				IA8,
+				IA7,
+				false,
+				false,
+				false,
+				false,
+				BLACK_ROOK,
+				false,
+			},
+			true,
+			[4]bool{true, true, true, false},
+			nil,
+			WHITE,
+			1,
+			2,
+			map[int][]int{
+				WHITE_PAWN:   []int{IA4, IE4, IH4, IB2, IC2, ID2, IF2, IG2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IB5, IC1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IB7, IC7, ID7, IF7, IG7, IA5, IE5, IH5},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IB4},
+				BLACK_ROOK:   []int{IH8, IA7},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"legal queens rook move updates castle permissions",
+		},
+		{
+			FromFENString("rnbqk1nr/1ppp1pp1/8/pB2p2p/Pb2P2P/8/1PPP1PP1/RNBQK1NR w KQkq - 0 1"),
+			Move{
+				ID2,
+				ID3,
+				false,
+				false,
+				false,
+				false,
+				WHITE_PAWN,
+				false,
+			},
+			false,
+			[4]bool{true, true, true, true},
+			nil,
+			WHITE,
+			0,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{IA4, IE4, IH4, IB2, IC2, ID2, IF2, IG2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IB5, IC1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IB7, IC7, ID7, IF7, IG7, IA5, IE5, IH5},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IB4},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"illegal quiet move returns false",
+		},
+		{
+			FromFENString("rnbqk1nr/1ppp1pp1/8/pB2p2p/Pb2P2P/8/1PPP1PP1/RNBQK1NR b KQkq - 0 1"),
+			Move{
+				ID7,
+				ID6,
+				false,
+				false,
+				false,
+				false,
+				BLACK_PAWN,
+				false,
+			},
+			false,
+			[4]bool{true, true, true, true},
+			nil,
+			BLACK,
+			0,
+			1,
+			map[int][]int{
+				WHITE_PAWN:   []int{IA4, IE4, IH4, IB2, IC2, ID2, IF2, IG2},
+				WHITE_KNIGHT: []int{IB1, IG1},
+				WHITE_BISHOP: []int{IB5, IC1},
+				WHITE_ROOK:   []int{IA1, IH1},
+				WHITE_QUEEN:  []int{ID1},
+				WHITE_KING:   []int{IE1},
+				BLACK_PAWN:   []int{IB7, IC7, ID7, IF7, IG7, IA5, IE5, IH5},
+				BLACK_KNIGHT: []int{IB8, IG8},
+				BLACK_BISHOP: []int{IC8, IB4},
+				BLACK_ROOK:   []int{IA8, IH8},
+				BLACK_QUEEN:  []int{ID8},
+				BLACK_KING:   []int{IE8},
+			},
+			"illegal quiet move returns false",
+		},
+	}
+	for _, tt := range tests {
+		res := tt.b.MakeMove(tt.m)
+		if res != tt.res {
+			t.Errorf("%s MakeMove returned unexpected result: %t, expected %t", tt.d, res, tt.res)
+		}
+		for i, v := range tt.castle {
+			if tt.b.castle[i] != v {
+				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.castle, tt.castle)
+			}
+		}
+		if tt.b.ep != nil && tt.ep != nil && *tt.b.ep != *tt.ep {
+			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.ep, *tt.ep)
+		}
+		if tt.b.side != tt.side {
+			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.side, tt.side)
+		}
+		if tt.b.hply != tt.hply {
+			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.hply, tt.hply)
+		}
+		if tt.b.ply != tt.ply {
+			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
+		}
+		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+			sqs := tt.b.pieceSquares[i]
+			if len(sqs) != len(tt.pieceSquares[i]) {
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+			}
+			for j, _ := range sqs {
+				if sqs[j] != tt.pieceSquares[i][j] {
+					t.Errorf("p: %d, expected and pieceSquares have different values: %v %v", i, sqs, tt.pieceSquares[i])
+				}
+			}
+		}
+	}
+}
+

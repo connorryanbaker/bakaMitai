@@ -15,6 +15,8 @@ type Board struct {
 // - update existing fields in state
 // - return false if illegal position
 // track move history [ ]
+// unmake move [ ]
+// fixup package structure [ ]
 // add move hash to history for position comparison [ ]
 // printing for debugging / ui [ ]
 // https://www.chessprogramming.org/Zobrist_Hashing
@@ -88,9 +90,11 @@ func (b *Board) MakeMove(m Move) bool { // should this return (bool, Board) w/ a
 	pieceAtDestSq := b.PieceAt(m.to)
 	b.pieces[m.to] = movingPiece
 	b.pieces[m.from] = EMPTY_SQUARE
+	b.updatePieceSquares()
 	if b.InCheck(b.side) {
 		b.pieces[m.from] = movingPiece
 		b.pieces[m.to] = pieceAtDestSq
+		b.updatePieceSquares()
 		return false
 	}
 
@@ -102,6 +106,8 @@ func (b *Board) MakeMove(m Move) bool { // should this return (bool, Board) w/ a
 			s := m.to - 10
 			b.ep = &s
 		}
+	} else {
+		b.ep = nil
 	}
 
 	b.updateCastlePermissions(m, movingPiece)
