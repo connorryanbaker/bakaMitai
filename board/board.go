@@ -8,23 +8,16 @@ type Board struct {
 	hply         int
 	ply          int
 	pieceSquares map[int][]int
+	history      []History
 }
 
 // todo:
-// makemove [ ]
-// - update existing fields in state
-// - return false if illegal position
 // track move history [ ]
 // unmake move [ ]
-// fixup package structure [ ]
 // add move hash to history for position comparison [ ]
 // printing for debugging / ui [ ]
 // https://www.chessprogramming.org/Zobrist_Hashing
-// fifty move rule
-// recognize checkmate, stalemate
-// move history: boardstate struct w/ hash, castling, ep, move, incheck?, repetitions
-// make move fn to maintain all this state
-// unmake move fn
+// recognize checkmate, stalemate, fifty move rule
 
 func NewBoard() Board {
 	return Board{
@@ -35,6 +28,7 @@ func NewBoard() Board {
 		0,
 		0,
 		INIT_PIECE_SQUARES, // we'll see if this works
+		make([]History, 1),
 	}
 }
 
@@ -61,6 +55,7 @@ func (b *Board) MakeMove(m Move) bool { // should this return (bool, Board) w/ a
 	// illegal moves (that leave king in check) will be undone by make move
 
 	movingPiece := b.PieceAt(m.from)
+	pieceAtDestSq := b.PieceAt(m.to)
 	if b.PieceColor(movingPiece) != b.side {
 		return false
 	}
@@ -87,11 +82,14 @@ func (b *Board) MakeMove(m Move) bool { // should this return (bool, Board) w/ a
 		return b.handleCapture(m)
 	}
 
-	pieceAtDestSq := b.PieceAt(m.to)
+	// "quiet move"
+
+	b.pushHistory(m)
 	b.pieces[m.to] = movingPiece
 	b.pieces[m.from] = EMPTY_SQUARE
 	b.updatePieceSquares()
 	if b.InCheck(b.side) {
+		b.popHistory()
 		b.pieces[m.from] = movingPiece
 		b.pieces[m.to] = pieceAtDestSq
 		b.updatePieceSquares()
@@ -126,10 +124,12 @@ func (b *Board) MakeMove(m Move) bool { // should this return (bool, Board) w/ a
 func (b *Board) handleCapture(m Move) bool {
 	movingPiece := b.PieceAt(m.from)
 	capturedPiece := b.PieceAt(m.to)
+	b.pushHistory(m)
 	b.pieces[m.to] = movingPiece
 	b.pieces[m.from] = EMPTY_SQUARE
 	b.updatePieceSquares()
 	if b.InCheck(b.side) {
+		b.popHistory()
 		b.pieces[m.to] = capturedPiece
 		b.pieces[m.from] = movingPiece
 		b.updatePieceSquares()
@@ -148,10 +148,12 @@ func (b *Board) handleCapture(m Move) bool {
 func (b *Board) handlePromotion(m Move) bool {
 	prevSq := b.PieceAt(m.to)
 	movingPiece := b.PieceAt(m.from)
+	b.pushHistory(m)
 	b.pieces[m.to] = m.promotionPiece
 	b.pieces[m.from] = EMPTY_SQUARE
 	b.updatePieceSquares()
 	if b.InCheck(b.side) {
+		b.popHistory()
 		b.pieces[m.to] = prevSq
 		b.pieces[m.from] = movingPiece
 		b.updatePieceSquares()
@@ -209,12 +211,14 @@ func (b *Board) updateCastlePermissions(m Move, p int) {
 }
 
 func (b *Board) handleEPCapture(m Move) bool {
+	b.pushHistory(m)
 	if b.side == WHITE {
 		b.pieces[m.to] = WHITE_PAWN
 		b.pieces[m.from] = EMPTY_SQUARE
 		b.pieces[m.to+10] = EMPTY_SQUARE
 		b.updatePieceSquares()
 		if b.InCheck(b.side) {
+			b.popHistory()
 			b.pieces[m.to+10] = BLACK_PAWN
 			b.pieces[m.to] = EMPTY_SQUARE
 			b.pieces[m.from] = WHITE_PAWN
@@ -227,6 +231,7 @@ func (b *Board) handleEPCapture(m Move) bool {
 		b.pieces[m.to-10] = EMPTY_SQUARE
 		b.updatePieceSquares()
 		if b.InCheck(b.side) {
+			b.popHistory()
 			b.pieces[m.to-10] = WHITE_PAWN
 			b.pieces[m.to] = EMPTY_SQUARE
 			b.pieces[m.from] = BLACK_PAWN
@@ -244,6 +249,7 @@ func (b *Board) handleEPCapture(m Move) bool {
 }
 
 func (b *Board) castleKingside(m Move) {
+	b.pushHistory(m)
 	if b.side == WHITE {
 		b.pieces[IG1] = WHITE_KING
 		b.pieces[IF1] = WHITE_ROOK
@@ -269,6 +275,7 @@ func (b *Board) castleKingside(m Move) {
 }
 
 func (b *Board) castleQueenside(m Move) {
+	b.pushHistory(m)
 	if b.side == WHITE {
 		b.pieces[IC1] = WHITE_KING
 		b.pieces[ID1] = WHITE_ROOK
