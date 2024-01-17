@@ -627,6 +627,7 @@ func TestMakeMoveEPCapture(t *testing.T) {
 		hply         int
 		ply          int
 		pieceSquares map[int][]int
+		h            *History
 		d            string
 	}{
 		{
@@ -660,6 +661,23 @@ func TestMakeMoveEPCapture(t *testing.T) {
 				BLACK_ROOK:   []int{IA8, IH8},
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
+			},
+			&History{
+				EMPTY_SQUARE,
+				Move{
+					IE5,
+					ID6,
+					true,
+					false,
+					false,
+					false,
+					WHITE_PAWN,
+					false,
+				},
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
 			},
 			"legal white ep capture d5->e6",
 		},
@@ -695,6 +713,23 @@ func TestMakeMoveEPCapture(t *testing.T) {
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
 			},
+			&History{
+				EMPTY_SQUARE,
+				Move{
+					ID4,
+					IE3,
+					true,
+					false,
+					false,
+					false,
+					BLACK_PAWN,
+					false,
+				},
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
+			},
 			"legal black ep capture d4->e3",
 		},
 		{
@@ -722,6 +757,7 @@ func TestMakeMoveEPCapture(t *testing.T) {
 				BLACK_BISHOP: []int{IG7},
 				BLACK_KING:   []int{IE8},
 			},
+			nil,
 			"illegal white ep capture wp e5 pinned",
 		},
 		{
@@ -749,6 +785,7 @@ func TestMakeMoveEPCapture(t *testing.T) {
 				BLACK_PAWN:   []int{IC4},
 				BLACK_KING:   []int{IF7},
 			},
+			nil,
 			"illegal black ep capture bp c4 pinned",
 		},
 	}
@@ -775,6 +812,34 @@ func TestMakeMoveEPCapture(t *testing.T) {
 		if tt.b.ply != tt.ply {
 			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
 		}
+		if tt.h == nil && len(tt.b.history) != 0 {
+			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.history)
+		} else if tt.h != nil {
+			if len(tt.b.history) != 1 {
+				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.history)
+			}
+			h := tt.b.history[0]
+			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
+				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if !equalMoves(tt.m, h.move) {
+				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {
+				t.Errorf("%s ep MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.ply != tt.h.ply {
+				t.Errorf("%s ply MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.hply != tt.h.hply {
+				t.Errorf("%s hply MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			for i := 0; i < 4; i++ {
+				if h.castle[i] != tt.h.castle[i] {
+					t.Errorf("%s castle MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+				}
+			}
+		}
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
@@ -800,6 +865,7 @@ func TestMakeMovePromotion(t *testing.T) {
 		hply         int
 		ply          int
 		pieceSquares map[int][]int
+		h            *History
 		d            string
 	}{
 		{
@@ -827,6 +893,23 @@ func TestMakeMovePromotion(t *testing.T) {
 				BLACK_PAWN:   []int{IC4},
 				BLACK_KING:   []int{IF7},
 			},
+			&History{
+				EMPTY_SQUARE,
+				Move{
+					ID7,
+					ID8,
+					false,
+					false,
+					false,
+					true,
+					WHITE_QUEEN,
+					false,
+				},
+				[4]bool{false, false, false, false},
+				nil,
+				0,
+				1,
+			},
 			"wp legal promotion d8Q",
 		},
 		{
@@ -851,6 +934,23 @@ func TestMakeMovePromotion(t *testing.T) {
 				WHITE_KING:  []int{IE2},
 				BLACK_QUEEN: []int{IB1},
 				BLACK_KING:  []int{IF7},
+			},
+			&History{
+				WHITE_BISHOP,
+				Move{
+					IC2,
+					IB1,
+					true,
+					false,
+					false,
+					true,
+					BLACK_QUEEN,
+					false,
+				},
+				[4]bool{false, false, false, false},
+				nil,
+				0,
+				1,
 			},
 			"legal promotion capture cxb1Q",
 		},
@@ -879,6 +979,7 @@ func TestMakeMovePromotion(t *testing.T) {
 				BLACK_PAWN:   []int{IC2},
 				BLACK_KING:   []int{IE2},
 			},
+			nil,
 			"illegal promotion capture cxb1Q cpawn pinned",
 		},
 		{
@@ -905,6 +1006,7 @@ func TestMakeMovePromotion(t *testing.T) {
 				BLACK_ROOK: []int{IA4},
 				BLACK_KING: []int{IE2},
 			},
+			nil,
 			"illegal promotion white king in check",
 		},
 	}
@@ -931,6 +1033,34 @@ func TestMakeMovePromotion(t *testing.T) {
 		if tt.b.ply != tt.ply {
 			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
 		}
+		if tt.h == nil && len(tt.b.history) != 0 {
+			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.history)
+		} else if tt.h != nil {
+			if len(tt.b.history) != 1 {
+				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.history)
+			}
+			h := tt.b.history[0]
+			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
+				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if !equalMoves(tt.m, h.move) {
+				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {
+				t.Errorf("%s ep MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.ply != tt.h.ply {
+				t.Errorf("%s ply MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.hply != tt.h.hply {
+				t.Errorf("%s hply MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			for i := 0; i < 4; i++ {
+				if h.castle[i] != tt.h.castle[i] {
+					t.Errorf("%s castle MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+				}
+			}
+		}
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
@@ -956,6 +1086,7 @@ func TestMakeMoveCapture(t *testing.T) {
 		hply         int
 		ply          int
 		pieceSquares map[int][]int
+		h            *History
 		d            string
 	}{
 		{
@@ -989,6 +1120,23 @@ func TestMakeMoveCapture(t *testing.T) {
 				BLACK_ROOK:   []int{IA8, IH8},
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
+			},
+			&History{
+				BLACK_PAWN,
+				Move{
+					IE1,
+					IF2,
+					true,
+					false,
+					false,
+					false,
+					WHITE_KING,
+					false,
+				},
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
 			},
 			"wk legal capture pf7",
 		},
@@ -1024,6 +1172,7 @@ func TestMakeMoveCapture(t *testing.T) {
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
 			},
+			nil,
 			"illegal capture dxe3 wk in check",
 		},
 		{
@@ -1057,6 +1206,23 @@ func TestMakeMoveCapture(t *testing.T) {
 				BLACK_ROOK:   []int{IA8, IH8},
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
+			},
+			&History{
+				BLACK_KNIGHT,
+				Move{
+					IH1,
+					IH2,
+					true,
+					false,
+					false,
+					false,
+					WHITE_ROOK,
+					false,
+				},
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
 			},
 			"legal rook capture, should rm ck perm",
 		},
@@ -1092,6 +1258,23 @@ func TestMakeMoveCapture(t *testing.T) {
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
 			},
+			&History{
+				WHITE_ROOK,
+				Move{
+					IA8,
+					IA7,
+					true,
+					false,
+					false,
+					false,
+					BLACK_ROOK,
+					false,
+				},
+				[4]bool{true, false, true, true},
+				nil,
+				0,
+				1,
+			},
 			"legal black rook capture a7, rm bcq perm",
 		},
 		{
@@ -1126,6 +1309,7 @@ func TestMakeMoveCapture(t *testing.T) {
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
 			},
+			nil,
 			"illegal dxe6, pawn pinned",
 		},
 	}
@@ -1152,6 +1336,34 @@ func TestMakeMoveCapture(t *testing.T) {
 		if tt.b.ply != tt.ply {
 			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
 		}
+		if tt.h == nil && len(tt.b.history) != 0 {
+			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.history)
+		} else if tt.h != nil {
+			if len(tt.b.history) != 1 {
+				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.history)
+			}
+			h := tt.b.history[0]
+			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
+				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if !equalMoves(tt.m, h.move) {
+				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {
+				t.Errorf("%s ep MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.ply != tt.h.ply {
+				t.Errorf("%s ply MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.hply != tt.h.hply {
+				t.Errorf("%s hply MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			for i := 0; i < 4; i++ {
+				if h.castle[i] != tt.h.castle[i] {
+					t.Errorf("%s castle MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+				}
+			}
+		}
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
@@ -1177,6 +1389,7 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 		hply         int
 		ply          int
 		pieceSquares map[int][]int
+		h            *History
 		d            string
 	}{
 		{
@@ -1211,10 +1424,27 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
 			},
+			&History{
+				EMPTY_SQUARE,
+				Move{
+					IE2,
+					IE4,
+					false,
+					false,
+					false,
+					false,
+					WHITE_PAWN,
+					true,
+				},
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
+			},
 			"legal opening move updates ep square",
 		},
 		{
-			FromFENString("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"),
+			FromFENString("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"),
 			Move{
 				IE7,
 				IE5,
@@ -1244,6 +1474,23 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 				BLACK_ROOK:   []int{IA8, IH8},
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
+			},
+			&History{
+				EMPTY_SQUARE,
+				Move{
+					IE7,
+					IE5,
+					false,
+					false,
+					false,
+					false,
+					BLACK_PAWN,
+					true,
+				},
+				[4]bool{true, true, true, true},
+				&IE3,
+				0,
+				1,
 			},
 			"legal black opening move updates ep square e6",
 		},
@@ -1279,6 +1526,23 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
 			},
+			&History{
+				EMPTY_SQUARE,
+				Move{
+					IE1,
+					IE2,
+					false,
+					false,
+					false,
+					false,
+					WHITE_KING,
+					false,
+				},
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
+			},
 			"legal bongcloud updates castle permissions",
 		},
 		{
@@ -1312,6 +1576,23 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 				BLACK_ROOK:   []int{IA8, IH8},
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE7},
+			},
+			&History{
+				EMPTY_SQUARE,
+				Move{
+					IE8,
+					IE7,
+					false,
+					false,
+					false,
+					false,
+					BLACK_KING,
+					false,
+				},
+				[4]bool{false, false, true, true},
+				nil,
+				0,
+				1,
 			},
 			"legal bongcloud updates castle permissions black ke7",
 		},
@@ -1347,6 +1628,23 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
 			},
+			&History{
+				EMPTY_SQUARE,
+				Move{
+					IH1,
+					IH2,
+					false,
+					false,
+					false,
+					false,
+					WHITE_ROOK,
+					false,
+				},
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
+			},
 			"legal kings rook move updates castle permissions",
 		},
 		{
@@ -1380,6 +1678,23 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 				BLACK_ROOK:   []int{IA8, IH8},
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
+			},
+			&History{
+				EMPTY_SQUARE,
+				Move{
+					IA1,
+					IA2,
+					false,
+					false,
+					false,
+					false,
+					WHITE_ROOK,
+					false,
+				},
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
 			},
 			"legal queens rook move updates castle permissions",
 		},
@@ -1415,6 +1730,23 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
 			},
+			&History{
+				EMPTY_SQUARE,
+				Move{
+					IH8,
+					IH7,
+					false,
+					false,
+					false,
+					false,
+					BLACK_ROOK,
+					false,
+				},
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
+			},
 			"legal kings rook move updates castle permissions",
 		},
 		{
@@ -1448,6 +1780,23 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 				BLACK_ROOK:   []int{IH8, IA7},
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
+			},
+			&History{
+				EMPTY_SQUARE,
+				Move{
+					IA8,
+					IA7,
+					false,
+					false,
+					false,
+					false,
+					BLACK_ROOK,
+					false,
+				},
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
 			},
 			"legal queens rook move updates castle permissions",
 		},
@@ -1483,6 +1832,7 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
 			},
+			nil,
 			"illegal quiet move returns false",
 		},
 		{
@@ -1517,6 +1867,7 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 				BLACK_QUEEN:  []int{ID8},
 				BLACK_KING:   []int{IE8},
 			},
+			nil,
 			"illegal quiet move returns false",
 		},
 	}
@@ -1541,6 +1892,34 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 		}
 		if tt.b.ply != tt.ply {
 			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
+		}
+		if tt.h == nil && len(tt.b.history) != 0 {
+			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.history)
+		} else if tt.h != nil {
+			if len(tt.b.history) != 1 {
+				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.history)
+			}
+			h := tt.b.history[0]
+			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
+				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if !equalMoves(tt.m, h.move) {
+				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {
+				t.Errorf("%s ep MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.ply != tt.h.ply {
+				t.Errorf("%s ply MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			if h.hply != tt.h.hply {
+				t.Errorf("%s hply MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+			}
+			for i := 0; i < 4; i++ {
+				if h.castle[i] != tt.h.castle[i] {
+					t.Errorf("%s castle MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
+				}
+			}
 		}
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
