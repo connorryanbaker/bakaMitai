@@ -14,9 +14,10 @@ type Board struct {
 // todo:
 // unmake move [ ]
 // add move hash to history for position comparison [ ]
-// printing for debugging / ui [ ]
-// https://www.chessprogramming.org/Zobrist_Hashing
-// recognize checkmate, stalemate, fifty move rule
+// https://www.chessprogramming.org/Zobrist_Hashing [ ]
+// recognize checkmate, stalemate, fifty move rule [ ]
+// printing for debugging / ui / accepting user input, play game [ ]
+// then move on to the fun stuff
 
 func NewBoard() Board {
 	return Board{
@@ -56,6 +57,7 @@ func (b *Board) UnmakeMove() {
 	b.castle = h.castle
 	b.hply = h.hply
 	b.ply = h.ply
+	b.side ^= 1
 	b.popHistory()
 	b.updatePieceSquares()
 }

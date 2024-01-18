@@ -1934,3 +1934,168 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 		}
 	}
 }
+
+// double pawn move ep
+// single pawn move no ep
+// castle kingside / queenside
+// ep capture
+// capture
+// moving king / rook
+// after make move / unmake move check:
+// piece squares, ep, castle, ply, hply side
+
+func TestUnmakeMove(t *testing.T) {
+	type state struct {
+		castle       [4]bool
+		ep           *int
+		hply         int
+		ply          int
+		side         int
+		hlen         int
+		pieceSquares map[int][]int
+	}
+	var tests = []struct {
+		b           Board
+		m           Move
+		afterMake   state
+		afterUnmake state
+		d           string
+	}{
+		{
+			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			Move{
+				IE2,
+				IE4,
+				false,
+				false,
+				false,
+				false,
+				WHITE_PAWN,
+				true,
+			},
+			state{
+				[4]bool{true, true, true, true},
+				&IE3,
+				0,
+				1,
+				BLACK,
+				1,
+				map[int][]int{
+					WHITE_PAWN:   []int{IE4, IA2, IB2, IC2, ID2, IF2, IG2, IH2},
+					WHITE_KNIGHT: []int{IB1, IG1},
+					WHITE_BISHOP: []int{IC1, IF1},
+					WHITE_ROOK:   []int{IA1, IH1},
+					WHITE_QUEEN:  []int{ID1},
+					WHITE_KING:   []int{IE1},
+					BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IE7, IF7, IG7, IH7},
+					BLACK_KNIGHT: []int{IB8, IG8},
+					BLACK_BISHOP: []int{IC8, IF8},
+					BLACK_ROOK:   []int{IA8, IH8},
+					BLACK_QUEEN:  []int{ID8},
+					BLACK_KING:   []int{IE8},
+				},
+			},
+			state{
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
+				WHITE,
+				0,
+				map[int][]int{
+					WHITE_PAWN:   []int{IA2, IB2, IC2, ID2, IE2, IF2, IG2, IH2},
+					WHITE_KNIGHT: []int{IB1, IG1},
+					WHITE_BISHOP: []int{IC1, IF1},
+					WHITE_ROOK:   []int{IA1, IH1},
+					WHITE_QUEEN:  []int{ID1},
+					WHITE_KING:   []int{IE1},
+					BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IE7, IF7, IG7, IH7},
+					BLACK_KNIGHT: []int{IB8, IG8},
+					BLACK_BISHOP: []int{IC8, IF8},
+					BLACK_ROOK:   []int{IA8, IH8},
+					BLACK_QUEEN:  []int{ID8},
+					BLACK_KING:   []int{IE8},
+				},
+			},
+			"opening move e4",
+		},
+	}
+
+	for _, tt := range tests {
+		res := tt.b.MakeMove(tt.m)
+		if !res {
+			t.Errorf("%s: MakeMove returned false: %v", tt.d, tt.m)
+		}
+		for i, v := range tt.b.castle {
+			if v != tt.afterMake.castle[i] {
+				t.Errorf("%s: MakeMove resulted in unexpected castle; received: %v, expected: %v", tt.d, tt.b.castle, tt.afterMake.castle)
+			}
+		}
+		if (tt.b.ep != nil && tt.afterMake.ep == nil) || (tt.b.ep == nil && tt.afterMake.ep != nil) {
+			t.Errorf("%s: MakeMove resulted in unexpected ep; received: %v, expected: %v", tt.d, tt.b.ep, tt.afterMake.ep)
+		} else if tt.b.ep != nil && tt.afterMake.ep != nil {
+			if *tt.b.ep != *tt.afterMake.ep {
+				t.Errorf("%s: MakeMove resulted in unexpected ep; received: %d, expected: %d", tt.d, *tt.b.ep, *tt.afterMake.ep)
+			}
+		}
+		if tt.b.hply != tt.afterMake.hply {
+			t.Errorf("%s: MakeMove resulted in unexpected hply; received: %d, expected: %d", tt.d, tt.b.hply, tt.afterMake.hply)
+		}
+		if tt.b.ply != tt.afterMake.ply {
+			t.Errorf("%s: MakeMove resulted in unexpected ply; received: %d, expected: %d", tt.d, tt.b.ply, tt.afterMake.ply)
+		}
+		if tt.b.side != tt.afterMake.side {
+			t.Errorf("%s: MakeMove resulted in unexpected side; received: %d, expected: %d", tt.d, tt.b.side, tt.afterMake.side)
+		}
+		if len(tt.b.history) != tt.afterMake.hlen {
+			t.Errorf("%s: MakeMove resulted in unexpected history; received: %v, expected len: %d", tt.d, tt.b.history, tt.afterMake.hlen)
+		}
+		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+			sqs := tt.b.pieceSquares[i]
+			if len(sqs) != len(tt.afterMake.pieceSquares[i]) {
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.afterMake.pieceSquares[i], tt.m.to)
+			}
+			for j, _ := range sqs {
+				if sqs[j] != tt.afterMake.pieceSquares[i][j] {
+					t.Errorf("p: %d, expected and pieceSquares have different values: %v %v", i, sqs, tt.afterMake.pieceSquares[i])
+				}
+			}
+		}
+		tt.b.UnmakeMove()
+		for i, v := range tt.b.castle {
+			if v != tt.afterUnmake.castle[i] {
+				t.Errorf("%s: UnmakeMove resulted in unexpected castle; received: %v, expected: %v", tt.d, tt.b.castle, tt.afterUnmake.castle)
+			}
+		}
+		if (tt.b.ep != nil && tt.afterUnmake.ep == nil) || (tt.b.ep == nil && tt.afterUnmake.ep != nil) {
+			t.Errorf("%s: UnmakeMove resulted in unexpected ep; received: %v, expected: %v", tt.d, tt.b.ep, tt.afterUnmake.ep)
+		} else if tt.b.ep != nil && tt.afterUnmake.ep != nil {
+			if *tt.b.ep != *tt.afterUnmake.ep {
+				t.Errorf("%s: UnmakeMove resulted in unexpected ep; received: %d, expected: %d", tt.d, *tt.b.ep, *tt.afterUnmake.ep)
+			}
+		}
+		if tt.b.hply != tt.afterUnmake.hply {
+			t.Errorf("%s: UnmakeMove resulted in unexpected hply; received: %d, expected: %d", tt.d, tt.b.hply, tt.afterUnmake.hply)
+		}
+		if tt.b.ply != tt.afterUnmake.ply {
+			t.Errorf("%s: UnmakeMove resulted in unexpected ply; received: %d, expected: %d", tt.d, tt.b.ply, tt.afterUnmake.ply)
+		}
+		if tt.b.side != tt.afterUnmake.side {
+			t.Errorf("%s: UnmakeMove resulted in unexpected side; received: %d, expected: %d", tt.d, tt.b.side, tt.afterUnmake.side)
+		}
+		if len(tt.b.history) != tt.afterUnmake.hlen {
+			t.Errorf("%s: UnmakeMove resulted in unexpected history; received: %v, expected len: %d", tt.d, tt.b.history, tt.afterUnmake.hlen)
+		}
+		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
+			sqs := tt.b.pieceSquares[i]
+			if len(sqs) != len(tt.afterUnmake.pieceSquares[i]) {
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.afterUnmake.pieceSquares[i], tt.m.to)
+			}
+			for j, _ := range sqs {
+				if sqs[j] != tt.afterUnmake.pieceSquares[i][j] {
+					t.Errorf("p: %d, expected and pieceSquares have different values: %v %v", i, sqs, tt.afterUnmake.pieceSquares[i])
+				}
+			}
+		}
+	}
+}
