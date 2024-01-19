@@ -16,6 +16,7 @@ type Board struct {
 // add move hash to history for position comparison [ ]
 // https://www.chessprogramming.org/Zobrist_Hashing [ ]
 // recognize checkmate, stalemate, fifty move rule [ ]
+// Moves() function to expose all available semi-legal moves in position [ ]
 // printing for debugging / ui / accepting user input, play game [ ]
 // then move on to the fun stuff
 

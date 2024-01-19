@@ -2648,9 +2648,126 @@ func TestUnmakeMove(t *testing.T) {
 			},
 			"black castle queenside",
 		},
+		{
+			FromFENString("rnbqkbnr/ppp1pppp/8/8/8/8/PPPPPpPP/RNBQKBNR w KQkq - 0 1"),
+			Move{
+				IE1,
+				IF2,
+				true,
+				false,
+				false,
+				false,
+				WHITE_KING,
+				false,
+			},
+			state{
+				[4]bool{false, false, true, true},
+				nil,
+				0,
+				1,
+				BLACK,
+				1,
+				map[int][]int{
+					WHITE_PAWN:   []int{IA2, IB2, IC2, ID2, IE2, IG2, IH2},
+					WHITE_KNIGHT: []int{IB1, IG1},
+					WHITE_BISHOP: []int{IC1, IF1},
+					WHITE_ROOK:   []int{IA1, IH1},
+					WHITE_QUEEN:  []int{ID1},
+					WHITE_KING:   []int{IF2},
+					BLACK_PAWN:   []int{IA7, IB7, IC7, IE7, IF7, IG7, IH7},
+					BLACK_KNIGHT: []int{IB8, IG8},
+					BLACK_BISHOP: []int{IC8, IF8},
+					BLACK_ROOK:   []int{IA8, IH8},
+					BLACK_QUEEN:  []int{ID8},
+					BLACK_KING:   []int{IE8},
+				},
+			},
+			state{
+				[4]bool{true, true, true, true},
+				nil,
+				0,
+				1,
+				WHITE,
+				0,
+				map[int][]int{
+					WHITE_PAWN:   []int{IA2, IB2, IC2, ID2, IE2, IG2, IH2},
+					WHITE_KNIGHT: []int{IB1, IG1},
+					WHITE_BISHOP: []int{IC1, IF1},
+					WHITE_ROOK:   []int{IA1, IH1},
+					WHITE_QUEEN:  []int{ID1},
+					WHITE_KING:   []int{IE1},
+					BLACK_PAWN:   []int{IA7, IB7, IC7, IE7, IF7, IG7, IH7, IF2},
+					BLACK_KNIGHT: []int{IB8, IG8},
+					BLACK_BISHOP: []int{IC8, IF8},
+					BLACK_ROOK:   []int{IA8, IH8},
+					BLACK_QUEEN:  []int{ID8},
+					BLACK_KING:   []int{IE8},
+				},
+			},
+			"white king xf2",
+		},
+		{
+			FromFENString("rnbqkbnr/pppppppR/8/8/8/8/PPPPPPP1/RNBQKBN1 b Qkq - 0 1"),
+			Move{
+				IH8,
+				IH7,
+				true,
+				false,
+				false,
+				false,
+				BLACK_ROOK,
+				false,
+			},
+			state{
+				[4]bool{false, true, false, true},
+				nil,
+				0,
+				2,
+				WHITE,
+				1,
+				map[int][]int{
+					WHITE_PAWN:   []int{IA2, IB2, IC2, ID2, IE2, IF2, IG2},
+					WHITE_KNIGHT: []int{IB1, IG1},
+					WHITE_BISHOP: []int{IC1, IF1},
+					WHITE_ROOK:   []int{IA1},
+					WHITE_QUEEN:  []int{ID1},
+					WHITE_KING:   []int{IE1},
+					BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IE7, IF7, IG7},
+					BLACK_KNIGHT: []int{IB8, IG8},
+					BLACK_BISHOP: []int{IC8, IF8},
+					BLACK_ROOK:   []int{IA8, IH7},
+					BLACK_QUEEN:  []int{ID8},
+					BLACK_KING:   []int{IE8},
+				},
+			},
+			state{
+				[4]bool{false, true, true, true},
+				nil,
+				0,
+				1,
+				BLACK,
+				0,
+				map[int][]int{
+					WHITE_PAWN:   []int{IA2, IB2, IC2, ID2, IE2, IF2, IG2},
+					WHITE_KNIGHT: []int{IB1, IG1},
+					WHITE_BISHOP: []int{IC1, IF1},
+					WHITE_ROOK:   []int{IH7, IA1},
+					WHITE_QUEEN:  []int{ID1},
+					WHITE_KING:   []int{IE1},
+					BLACK_PAWN:   []int{IA7, IB7, IC7, ID7, IE7, IF7, IG7},
+					BLACK_KNIGHT: []int{IB8, IG8},
+					BLACK_BISHOP: []int{IC8, IF8},
+					BLACK_ROOK:   []int{IA8, IH8},
+					BLACK_QUEEN:  []int{ID8},
+					BLACK_KING:   []int{IE8},
+				},
+			},
+			"black rook xh7",
+		},
 	}
 	// capture
 	// moving king / rook
+	// promotion
 
 	for _, tt := range tests {
 		res := tt.b.MakeMove(tt.m)
@@ -2684,11 +2801,11 @@ func TestUnmakeMove(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.afterMake.pieceSquares[i]) {
-				t.Errorf("p: %d, MakeMove expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.afterMake.pieceSquares[i], tt.m.to)
+				t.Errorf("%s p: %d, MakeMove expected and pieceSquares have different lengths: %v %v %d", tt.d, i, sqs, tt.afterMake.pieceSquares[i], tt.m.to)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.afterMake.pieceSquares[i][j] {
-					t.Errorf("p: %d, MakeMove expected and pieceSquares have different values: %v %v", i, sqs, tt.afterMake.pieceSquares[i])
+					t.Errorf("%s p: %d, MakeMove expected and pieceSquares have different values: %v %v", tt.d, i, sqs, tt.afterMake.pieceSquares[i])
 				}
 			}
 		}
