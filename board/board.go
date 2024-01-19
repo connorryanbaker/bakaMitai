@@ -51,8 +51,35 @@ func (b *Board) UnmakeMove() {
 	}
 
 	h := b.history[len(b.history)-1]
-	b.pieces[h.move.from] = b.PieceAt(h.move.to)
-	b.pieces[h.move.to] = h.previousSquareOccupant
+	m := h.move
+	p := b.PieceAt(m.to)
+	b.pieces[m.from] = p
+	b.pieces[m.to] = h.previousSquareOccupant
+	if m.castleKingside {
+		if b.side == BLACK {
+			b.pieces[IF1] = EMPTY_SQUARE
+			b.pieces[IH1] = WHITE_ROOK
+		} else {
+			b.pieces[IF8] = EMPTY_SQUARE
+			b.pieces[IH8] = BLACK_ROOK
+		}
+	}
+	if m.castleQueenside {
+		if b.side == BLACK {
+			b.pieces[ID1] = EMPTY_SQUARE
+			b.pieces[IA1] = WHITE_ROOK
+		} else {
+			b.pieces[ID8] = EMPTY_SQUARE
+			b.pieces[IA8] = BLACK_ROOK
+		}
+	}
+	if m.capture && h.ep != nil && m.to == *h.ep && (p == WHITE_PAWN || p == BLACK_PAWN) {
+		if b.side == BLACK {
+			b.pieces[m.to+10] = BLACK_PAWN
+		} else {
+			b.pieces[m.to-10] = WHITE_PAWN
+		}
+	}
 	b.ep = h.ep
 	b.castle = h.castle
 	b.hply = h.hply
