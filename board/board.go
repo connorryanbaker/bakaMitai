@@ -54,6 +54,13 @@ func (b *Board) UnmakeMove() {
 	h := b.history[len(b.history)-1]
 	m := h.move
 	p := b.PieceAt(m.to)
+	if m.promote {
+		if b.side == BLACK {
+			p = WHITE_PAWN
+		} else {
+			p = BLACK_PAWN
+		}
+	}
 	b.pieces[m.from] = p
 	b.pieces[m.to] = h.previousSquareOccupant
 	if m.castleKingside {
