@@ -12,11 +12,10 @@ type Board struct {
 }
 
 // todo:
-// unmake move [ ]
-// add move hash to history for position comparison [ ]
-// https://www.chessprogramming.org/Zobrist_Hashing [ ]
 // recognize checkmate, stalemate, fifty move rule [ ]
 // Moves() function to expose all available semi-legal moves in position [ ]
+// add move hash to history for position comparison [ ]
+// https://www.chessprogramming.org/Zobrist_Hashing [ ]
 // printing for debugging / ui / accepting user input, play game [ ]
 // then move on to the fun stuff
 
@@ -373,12 +372,12 @@ func (b Board) Checkmate(side int) bool {
 		if !b.InCheck(WHITE) {
 			return false
 		}
-		return len(b.WhiteKingMoves(b.pieceSquares[WHITE_KING][0])) == 0
+		return len(b.LegalMoves()) == 0
 	}
 	if !b.InCheck(BLACK) {
 		return false
 	}
-	return len(b.BlackKingMoves(b.pieceSquares[BLACK_KING][0])) == 0
+	return len(b.LegalMoves()) == 0
 }
 
 func (b *Board) updatePieceSquares() {
