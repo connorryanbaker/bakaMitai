@@ -368,6 +368,19 @@ func (b Board) InCheck(side int) bool {
 	return attackedSquares[kingPos] == true
 }
 
+func (b Board) Checkmate(side int) bool {
+	if side == WHITE {
+		if !b.InCheck(WHITE) {
+			return false
+		}
+		return len(b.WhiteKingMoves(b.pieceSquares[WHITE_KING][0])) == 0
+	}
+	if !b.InCheck(BLACK) {
+		return false
+	}
+	return len(b.BlackKingMoves(b.pieceSquares[BLACK_KING][0])) == 0
+}
+
 func (b *Board) updatePieceSquares() {
 	nps := make(map[int][]int)
 	for i := 0; i < 64; i++ {

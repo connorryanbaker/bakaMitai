@@ -2945,3 +2945,28 @@ func TestUnmakeMove(t *testing.T) {
 		}
 	}
 }
+
+func TestCheckmate(t *testing.T) {
+	var tests = []struct {
+		b         Board
+		checkmate bool
+		d         string
+	}{
+		{
+			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			false,
+			"start position",
+		},
+		{
+			FromFENString("rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 1"),
+			true,
+			"wk checkmate pawns f3g4 Qh4",
+		},
+	}
+
+	for _, tt := range tests {
+		if tt.b.Checkmate(tt.b.side) != tt.checkmate {
+			t.Errorf("%s: received unexpected checkmate; expected %t, received: %t", tt.d, tt.checkmate, tt.b.Checkmate(tt.b.side))
+		}
+	}
+}
