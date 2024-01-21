@@ -3060,3 +3060,114 @@ func TestStalemate(t *testing.T) {
 		}
 	}
 }
+
+func TestThreefoldRepetition(t *testing.T) {
+	b := FromFENString("7q/8/8/8/8/4k3/8/7K w - - 0 1")
+	b.MakeMove(Move{
+		IH1,
+		IG1,
+		false,
+		false,
+		false,
+		false,
+		WHITE_KING,
+		false,
+	})
+	b.MakeMove(Move{
+		IH8,
+		IG8,
+		false,
+		false,
+		false,
+		false,
+		BLACK_QUEEN,
+		false,
+	})
+	b.MakeMove(Move{
+		IG1,
+		IH1,
+		false,
+		false,
+		false,
+		false,
+		WHITE_KING,
+		false,
+	})
+	b.MakeMove(Move{
+		IG8,
+		IH8,
+		false,
+		false,
+		false,
+		false,
+		BLACK_QUEEN,
+		false,
+	})
+	b.MakeMove(Move{
+		IH1,
+		IG1,
+		false,
+		false,
+		false,
+		false,
+		WHITE_KING,
+		false,
+	})
+	b.MakeMove(Move{
+		IH8,
+		IG8,
+		false,
+		false,
+		false,
+		false,
+		BLACK_QUEEN,
+		false,
+	})
+	b.MakeMove(Move{
+		IG1,
+		IH1,
+		false,
+		false,
+		false,
+		false,
+		WHITE_KING,
+		false,
+	})
+	b.MakeMove(Move{
+		IG8,
+		IH8,
+		false,
+		false,
+		false,
+		false,
+		BLACK_QUEEN,
+		false,
+	})
+	if b.ThreefoldRepetition() != true {
+		t.Errorf("Unexpected threefold repetition; received: %t, expected: %t", false, true)
+	}
+}
+
+func TestFiftyMoveDraw(t *testing.T) {
+	b := FromFENString("7q/8/8/8/8/4k3/8/7K w - - 99 100")
+	b.MakeMove(Move{
+		IH1,
+		IG1,
+		false,
+		false,
+		false,
+		false,
+		WHITE_KING,
+		false,
+	})
+	if b.FiftyMoveDraw() != true {
+		t.Errorf("hply of %d should indicate 50 move draw; received: false, expected true", b.hply)
+	}
+}
+
+func TestInsufficientMaterial(t *testing.T) {
+	b := FromFENString("8/8/8/8/8/4k3/8/7K w - - 30 100")
+	if b.InsufficientMaterial() != true {
+		t.Errorf("Kings only on the board should be ruled insufficient material")
+	}
+}
