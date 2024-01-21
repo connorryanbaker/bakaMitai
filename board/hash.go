@@ -33,8 +33,8 @@ func (b Board) Hash() uint64 {
 func newHashSeed() hash {
 	h := hash{}
 	for i := 0; i < 63; i++ {
-		for j := WHITE_PAWN; j <= BLACK_PAWN; j++ {
-			h.pieceSquares[i][j] = rand.Uint64()
+		for j := WHITE_PAWN; j <= BLACK_KING; j++ {
+			h.pieceSquares[i][j-1] = rand.Uint64()
 		}
 	}
 	for i := 0; i < 8; i++ {
