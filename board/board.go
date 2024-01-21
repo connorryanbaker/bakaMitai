@@ -27,7 +27,7 @@ func NewBoard() Board {
 		0,
 		0,
 		INIT_PIECE_SQUARES, // we'll see if this works
-		make([]History, 1),
+		make([]History, 0),
 		newHash(),
 	}
 }

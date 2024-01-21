@@ -30,6 +30,9 @@ func TestHashChangesWithMakeMoveAndUnmakemove(t *testing.T) {
 	if b.Hash() == h1 {
 		t.Errorf("board hash should update with moves: %d %d", h1, b.Hash())
 	}
+	if b.history[0].hash != h1 {
+		t.Errorf("board history hash should match: %d %d", b.history[0].hash, h1)
+	}
 	b.UnmakeMove()
 	if b.Hash() != h1 {
 		t.Errorf("board hash should match original with unmake move: %d %d", h1, b.Hash())
