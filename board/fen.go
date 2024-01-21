@@ -47,6 +47,7 @@ func FromFENString(f string) Board {
 	b.ep = parseEnPassant(components[3])
 	b.hply = parseHply(components[4])
 	b.ply = parsePly(components[5])
+	b.hashSeed = newHashSeed()
 	return b
 }
 

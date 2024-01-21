@@ -1,5 +1,7 @@
 package board
 
+import "strings"
+
 const OFF_BOARD = -1
 const EMPTY_SQUARE = 0
 const WHITE_PAWN = 1
@@ -260,4 +262,82 @@ var SQ_NUM_TO_NAME = map[int]string{
 	IF8: "F8",
 	IG8: "G8",
 	IH8: "H8",
+}
+
+var SQ_NAME_TO_SQ_64 = map[int]int{
+	IA1: 56,
+	IB1: 57,
+	IC1: 58,
+	ID1: 59,
+	IE1: 60,
+	IF1: 61,
+	IG1: 62,
+	IH1: 63,
+	IA2: 48,
+	IB2: 49,
+	IC2: 50,
+	ID2: 51,
+	IE2: 52,
+	IF2: 53,
+	IG2: 54,
+	IH2: 55,
+	IA3: 40,
+	IB3: 41,
+	IC3: 42,
+	ID3: 43,
+	IE3: 44,
+	IF3: 45,
+	IG3: 46,
+	IH3: 47,
+	IA4: 32,
+	IB4: 33,
+	IC4: 34,
+	ID4: 35,
+	IE4: 36,
+	IF4: 37,
+	IG4: 38,
+	IH4: 39,
+	IA5: 24,
+	IB5: 25,
+	IC5: 26,
+	ID5: 27,
+	IE5: 28,
+	IF5: 29,
+	IG5: 30,
+	IH5: 31,
+	IA6: 16,
+	IB6: 17,
+	IC6: 18,
+	ID6: 19,
+	IE6: 20,
+	IF6: 21,
+	IG6: 22,
+	IH6: 23,
+	IA7: 8,
+	IB7: 9,
+	IC7: 10,
+	ID7: 11,
+	IE7: 12,
+	IF7: 13,
+	IG7: 14,
+	IH7: 15,
+	IA8: 0,
+	IB8: 1,
+	IC8: 2,
+	ID8: 3,
+	IE8: 4,
+	IF8: 5,
+	IG8: 6,
+	IH8: 7,
+}
+
+const FILES = "ABCDEFGH"
+
+func epSquareFile(ep *int) int {
+	if ep == nil { // should return error
+		return -1
+	}
+
+	sqString := SQ_NUM_TO_NAME[*ep]
+	return strings.IndexByte(FILES, sqString[0])
 }

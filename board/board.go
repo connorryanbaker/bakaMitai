@@ -9,13 +9,12 @@ type Board struct {
 	ply          int
 	pieceSquares map[int][]int
 	history      []History
+	hashSeed     hash
 }
 
 // todo:
-// recognize checkmate, stalemate, fifty move rule [ ]
-// Moves() function to expose all available semi-legal moves in position [ ]
-// add move hash to history for position comparison [ ]
-// https://www.chessprogramming.org/Zobrist_Hashing [ ]
+// add move hash to history for position comparison https://www.chessprogramming.org/Zobrist_Hashing [ ]
+// recognize fifty move rule and threefold repetition [ ]
 // printing for debugging / ui / accepting user input, play game [ ]
 // then move on to the fun stuff
 
@@ -28,7 +27,8 @@ func NewBoard() Board {
 		0,
 		0,
 		INIT_PIECE_SQUARES, // we'll see if this works
-		make([]History, 1),
+		make([]History, 0),
+		newHashSeed(),
 	}
 }
 

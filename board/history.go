@@ -7,6 +7,7 @@ type History struct {
 	ep                     *int
 	hply                   int
 	ply                    int
+	hash                   uint64
 }
 
 func (b *Board) pushHistory(m Move) {
@@ -17,6 +18,7 @@ func (b *Board) pushHistory(m Move) {
 		ep:                     b.ep,
 		hply:                   b.hply,
 		ply:                    b.ply,
+		hash:                   b.Hash(),
 	}
 	b.history = append(b.history, h)
 }
