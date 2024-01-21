@@ -1,8 +1,6 @@
 package board
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestPieceAtNewBoard(t *testing.T) {
 	var tests = []struct {
@@ -2979,11 +2977,71 @@ func TestCheckmate(t *testing.T) {
 			false,
 			"bk check on f7 queen supported king has escape square",
 		},
+		{
+			FromFENString("4k3/4P3/4K3/8/8/8/8/8 b - - 0 1"),
+			false,
+			"white stalemates black w/ king and pawn",
+		},
 	}
 
 	for _, tt := range tests {
-		if tt.b.Checkmate(tt.b.side) != tt.checkmate {
-			t.Errorf("%s: received unexpected checkmate; expected %t, received: %t", tt.d, tt.checkmate, tt.b.Checkmate(tt.b.side))
+		if tt.b.Checkmate() != tt.checkmate {
+			t.Errorf("%s: received unexpected checkmate; expected %t, received: %t", tt.d, tt.checkmate, tt.b.Checkmate())
+		}
+	}
+}
+
+func TestStalemate(t *testing.T) {
+	var tests = []struct {
+		b         Board
+		stalemate bool
+		d         string
+	}{
+		{
+			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			false,
+			"start position",
+		},
+		{
+			FromFENString("rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 1"),
+			false,
+			"wk checkmate pawns f3g4 Qh4",
+		},
+		{
+			FromFENString("rnbqkbnr/pppppQpp/8/8/2B5/8/PPPPPPPP/RNB1K1NR b KQkq - 0 1"),
+			false,
+			"bk checkmate on f7 queen supported",
+		},
+		{
+			FromFENString("rnbqkb1r/pppppQpp/7n/8/2B5/8/PPPPPPPP/RNB1K1NR b KQkq - 0 1"),
+			false,
+			"bk check on f7 queen supported but attacked by knight",
+		},
+		{
+			FromFENString("rnbqkbnr/ppp1pQpp/3p4/8/2B5/8/PPPPPPPP/RNB1K1NR b KQkq - 0 1"),
+			false,
+			"bk check on f7 queen supported king has escape square",
+		},
+		{
+			FromFENString("4k3/4P3/4K3/8/8/8/8/8 b - - 0 1"),
+			true,
+			"white stalemates black w/ king and pawn",
+		},
+		{
+			FromFENString("3r1r2/8/8/8/8/4k3/8/4K3 w - - 0 1"),
+			true,
+			"black stalemates white w/ king and two rooks",
+		},
+		{
+			FromFENString("3r1r2/4P3/8/8/8/4k3/8/4K3 w - - 0 1"),
+			false,
+			"w/o pawn, black stalemates white w/ king and two rooks, pawn has 3 moves",
+		},
+	}
+
+	for _, tt := range tests {
+		if tt.b.Stalemate() != tt.stalemate {
+			t.Errorf("%s: received unexpected stalemate; expected %t, received: %t", tt.d, tt.stalemate, tt.b.Stalemate())
 		}
 	}
 }

@@ -367,14 +367,15 @@ func (b Board) InCheck(side int) bool {
 	return attackedSquares[kingPos] == true
 }
 
-func (b Board) Checkmate(side int) bool {
-	if side == WHITE {
-		if !b.InCheck(WHITE) {
-			return false
-		}
-		return len(b.LegalMoves()) == 0
+func (b Board) Checkmate() bool {
+	if !b.InCheck(b.side) {
+		return false
 	}
-	if !b.InCheck(BLACK) {
+	return len(b.LegalMoves()) == 0
+}
+
+func (b Board) Stalemate() bool {
+	if b.InCheck(b.side) {
 		return false
 	}
 	return len(b.LegalMoves()) == 0
