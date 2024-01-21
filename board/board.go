@@ -381,6 +381,25 @@ func (b Board) Stalemate() bool {
 	return len(b.LegalMoves()) == 0
 }
 
+func (b Board) FiftyMoveDraw() bool {
+	return b.hply == 100
+}
+
+func (b Board) ThreefoldRepetition() bool {
+	currentHash := b.Hash()
+	count := 1
+	for _, v := range b.history {
+		if v.hash == currentHash {
+			count += 1
+		}
+	}
+	return count >= 3
+}
+
+func (b Board) InsufficientMaterial() bool {
+	return len(b.pieceSquares) == 2
+}
+
 func (b *Board) updatePieceSquares() {
 	nps := make(map[int][]int)
 	for i := 0; i < 64; i++ {
