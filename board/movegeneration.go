@@ -1,7 +1,7 @@
 package board
 
 import (
-	"errors"
+	"fmt"
 )
 
 var KNIGHT_DELTAS = [8]int{-21, -19, -12, -8, 12, 21, 19, 8}
@@ -59,6 +59,50 @@ func equalMoves(m1, m2 Move) bool {
 	return true
 }
 
+// these need tests
+
+func (b Board) LegalMoves() []Move {
+	moves := make([]Move, 0)
+	for _, m := range b.Moves() {
+		r := b.MakeMove(m)
+		if r == true {
+			b.UnmakeMove()
+			moves = append(moves, m)
+		}
+	}
+	return moves
+}
+
+func (b Board) Moves() []Move {
+	m := make([]Move, 0)
+	if b.side == WHITE {
+		for i := WHITE_PAWN; i <= WHITE_KING; i++ {
+			if b.pieceSquares[i] != nil {
+				for j := 0; j < len(b.pieceSquares[i]); j++ {
+					moves, err := b.MovesForPiece(b.pieceSquares[i][j])
+					if err != nil {
+						panic(err)
+					}
+					m = append(m, moves...)
+				}
+			}
+		}
+	} else {
+		for i := BLACK_PAWN; i <= BLACK_KING; i++ {
+			if b.pieceSquares[i] != nil {
+				for j := 0; j < len(b.pieceSquares[i]); j++ {
+					moves, err := b.MovesForPiece(b.pieceSquares[i][j])
+					if err != nil {
+						panic(err)
+					}
+					m = append(m, moves...)
+				}
+			}
+		}
+	}
+	return m
+}
+
 func (b Board) MovesForPiece(sq int) ([]Move, error) {
 	piece := b.PieceAt(sq)
 	switch piece {
@@ -66,28 +110,28 @@ func (b Board) MovesForPiece(sq int) ([]Move, error) {
 		return b.WhitePawnMoves(sq), nil
 	case WHITE_KNIGHT:
 		return b.WhiteKnightMoves(sq), nil
-	// case WHITE_BISHOP:
-	//   return b.WhiteBishopMoves(sq), nil
-	// case WHITE_ROOK:
-	//   return b.WhiteRookMoves(sq), nil
-	// case WHITE_QUEEN:
-	//   return b.WhiteQueenMoves(sq), nil
-	// case WHITE_KING:
-	//   return b.WhiteKingMoves(sq), nil
+	case WHITE_BISHOP:
+		return b.WhiteBishopMoves(sq), nil
+	case WHITE_ROOK:
+		return b.WhiteRookMoves(sq), nil
+	case WHITE_QUEEN:
+		return b.WhiteQueenMoves(sq), nil
+	case WHITE_KING:
+		return b.WhiteKingMoves(sq), nil
 	case BLACK_PAWN:
 		return b.BlackPawnMoves(sq), nil
 	case BLACK_KNIGHT:
 		return b.BlackKnightMoves(sq), nil
-	// case BLACK_BISHOP:
-	//   return b.WhiteBishopMoves(sq), nil
-	// case BLACK_ROOK:
-	//   return b.WhiteRookMoves(sq), nil
-	// case BLACK_QUEEN:
-	//   return b.WhiteQueenMoves(sq), nil
-	// case BLACK_KING:
-	//   return b.WhiteKingMoves(sq), nil
+	case BLACK_BISHOP:
+		return b.BlackBishopMoves(sq), nil
+	case BLACK_ROOK:
+		return b.BlackRookMoves(sq), nil
+	case BLACK_QUEEN:
+		return b.BlackQueenMoves(sq), nil
+	case BLACK_KING:
+		return b.BlackKingMoves(sq), nil
 	default:
-		return nil, errors.New("invalid square")
+		return nil, fmt.Errorf("invalid square: %d", sq)
 	}
 }
 
