@@ -10,13 +10,8 @@ type Board struct {
 	pieceSquares map[int][]int
 	history      []History
 	hashSeed     hash
+	legalMoves   []Move
 }
-
-// todo:
-// add move hash to history for position comparison https://www.chessprogramming.org/Zobrist_Hashing [ ]
-// recognize fifty move rule and threefold repetition [ ]
-// printing for debugging / ui / accepting user input, play game [ ]
-// then move on to the fun stuff
 
 func NewBoard() Board {
 	return Board{
@@ -29,7 +24,16 @@ func NewBoard() Board {
 		INIT_PIECE_SQUARES, // we'll see if this works
 		make([]History, 0),
 		newHashSeed(),
+		nil,
 	}
+}
+
+func (b Board) Side() int {
+	return b.side
+}
+
+func (b Board) Pieces() map[int][]int {
+	return b.pieceSquares
 }
 
 func (b Board) isEPCapture(m Move) bool {
@@ -105,11 +109,13 @@ func (b *Board) MakeMove(m Move) bool {
 
 	if m.castleKingside {
 		b.castleKingside(m)
+		b.legalMoves = nil
 		return true
 	}
 
 	if m.castleQueenside {
 		b.castleQueenside(m)
+		b.legalMoves = nil
 		return true
 	}
 
@@ -161,6 +167,7 @@ func (b *Board) MakeMove(m Move) bool {
 		b.ply += 1
 	}
 	b.side ^= 1
+	b.legalMoves = nil
 	return true
 }
 
@@ -185,6 +192,7 @@ func (b *Board) handleCapture(m Move) bool {
 		b.ply += 1
 	}
 	b.side ^= 1
+	b.legalMoves = nil
 	return true
 }
 
@@ -208,6 +216,7 @@ func (b *Board) handlePromotion(m Move) bool {
 		b.ply += 1
 	}
 	b.side ^= 1
+	b.legalMoves = nil
 	return true
 }
 
@@ -288,6 +297,7 @@ func (b *Board) handleEPCapture(m Move) bool {
 		b.ply += 1
 	}
 	b.side ^= 1
+	b.legalMoves = nil
 	return true
 }
 
@@ -398,6 +408,10 @@ func (b Board) ThreefoldRepetition() bool {
 
 func (b Board) InsufficientMaterial() bool {
 	return len(b.pieceSquares) == 2
+}
+
+func (b Board) Drawn() bool {
+	return b.InsufficientMaterial() || b.ThreefoldRepetition() || b.FiftyMoveDraw() || b.Stalemate()
 }
 
 func (b *Board) updatePieceSquares() {
