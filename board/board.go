@@ -9,7 +9,7 @@ type Board struct {
 	ply          int
 	pieceSquares map[int][]int
 	history      []History
-	hash         hash
+	hashSeed     hash
 }
 
 // todo:
@@ -28,7 +28,7 @@ func NewBoard() Board {
 		0,
 		INIT_PIECE_SQUARES, // we'll see if this works
 		make([]History, 0),
-		newHash(),
+		newHashSeed(),
 	}
 }
 

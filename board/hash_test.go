@@ -2,6 +2,8 @@ package board
 
 import "testing"
 
+// additional tests necessary
+
 func TestHashIsConsistent(t *testing.T) {
 	b := NewBoard()
 	h1 := b.Hash()
