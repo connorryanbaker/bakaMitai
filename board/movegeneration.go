@@ -62,6 +62,9 @@ func equalMoves(m1, m2 Move) bool {
 // these need tests
 
 func (b Board) LegalMoves() []Move {
+	if b.legalMoves != nil {
+		return b.legalMoves
+	}
 	moves := make([]Move, 0)
 	for _, m := range b.Moves() {
 		r := b.MakeMove(m)
@@ -70,7 +73,8 @@ func (b Board) LegalMoves() []Move {
 			moves = append(moves, m)
 		}
 	}
-	return moves
+	b.legalMoves = moves
+	return b.legalMoves
 }
 
 func (b Board) Moves() []Move {
