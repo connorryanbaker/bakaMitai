@@ -8,17 +8,18 @@ import (
 )
 
 func main() {
-	// b := board.FromFENString("1q6/8/8/8/8/5k2/8/7K b - - 0 1")
-	b := board.NewBoard()
-	playRandomGame(b)
+	b := board.FromFENString("r2qk2r/pppb1ppp/8/1B2N3/1b2p3/8/PPPBPPPP/R2QK2R w KQkq - 1 1")
+	// b := board.NewBoard()
+	play(b)
 }
 
-func playRandomGame(b board.Board) {
+func play(b board.Board) {
 	for true {
 		b.Print()
-		e, m := search.Search(&b, 3)
-    fmt.Println(e)
-    fmt.Println(b.Hash())
+		_, m := search.Search(&b, 2)
+		// fmt.Println(e)
+		// fmt.Println(b.Hash())
+		// fmt.Println(m)
 		b.MakeMove(m)
 		if b.Checkmate() {
 			b.Print()

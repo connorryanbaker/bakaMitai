@@ -3171,3 +3171,34 @@ func TestInsufficientMaterial(t *testing.T) {
 		t.Errorf("Kings only on the board should be ruled insufficient material")
 	}
 }
+
+func TestUnmakeMoveRegression(t *testing.T) {
+	// this fen resulted in bq disappearing
+	b := FromFENString("r2qk2r/pppb1ppp/8/1B2N3/1b2p3/8/PPPBPPPP/R2QK2R w KQkq - 1 1")
+	for _, m := range b.LegalMoves() {
+		bh := b.Hash()
+		r := b.MakeMove(m)
+		if r != true {
+			t.Errorf("legal move %v returned false", m)
+		}
+
+		for _, m2 := range b.LegalMoves() {
+			bh2 := b.Hash()
+			r2 := b.MakeMove(m2)
+			if r2 != true {
+				t.Errorf("legal move %v returned false", m)
+			}
+			if m2.CastleQueenside {
+				t.Errorf("illegal move castle queenside :%v", m2)
+			}
+			b.UnmakeMove()
+			if b.Hash() != bh2 {
+				t.Errorf("Unmake move after %v resulted in changed hash", m2)
+			}
+		}
+		b.UnmakeMove()
+		if b.Hash() != bh {
+			t.Errorf("Unmake move after %v resulted in changed hash", m)
+		}
+	}
+}

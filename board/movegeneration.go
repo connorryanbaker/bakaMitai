@@ -471,7 +471,7 @@ func (b Board) checkBlackCastleQueenside(attackedSquares map[int]bool) bool {
 		return false
 	}
 
-	for i := IB8; i < ID8; i++ {
+	for i := IB8; i < IE8; i++ {
 		if b.PieceAt(i) != EMPTY_SQUARE {
 			return false
 		}

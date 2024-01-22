@@ -1,6 +1,7 @@
 package search
 
 import (
+	"fmt"
 	"github.com/connorryanbaker/engine/board"
 	"github.com/connorryanbaker/engine/eval"
 )
@@ -9,7 +10,12 @@ import (
 
 func Search(b *board.Board, depth int) (float64, board.Move) {
 	maximizing := b.Side() == board.WHITE
-	return minimax(b, maximizing, depth)
+	bhash := b.Hash()
+	e, m := minimax(b, maximizing, depth)
+	if bhash != b.Hash() {
+		panic("wtf")
+	}
+	return e, m
 }
 
 func minimax(b *board.Board, maximizing bool, depth int) (float64, board.Move) {
@@ -21,10 +27,17 @@ func minimax(b *board.Board, maximizing bool, depth int) (float64, board.Move) {
 	moves := b.LegalMoves()
 	evals := make([]float64, len(moves))
 	for i, m := range moves {
+		bhash := b.Hash()
 		b.MakeMove(m)
 		eval, _ := minimax(b, !maximizing, depth-1)
-		evals[i] = eval
 		b.UnmakeMove()
+		if bhash != b.Hash() {
+			b.Print()
+			fmt.Println(m)
+			fmt.Println(b.History())
+			panic(m)
+		}
+		evals[i] = eval
 	}
 	var idx int
 	if maximizing {
