@@ -845,7 +845,7 @@ func TestMakeMoveEPCapture(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
-				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.pieceSquares[i][j] {
@@ -1068,7 +1068,7 @@ func TestMakeMovePromotion(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
-				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.pieceSquares[i][j] {
@@ -1374,7 +1374,7 @@ func TestMakeMoveCapture(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
-				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.pieceSquares[i][j] {
@@ -1939,7 +1939,7 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
-				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.pieceSquares[i][j] {
@@ -2914,7 +2914,7 @@ func TestUnmakeMove(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.afterMake.pieceSquares[i]) {
-				t.Errorf("%s p: %d, MakeMove expected and pieceSquares have different lengths: %v %v %d", tt.d, i, sqs, tt.afterMake.pieceSquares[i], tt.m.to)
+				t.Errorf("%s p: %d, MakeMove expected and pieceSquares have different lengths: %v %v %d", tt.d, i, sqs, tt.afterMake.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.afterMake.pieceSquares[i][j] {
@@ -2950,7 +2950,7 @@ func TestUnmakeMove(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.afterUnmake.pieceSquares[i]) {
-				t.Errorf("p: %d, UnmakeMove expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.afterUnmake.pieceSquares[i], tt.m.to)
+				t.Errorf("p: %d, UnmakeMove expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.afterUnmake.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.afterUnmake.pieceSquares[i][j] {

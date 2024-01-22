@@ -21,44 +21,44 @@ var BLACK_PROMOTION_PIECES = [4]int{BLACK_QUEEN, BLACK_ROOK, BLACK_BISHOP, BLACK
 // should go without saying that these methods can be consolidated
 
 type Move struct {
-	from            int
-	to              int
-	capture         bool
-	castleKingside  bool
-	castleQueenside bool
-	promote         bool
-	promotionPiece  int
-	doublePawnPush  bool
+	From            int
+	To              int
+	Capture         bool
+	CastleKingside  bool
+	CastleQueenside bool
+	Promote         bool
+	PromotionPiece  int
+	DoublePawnPush  bool
 }
 
 // todo: make struct fields public
 func (m Move) ToFrom() (int, int) {
-	return m.to, m.from
+	return m.To, m.From
 }
 
 func equalMoves(m1, m2 Move) bool {
-	if m1.from != m2.from {
+	if m1.From != m2.From {
 		return false
 	}
-	if m1.to != m2.to {
+	if m1.To != m2.To {
 		return false
 	}
-	if m1.capture != m2.capture {
+	if m1.Capture != m2.Capture {
 		return false
 	}
-	if m1.castleKingside != m2.castleKingside {
+	if m1.CastleKingside != m2.CastleKingside {
 		return false
 	}
-	if m1.castleQueenside != m2.castleQueenside {
+	if m1.CastleQueenside != m2.CastleQueenside {
 		return false
 	}
-	if m1.promote != m2.promote {
+	if m1.Promote != m2.Promote {
 		return false
 	}
-	if m1.promotionPiece != m2.promotionPiece {
+	if m1.PromotionPiece != m2.PromotionPiece {
 		return false
 	}
-	if m1.doublePawnPush != m2.doublePawnPush {
+	if m1.DoublePawnPush != m2.DoublePawnPush {
 		return false
 	}
 	return true
@@ -339,7 +339,7 @@ func (b Board) BlackRookMoves(sq int) []Move {
 func (b Board) WhiteQueenMoves(sq int) []Move {
 	moves := append(b.WhiteBishopMoves(sq), b.WhiteRookMoves(sq)...)
 	for i, _ := range moves {
-		moves[i].promotionPiece = WHITE_QUEEN // might as well lean into this silly convention
+		moves[i].PromotionPiece = WHITE_QUEEN // might as well lean into this silly convention
 	}
 	return moves
 }
@@ -347,7 +347,7 @@ func (b Board) WhiteQueenMoves(sq int) []Move {
 func (b Board) BlackQueenMoves(sq int) []Move {
 	moves := append(b.BlackBishopMoves(sq), b.BlackRookMoves(sq)...)
 	for i, _ := range moves {
-		moves[i].promotionPiece = BLACK_QUEEN
+		moves[i].PromotionPiece = BLACK_QUEEN
 	}
 	return moves
 }

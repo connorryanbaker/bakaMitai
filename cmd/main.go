@@ -16,7 +16,9 @@ func main() {
 func playRandomGame(b board.Board) {
 	for true {
 		b.Print()
-		_, m := search.Search(&b, 2)
+		e, m := search.Search(&b, 3)
+    fmt.Println(e)
+    fmt.Println(b.Hash())
 		b.MakeMove(m)
 		if b.Checkmate() {
 			b.Print()
