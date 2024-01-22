@@ -5,9 +5,6 @@ import (
 	"math"
 )
 
-// TODO: minimize number of time board generates moves / checks
-// attacks etc.
-
 func Eval(b board.Board) float64 {
 	if b.Checkmate() {
 		if b.Side() == board.WHITE {

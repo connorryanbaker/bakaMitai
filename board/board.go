@@ -28,6 +28,11 @@ func NewBoard() Board {
 	}
 }
 
+// todo: these should be public fields
+func (b Board) History() []History {
+	return b.history
+}
+
 func (b Board) Side() int {
 	return b.side
 }

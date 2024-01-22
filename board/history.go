@@ -10,6 +10,11 @@ type History struct {
 	hash                   uint64
 }
 
+// todo: make struct fields public where necessary
+func (h History) Move() Move {
+	return h.move
+}
+
 func (b *Board) pushHistory(m Move) {
 	h := History{
 		previousSquareOccupant: b.PieceAt(m.to),
