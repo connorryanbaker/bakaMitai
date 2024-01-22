@@ -31,6 +31,11 @@ type Move struct {
 	doublePawnPush  bool
 }
 
+// todo: make struct fields public
+func (m Move) ToFrom() (int, int) {
+	return m.to, m.from
+}
+
 func equalMoves(m1, m2 Move) bool {
 	if m1.from != m2.from {
 		return false
