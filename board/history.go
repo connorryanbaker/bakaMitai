@@ -17,7 +17,7 @@ func (h History) Move() Move {
 
 func (b *Board) pushHistory(m Move) {
 	h := History{
-		previousSquareOccupant: b.PieceAt(m.to),
+		previousSquareOccupant: b.PieceAt(m.To),
 		move:                   m,
 		castle:                 b.castle,
 		ep:                     b.ep,

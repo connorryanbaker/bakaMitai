@@ -845,7 +845,7 @@ func TestMakeMoveEPCapture(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
-				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.pieceSquares[i][j] {
@@ -1068,7 +1068,7 @@ func TestMakeMovePromotion(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
-				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.pieceSquares[i][j] {
@@ -1374,7 +1374,7 @@ func TestMakeMoveCapture(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
-				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.pieceSquares[i][j] {
@@ -1939,7 +1939,7 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
-				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.to)
+				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.pieceSquares[i][j] {
@@ -2914,7 +2914,7 @@ func TestUnmakeMove(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.afterMake.pieceSquares[i]) {
-				t.Errorf("%s p: %d, MakeMove expected and pieceSquares have different lengths: %v %v %d", tt.d, i, sqs, tt.afterMake.pieceSquares[i], tt.m.to)
+				t.Errorf("%s p: %d, MakeMove expected and pieceSquares have different lengths: %v %v %d", tt.d, i, sqs, tt.afterMake.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.afterMake.pieceSquares[i][j] {
@@ -2950,7 +2950,7 @@ func TestUnmakeMove(t *testing.T) {
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
 			sqs := tt.b.pieceSquares[i]
 			if len(sqs) != len(tt.afterUnmake.pieceSquares[i]) {
-				t.Errorf("p: %d, UnmakeMove expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.afterUnmake.pieceSquares[i], tt.m.to)
+				t.Errorf("p: %d, UnmakeMove expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.afterUnmake.pieceSquares[i], tt.m.To)
 			}
 			for j, _ := range sqs {
 				if sqs[j] != tt.afterUnmake.pieceSquares[i][j] {
@@ -3169,5 +3169,36 @@ func TestInsufficientMaterial(t *testing.T) {
 	b := FromFENString("8/8/8/8/8/4k3/8/7K w - - 30 100")
 	if b.InsufficientMaterial() != true {
 		t.Errorf("Kings only on the board should be ruled insufficient material")
+	}
+}
+
+func TestUnmakeMoveRegression(t *testing.T) {
+	// this fen resulted in bq disappearing
+	b := FromFENString("r2qk2r/pppb1ppp/8/1B2N3/1b2p3/8/PPPBPPPP/R2QK2R w KQkq - 1 1")
+	for _, m := range b.LegalMoves() {
+		bh := b.Hash()
+		r := b.MakeMove(m)
+		if r != true {
+			t.Errorf("legal move %v returned false", m)
+		}
+
+		for _, m2 := range b.LegalMoves() {
+			bh2 := b.Hash()
+			r2 := b.MakeMove(m2)
+			if r2 != true {
+				t.Errorf("legal move %v returned false", m)
+			}
+			if m2.CastleQueenside {
+				t.Errorf("illegal move castle queenside :%v", m2)
+			}
+			b.UnmakeMove()
+			if b.Hash() != bh2 {
+				t.Errorf("Unmake move after %v resulted in changed hash", m2)
+			}
+		}
+		b.UnmakeMove()
+		if b.Hash() != bh {
+			t.Errorf("Unmake move after %v resulted in changed hash", m)
+		}
 	}
 }
