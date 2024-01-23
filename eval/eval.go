@@ -18,5 +18,5 @@ func Eval(b board.Board) float64 {
 	}
 
 	// TODO: tests to ensure balance of evals
-	return evalMaterial(b) + evalPieceSquares(b) * 5
+	return evalMaterial(b) + evalPieceSquares(b)*5
 }
