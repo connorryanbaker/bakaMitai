@@ -35,12 +35,11 @@ func TestFindMateInOne(t *testing.T) {
 
 	for _, tt := range tests {
 		_, m := Search(&tt.b, 2)
-		to, from := m.ToFrom()
-		if to != tt.expectedTo {
-			t.Errorf("received unexpected to; expected: %d, received: %d", tt.expectedTo, to)
+		if m.To != tt.expectedTo {
+			t.Errorf("received unexpected to; expected: %d, received: %d", tt.expectedTo, m.To)
 		}
-		if from != tt.expectedFrom {
-			t.Errorf("received unexpected from; expected: %d, received: %d", tt.expectedFrom, from)
+		if m.From != tt.expectedFrom {
+			t.Errorf("received unexpected from; expected: %d, received: %d", tt.expectedFrom, m.From)
 		}
 	}
 }

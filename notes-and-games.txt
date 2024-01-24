@@ -1,0 +1,25 @@
+test fens
+why does black capture c2
+r2qkb1r/ppp1pppp/4bn2/6B1/3np3/P1N5/1PPN1PPP/R2QKB1R b KQkq - 0 7
+why doesn't bishop capture g5
+1k1r1b1r/1p2pp1p/p3bn2/2p3p1/4P3/P1N5/1PQBBKPP/3R1R2 w - - 0 17
+why does queen capture knight here?
+1k1r1b1r/pp1qpppp/2p1bn2/6B1/4p3/P1N5/1PQNBPPP/3R1RK1 b - - 5 12
+
+to the above 2 moves with black, as search depth is set to 3 and there is no
+quiescence search (continuing to search at depth 0 to evaluate captures in
+position), black side moves seeing 3 ply ahead and assumes it is substantially
+ahead in material. alpha beta pruning will allow us to greatly reduce search
+space, this should allow for quiescence search at terminal nodes to avoid
+blunders like this.
+
+game one
+1. Nc3 Nc6 2. Nd5 Nf6 3. Nxf6+ exf6 4. e4 Bd6 5. Bb5 Nd4 6. e5 fxe5 7. Bc4 O-O
+8. Nh3 Qh4 9. O-O Qh6 10. d3 Qh4 11. Bg5 Nf3+ 12. Qxf3 Qd4 13. Bxf7+ Rxf7 14.
+Qh5 Qxb2 15. Nf4 g6 16. Rab1 Qxc2 17. Qe2 Qxb1 18. Rxb1 exf4 19. Qe8+ Rf8 20.
+Qe4 a6 21. Qd5+ Rf7 22. Rb3 a5 23. Qc4 a4 24. Rc3 Be5 25. d4 d5 26. Qxd5 Bd6 27.
+a3 Ra6 28. Qc4 Bf5 29. Bf6 Bxa3 30. Be5 Bb2 31. Rf3 Be6 32. Qb5 a3 33. Qe8+ Rf8
+34. Qe7 Rf7 35. Qd8+ Rf8 36. Qe7 Rf7 37. Qd8+ Rf8 38. Qe7 1/2-1/2
+
+game two - an improvement! with a couple of massive blunders to investigate
+1. Nc3 Nc6 2. d4 Nf6 3. Bh6 (3. Bg5 d5 4. Nf3 Be6 5. e4 dxe4 6. Nd2 Nxd4 7. a3 Nxc2+ 8. Qxc2 Qd7 9. Bb5 c6 10. Be2 O-O-O 11. O-O Kb8 12. Rad1 Qxd2 13. Bxd2 e3 14. fxe3 c5 15. Kf2 a6 16. e4 g5 17. Ke3 Bg7 18. e5 Ne8 19. Qa4 Bxe5 20. Ke4 Bxc3 21. Bxc3 f5+ 22. Ke5 Nf6 23. Kxe6 Rd6+ 24. Rxd6 exd6 25. Bxf6 Rf8 26. Bxg5 Rg8 27. Rxf5 Rg6+ 28. Kd5 Rg8 29. Kxd6 Rg6+ 30. Kxc5 b6+ 31. Kd5 b5 32. Bf4+ Ka8 33. Bxb5 h6 34. Bxa6 Rb6 35. Bc8+ Ra6 36. Qxa6#

@@ -31,11 +31,6 @@ type Move struct {
 	DoublePawnPush  bool
 }
 
-// todo: make struct fields public
-func (m Move) ToFrom() (int, int) {
-	return m.To, m.From
-}
-
 func equalMoves(m1, m2 Move) bool {
 	if m1.From != m2.From {
 		return false
@@ -84,11 +79,11 @@ func (b Board) LegalMoves() []Move {
 
 func (b Board) Moves() []Move {
 	m := make([]Move, 0)
-	if b.side == WHITE {
+	if b.Side == WHITE {
 		for i := WHITE_PAWN; i <= WHITE_KING; i++ {
-			if b.pieceSquares[i] != nil {
-				for j := 0; j < len(b.pieceSquares[i]); j++ {
-					moves, err := b.MovesForPiece(b.pieceSquares[i][j])
+			if b.PieceSquares[i] != nil {
+				for j := 0; j < len(b.PieceSquares[i]); j++ {
+					moves, err := b.MovesForPiece(b.PieceSquares[i][j])
 					if err != nil {
 						panic(err)
 					}
@@ -98,9 +93,9 @@ func (b Board) Moves() []Move {
 		}
 	} else {
 		for i := BLACK_PAWN; i <= BLACK_KING; i++ {
-			if b.pieceSquares[i] != nil {
-				for j := 0; j < len(b.pieceSquares[i]); j++ {
-					moves, err := b.MovesForPiece(b.pieceSquares[i][j])
+			if b.PieceSquares[i] != nil {
+				for j := 0; j < len(b.PieceSquares[i]); j++ {
+					moves, err := b.MovesForPiece(b.PieceSquares[i][j])
 					if err != nil {
 						panic(err)
 					}
@@ -160,7 +155,7 @@ func (b Board) WhitePawnMoves(sq int) []Move {
 				moves[mi] = Move{sq, ns, true, false, false, false, WHITE_PAWN, false}
 				mi += 1
 			}
-		} else if b.ep != nil && *b.ep == ns {
+		} else if b.Ep != nil && *b.Ep == ns {
 			moves[mi] = Move{sq, ns, true, false, false, false, WHITE_PAWN, false}
 			mi += 1
 		}
@@ -200,7 +195,7 @@ func (b Board) BlackPawnMoves(sq int) []Move {
 				moves[mi] = Move{sq, ns, true, false, false, false, BLACK_PAWN, false}
 				mi += 1
 			}
-		} else if b.ep != nil && *b.ep == ns {
+		} else if b.Ep != nil && *b.Ep == ns {
 			moves[mi] = Move{sq, ns, true, false, false, false, BLACK_PAWN, false}
 			mi += 1
 		}
@@ -382,7 +377,7 @@ func (b Board) WhiteKingMoves(sq int) []Move {
 }
 
 func (b Board) checkWhiteCastleKingside(attackedSquares map[int]bool) bool {
-	if !b.castle[0] {
+	if !b.Castle[0] {
 		return false
 	}
 
@@ -400,7 +395,7 @@ func (b Board) checkWhiteCastleKingside(attackedSquares map[int]bool) bool {
 }
 
 func (b Board) checkWhiteCastleQueenside(attackedSquares map[int]bool) bool {
-	if !b.castle[1] {
+	if !b.Castle[1] {
 		return false
 	}
 
@@ -449,7 +444,7 @@ func (b Board) BlackKingMoves(sq int) []Move {
 }
 
 func (b Board) checkBlackCastleKingside(attackedSquares map[int]bool) bool {
-	if !b.castle[2] {
+	if !b.Castle[2] {
 		return false
 	}
 
@@ -467,7 +462,7 @@ func (b Board) checkBlackCastleKingside(attackedSquares map[int]bool) bool {
 }
 
 func (b Board) checkBlackCastleQueenside(attackedSquares map[int]bool) bool {
-	if !b.castle[3] {
+	if !b.Castle[3] {
 		return false
 	}
 
@@ -489,7 +484,7 @@ func (b Board) checkBlackCastleQueenside(attackedSquares map[int]bool) bool {
 func (b Board) SquaresAttackedByWhitePieces() []int {
 	attackedSquares := make([]int, 0)
 	for i := WHITE_PAWN; i <= WHITE_KING; i++ {
-		sqs, ok := b.pieceSquares[i]
+		sqs, ok := b.PieceSquares[i]
 		if ok {
 			for _, sq := range sqs {
 				switch i {
@@ -516,7 +511,7 @@ func (b Board) SquaresAttackedByWhitePieces() []int {
 func (b Board) SquaresAttackedByBlackPieces() []int {
 	attackedSquares := make([]int, 0)
 	for i := BLACK_PAWN; i <= BLACK_KING; i++ {
-		sqs, ok := b.pieceSquares[i]
+		sqs, ok := b.PieceSquares[i]
 		if ok {
 			for _, sq := range sqs {
 				switch i {

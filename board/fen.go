@@ -41,12 +41,12 @@ func FromFENString(f string) Board {
 	components := strings.Split(f, " ")
 	pieces, pieceSquares := parsePieceString(components[0])
 	b.pieces = pieces
-	b.pieceSquares = pieceSquares
-	b.side = parseSideToMove(components[1])
-	b.castle = parseCastlePermissions(components[2])
-	b.ep = parseEnPassant(components[3])
-	b.hply = parseHply(components[4])
-	b.ply = parsePly(components[5])
+	b.PieceSquares = pieceSquares
+	b.Side = parseSideToMove(components[1])
+	b.Castle = parseCastlePermissions(components[2])
+	b.Ep = parseEnPassant(components[3])
+	b.Hply = parseHply(components[4])
+	b.Ply = parsePly(components[5])
 	b.hashSeed = newHashSeed()
 	return b
 }

@@ -7,7 +7,7 @@ import (
 
 func Eval(b board.Board) float64 {
 	if b.Checkmate() {
-		if b.Side() == board.WHITE {
+		if b.Side == board.WHITE {
 			return math.Inf(-1)
 		}
 		return math.Inf(1)
