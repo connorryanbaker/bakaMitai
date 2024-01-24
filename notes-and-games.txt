@@ -1,12 +1,17 @@
-test fens - 
+test fens
 why does black capture c2
 r2qkb1r/ppp1pppp/4bn2/6B1/3np3/P1N5/1PPN1PPP/R2QKB1R b KQkq - 0 7
 why doesn't bishop capture g5
 1k1r1b1r/1p2pp1p/p3bn2/2p3p1/4P3/P1N5/1PQBBKPP/3R1R2 w - - 0 17
-
 why does queen capture knight here?
 1k1r1b1r/pp1qpppp/2p1bn2/6B1/4p3/P1N5/1PQNBPPP/3R1RK1 b - - 5 12
 
+to the above 2 moves with black, as search depth is set to 3 and there is no
+quiescence search (continuing to search at depth 0 to evaluate captures in
+position), black side moves seeing 3 ply ahead and assumes it is substantially
+ahead in material. alpha beta pruning will allow us to greatly reduce search
+space, this should allow for quiescence search at terminal nodes to avoid
+blunders like this.
 
 game one
 1. Nc3 Nc6 2. Nd5 Nf6 3. Nxf6+ exf6 4. e4 Bd6 5. Bb5 Nd4 6. e5 fxe5 7. Bc4 O-O
