@@ -2,33 +2,28 @@ package board
 
 type History struct {
 	previousSquareOccupant int
-	move                   Move
+	Move                   Move
 	castle                 [4]bool
 	ep                     *int
 	hply                   int
 	ply                    int
-	hash                   uint64
-}
-
-// todo: make struct fields public where necessary
-func (h History) Move() Move {
-	return h.move
+	Hash                   uint64
 }
 
 func (b *Board) pushHistory(m Move) {
 	h := History{
 		previousSquareOccupant: b.PieceAt(m.To),
-		move:                   m,
-		castle:                 b.castle,
-		ep:                     b.ep,
-		hply:                   b.hply,
-		ply:                    b.ply,
-		hash:                   b.Hash(),
+		Move:                   m,
+		castle:                 b.Castle,
+		ep:                     b.Ep,
+		hply:                   b.Hply,
+		ply:                    b.Ply,
+		Hash:                   b.Hash(),
 	}
-	b.history = append(b.history, h)
+	b.History = append(b.History, h)
 }
 
 func (b *Board) popHistory() {
-	b.history[len(b.history)-1] = History{}
-	b.history = b.history[:len(b.history)-1]
+	b.History[len(b.History)-1] = History{}
+	b.History = b.History[:len(b.History)-1]
 }

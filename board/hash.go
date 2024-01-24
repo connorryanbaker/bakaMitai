@@ -11,20 +11,20 @@ type hash struct {
 
 func (b Board) Hash() uint64 {
 	var h uint64
-	for piece, squares := range b.pieceSquares {
+	for piece, squares := range b.PieceSquares {
 		for _, sq := range squares {
 			h ^= b.hashSeed.pieceSquares[SQ_NAME_TO_SQ_64[sq]][piece-1]
 		}
 	}
-	for i, v := range b.castle {
+	for i, v := range b.Castle {
 		if v {
 			h ^= b.hashSeed.castle[i]
 		}
 	}
-	if b.ep != nil {
-		h ^= b.hashSeed.epFile[epSquareFile(b.ep)]
+	if b.Ep != nil {
+		h ^= b.hashSeed.epFile[epSquareFile(b.Ep)]
 	}
-	if b.side == BLACK {
+	if b.Side == BLACK {
 		h ^= b.hashSeed.blackToMove
 	}
 	return h

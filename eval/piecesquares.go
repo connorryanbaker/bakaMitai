@@ -136,22 +136,25 @@ var PIECE_WEIGHTS = map[int]float64{
 	board.BLACK_BISHOP: -3.5,
 	board.WHITE_ROOK:   3,
 	board.BLACK_ROOK:   -3,
-	// board.WHITE_QUEEN: 1,
-	// board.BLACK_QUEEN: 1,
 	board.WHITE_KING: 10,
 	board.BLACK_KING: -10,
 }
 
 func evalPieceSquares(b board.Board) float64 {
 	var e float64
-	for p, sqs := range b.Pieces() {
-		lookup := PIECE_TO_LOOKUP[p]
-		if p == board.WHITE_KING && b.Pieces()[board.BLACK_QUEEN] == nil {
+	for p, sqs := range b.PieceSquares {
+		lookup, ok := PIECE_TO_LOOKUP[p]
+    if !ok {
+      continue
+    }
+
+		if p == board.WHITE_KING && b.PieceSquares[board.BLACK_QUEEN] == nil {
 			lookup = KING_END_GAME_SQ_VALUES
 		}
-		if p == board.BLACK_KING && b.Pieces()[board.WHITE_QUEEN] == nil {
+		if p == board.BLACK_KING && b.PieceSquares[board.WHITE_QUEEN] == nil {
 			lookup = KING_END_GAME_SQ_VALUES
 		}
+
 		for _, sq := range sqs {
 			v := lookup[board.SQ_NAME_TO_SQ_64[sq]]
 			e += v * PIECE_WEIGHTS[p]

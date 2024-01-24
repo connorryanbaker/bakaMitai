@@ -1405,9 +1405,9 @@ func TestCastling(t *testing.T) {
 	for _, tt := range tests {
 		var moves []Move
 		if tt.side == WHITE {
-			moves = tt.b.WhiteKingMoves(tt.b.pieceSquares[WHITE_KING][0])
+			moves = tt.b.WhiteKingMoves(tt.b.PieceSquares[WHITE_KING][0])
 		} else {
-			moves = tt.b.BlackKingMoves(tt.b.pieceSquares[BLACK_KING][0])
+			moves = tt.b.BlackKingMoves(tt.b.PieceSquares[BLACK_KING][0])
 		}
 
 		if len(moves) != len(tt.moves) {

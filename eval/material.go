@@ -17,7 +17,7 @@ var PIECE_VALUES = map[int]float64{
 
 func evalMaterial(b board.Board) float64 {
 	var e float64
-	for p, sqs := range b.Pieces() {
+	for p, sqs := range b.PieceSquares {
 		e += PIECE_VALUES[p] * float64(len(sqs))
 	}
 	return e

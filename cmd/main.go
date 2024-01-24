@@ -48,8 +48,8 @@ func play(b board.Board) {
 }
 
 func printHistory(b board.Board) {
-	h := b.History()
+	h := b.History
 	for i := 0; i < len(h); i++ {
-		fmt.Printf("%d: FROM: %s TO: %s\n", i+1, board.SQ_NUM_TO_NAME[h[i].Move().From], board.SQ_NUM_TO_NAME[h[i].Move().To])
+		fmt.Printf("%d: FROM: %s TO: %s\n", i+1, board.SQ_NUM_TO_NAME[h[i].Move.From], board.SQ_NUM_TO_NAME[h[i].Move.To])
 	}
 }

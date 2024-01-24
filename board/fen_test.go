@@ -201,25 +201,25 @@ func TestFromFENString(t *testing.T) {
 				t.Errorf("sq: %d, received %d, expected %d", expectation.sq, received, expectation.piece)
 			}
 		}
-		if b.side != tt.side {
-			t.Errorf("side - received %d, expected %d", b.side, tt.side)
+		if b.Side != tt.side {
+			t.Errorf("side - received %d, expected %d", b.Side, tt.side)
 		}
-		if b.castle != tt.castle {
-			t.Errorf("castle - received %v, expected %v", b.castle, tt.castle)
+		if b.Castle != tt.castle {
+			t.Errorf("castle - received %v, expected %v", b.Castle, tt.castle)
 		}
-		if b.ep != tt.ep {
-			t.Errorf("ep - received %p, expected %p", b.ep, tt.ep)
+		if b.Ep != tt.ep {
+			t.Errorf("ep - received %p, expected %p", b.Ep, tt.ep)
 		}
-		if b.hply != tt.hply {
-			t.Errorf("hply - received %d, expected %d", b.hply, tt.hply)
+		if b.Hply != tt.hply {
+			t.Errorf("hply - received %d, expected %d", b.Hply, tt.hply)
 		}
-		if b.ply != tt.ply {
-			t.Errorf("ply - received %d, expected %d", b.ply, tt.ply)
+		if b.Ply != tt.ply {
+			t.Errorf("ply - received %d, expected %d", b.Ply, tt.ply)
 		}
 
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
-			if !equalIntSlices(b.pieceSquares[i], tt.pieceSquares[i]) {
-				t.Errorf("pieceSquares sq: %d - received %v, expected %v", i, b.pieceSquares[i], tt.pieceSquares[i])
+			if !equalIntSlices(b.PieceSquares[i], tt.pieceSquares[i]) {
+				t.Errorf("pieceSquares sq: %d - received %v, expected %v", i, b.PieceSquares[i], tt.pieceSquares[i])
 			}
 		}
 	}

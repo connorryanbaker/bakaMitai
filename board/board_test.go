@@ -221,33 +221,33 @@ func TestMakeMoveCastleKingsideWhite(t *testing.T) {
 		t.Errorf("makemove returned false for legal castle kingside")
 	}
 
-	if b.castle[0] == true || b.castle[1] == true {
-		t.Errorf("castle kingside should disable castle permissions, %v", b.castle)
+	if b.Castle[0] == true || b.Castle[1] == true {
+		t.Errorf("castle kingside should disable castle permissions, %v", b.Castle)
 	}
 
-	if b.ep != nil {
-		t.Errorf("castle kingside should nullify ep, %d", *b.ep)
+	if b.Ep != nil {
+		t.Errorf("castle kingside should nullify ep, %d", *b.Ep)
 	}
 
-	if b.side != BLACK {
-		t.Errorf("castle kingside should flip side to play, %d", b.side)
+	if b.Side != BLACK {
+		t.Errorf("castle kingside should flip side to play, %d", b.Side)
 	}
 
-	if b.hply != 1 {
-		t.Errorf("castle kingside should increment hply, %d", b.ply)
+	if b.Hply != 1 {
+		t.Errorf("castle kingside should increment hply, %d", b.Ply)
 	}
 
-	if b.ply != 1 {
-		t.Errorf("castle kingside should not increment ply after white move, %d", b.ply)
+	if b.Ply != 1 {
+		t.Errorf("castle kingside should not increment ply after white move, %d", b.Ply)
 	}
 
-	if len(b.history) != 1 {
+	if len(b.History) != 1 {
 		t.Errorf("history length should be 1")
 	}
 
-	h := b.history[0]
-	if h.move != m {
-		t.Errorf("history move does not match; received: %v, expected: %v", h.move, m)
+	h := b.History[0]
+	if h.Move != m {
+		t.Errorf("history move does not match; received: %v, expected: %v", h.Move, m)
 	}
 	if h.previousSquareOccupant != EMPTY_SQUARE {
 		t.Errorf("history pso does not match; received: %d, expected: %d", h.previousSquareOccupant, EMPTY_SQUARE)
@@ -268,7 +268,7 @@ func TestMakeMoveCastleKingsideWhite(t *testing.T) {
 	}
 
 	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
-		sqs := b.pieceSquares[i]
+		sqs := b.PieceSquares[i]
 		var expected []int
 		switch i {
 		case WHITE_PAWN:
@@ -324,33 +324,33 @@ func TestMakeMoveCastleKingsideBlack(t *testing.T) {
 		t.Errorf("makemove returned false for legal castle kingside")
 	}
 
-	if b.castle[2] == true || b.castle[3] == true {
-		t.Errorf("castle kingside should disable castle permissions, %v", b.castle)
+	if b.Castle[2] == true || b.Castle[3] == true {
+		t.Errorf("castle kingside should disable castle permissions, %v", b.Castle)
 	}
 
-	if b.ep != nil {
-		t.Errorf("castle kingside should nullify ep, %d", *b.ep)
+	if b.Ep != nil {
+		t.Errorf("castle kingside should nullify ep, %d", *b.Ep)
 	}
 
-	if b.side != WHITE {
-		t.Errorf("castle kingside should flip side to play, %d", b.side)
+	if b.Side != WHITE {
+		t.Errorf("castle kingside should flip side to play, %d", b.Side)
 	}
 
-	if b.hply != 1 {
-		t.Errorf("castle kingside should increment hply, %d", b.ply)
+	if b.Hply != 1 {
+		t.Errorf("castle kingside should increment hply, %d", b.Ply)
 	}
 
-	if b.ply != 2 {
-		t.Errorf("castle kingside should increment ply after black move, %d", b.ply)
+	if b.Ply != 2 {
+		t.Errorf("castle kingside should increment ply after black move, %d", b.Ply)
 	}
 
-	if len(b.history) != 1 {
+	if len(b.History) != 1 {
 		t.Errorf("history length should be 1")
 	}
 
-	h := b.history[0]
-	if h.move != m {
-		t.Errorf("history move does not match; received: %v, expected: %v", h.move, m)
+	h := b.History[0]
+	if h.Move != m {
+		t.Errorf("history move does not match; received: %v, expected: %v", h.Move, m)
 	}
 	if h.previousSquareOccupant != EMPTY_SQUARE {
 		t.Errorf("history pso does not match; received: %d, expected: %d", h.previousSquareOccupant, EMPTY_SQUARE)
@@ -372,7 +372,7 @@ func TestMakeMoveCastleKingsideBlack(t *testing.T) {
 	}
 
 	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
-		sqs := b.pieceSquares[i]
+		sqs := b.PieceSquares[i]
 		var expected []int
 		switch i {
 		case WHITE_PAWN:
@@ -428,33 +428,33 @@ func TestMakeMoveCastleQueensideWhite(t *testing.T) {
 		t.Errorf("makemove returned false for legal castle queenside")
 	}
 
-	if b.castle[0] == true || b.castle[1] == true {
-		t.Errorf("castle queenside should disable castle permissions, %v", b.castle)
+	if b.Castle[0] == true || b.Castle[1] == true {
+		t.Errorf("castle queenside should disable castle permissions, %v", b.Castle)
 	}
 
-	if b.ep != nil {
-		t.Errorf("castle queenside should nullify ep, %d", *b.ep)
+	if b.Ep != nil {
+		t.Errorf("castle queenside should nullify ep, %d", *b.Ep)
 	}
 
-	if b.side != BLACK {
-		t.Errorf("castle queenside should flip side to play, %d", b.side)
+	if b.Side != BLACK {
+		t.Errorf("castle queenside should flip side to play, %d", b.Side)
 	}
 
-	if b.hply != 1 {
-		t.Errorf("castle queenside should increment hply, %d", b.ply)
+	if b.Hply != 1 {
+		t.Errorf("castle queenside should increment hply, %d", b.Ply)
 	}
 
-	if b.ply != 1 {
-		t.Errorf("castle queenside should not increment ply after white move, %d", b.ply)
+	if b.Ply != 1 {
+		t.Errorf("castle queenside should not increment ply after white move, %d", b.Ply)
 	}
 
-	if len(b.history) != 1 {
+	if len(b.History) != 1 {
 		t.Errorf("history length should be 1")
 	}
 
-	h := b.history[0]
-	if h.move != m {
-		t.Errorf("history move does not match; received: %v, expected: %v", h.move, m)
+	h := b.History[0]
+	if h.Move != m {
+		t.Errorf("history move does not match; received: %v, expected: %v", h.Move, m)
 	}
 	if h.previousSquareOccupant != EMPTY_SQUARE {
 		t.Errorf("history pso does not match; received: %d, expected: %d", h.previousSquareOccupant, EMPTY_SQUARE)
@@ -475,7 +475,7 @@ func TestMakeMoveCastleQueensideWhite(t *testing.T) {
 		}
 	}
 	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
-		sqs := b.pieceSquares[i]
+		sqs := b.PieceSquares[i]
 		var expected []int
 		switch i {
 		case WHITE_PAWN:
@@ -531,32 +531,32 @@ func TestMakeMoveCastleQueensideBlack(t *testing.T) {
 		t.Errorf("makemove returned false for legal castle queenside")
 	}
 
-	if b.castle[2] == true || b.castle[3] == true {
-		t.Errorf("castle queenside should disable castle permissions, %v", b.castle)
+	if b.Castle[2] == true || b.Castle[3] == true {
+		t.Errorf("castle queenside should disable castle permissions, %v", b.Castle)
 	}
 
-	if b.ep != nil {
-		t.Errorf("castle queenside should nullify ep, %d", *b.ep)
+	if b.Ep != nil {
+		t.Errorf("castle queenside should nullify ep, %d", *b.Ep)
 	}
 
-	if b.side != WHITE {
-		t.Errorf("castle queenside should flip side to play, %d", b.side)
+	if b.Side != WHITE {
+		t.Errorf("castle queenside should flip side to play, %d", b.Side)
 	}
 
-	if b.hply != 1 {
-		t.Errorf("castle queenside should increment hply, %d", b.hply)
+	if b.Hply != 1 {
+		t.Errorf("castle queenside should increment hply, %d", b.Hply)
 	}
 
-	if b.ply != 2 {
-		t.Errorf("castle queenside should increment ply after black move, %d", b.ply)
+	if b.Ply != 2 {
+		t.Errorf("castle queenside should increment ply after black move, %d", b.Ply)
 	}
-	if len(b.history) != 1 {
+	if len(b.History) != 1 {
 		t.Errorf("history length should be 1")
 	}
 
-	h := b.history[0]
-	if h.move != m {
-		t.Errorf("history move does not match; received: %v, expected: %v", h.move, m)
+	h := b.History[0]
+	if h.Move != m {
+		t.Errorf("history move does not match; received: %v, expected: %v", h.Move, m)
 	}
 	if h.previousSquareOccupant != EMPTY_SQUARE {
 		t.Errorf("history pso does not match; received: %d, expected: %d", h.previousSquareOccupant, EMPTY_SQUARE)
@@ -577,7 +577,7 @@ func TestMakeMoveCastleQueensideBlack(t *testing.T) {
 		}
 	}
 	for i := WHITE_PAWN; i <= BLACK_KING; i++ {
-		sqs := b.pieceSquares[i]
+		sqs := b.PieceSquares[i]
 		var expected []int
 		switch i {
 		case WHITE_PAWN:
@@ -798,33 +798,33 @@ func TestMakeMoveEPCapture(t *testing.T) {
 			t.Errorf("%s MakeMove returned unexpected result: %t, expected %t", tt.d, res, tt.res)
 		}
 		for i, v := range tt.castle {
-			if tt.b.castle[i] != v {
-				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.castle, tt.castle)
+			if tt.b.Castle[i] != v {
+				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.Castle, tt.castle)
 			}
 		}
-		if tt.b.ep != nil && tt.ep != nil && *tt.b.ep != *tt.ep {
-			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.ep, *tt.ep)
+		if tt.b.Ep != nil && tt.ep != nil && *tt.b.Ep != *tt.ep {
+			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.Ep, *tt.ep)
 		}
-		if tt.b.side != tt.side {
-			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.side, tt.side)
+		if tt.b.Side != tt.side {
+			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.Side, tt.side)
 		}
-		if tt.b.hply != tt.hply {
-			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.hply, tt.hply)
+		if tt.b.Hply != tt.hply {
+			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.Hply, tt.hply)
 		}
-		if tt.b.ply != tt.ply {
-			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
+		if tt.b.Ply != tt.ply {
+			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.Ply, tt.ply)
 		}
-		if tt.h == nil && len(tt.b.history) != 0 {
-			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.history)
+		if tt.h == nil && len(tt.b.History) != 0 {
+			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.History)
 		} else if tt.h != nil {
-			if len(tt.b.history) != 1 {
-				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.history)
+			if len(tt.b.History) != 1 {
+				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.History)
 			}
-			h := tt.b.history[0]
+			h := tt.b.History[0]
 			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
 				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
-			if !equalMoves(tt.m, h.move) {
+			if !equalMoves(tt.m, h.Move) {
 				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
 			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {
@@ -843,7 +843,7 @@ func TestMakeMoveEPCapture(t *testing.T) {
 			}
 		}
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
-			sqs := tt.b.pieceSquares[i]
+			sqs := tt.b.PieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
 				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
@@ -1021,33 +1021,33 @@ func TestMakeMovePromotion(t *testing.T) {
 			t.Errorf("%s MakeMove returned unexpected result: %t, expected %t", tt.d, res, tt.res)
 		}
 		for i, v := range tt.castle {
-			if tt.b.castle[i] != v {
-				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.castle, tt.castle)
+			if tt.b.Castle[i] != v {
+				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.Castle, tt.castle)
 			}
 		}
-		if tt.b.ep != nil && tt.ep != nil && *tt.b.ep != *tt.ep {
-			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.ep, *tt.ep)
+		if tt.b.Ep != nil && tt.ep != nil && *tt.b.Ep != *tt.ep {
+			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.Ep, *tt.ep)
 		}
-		if tt.b.side != tt.side {
-			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.side, tt.side)
+		if tt.b.Side != tt.side {
+			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.Side, tt.side)
 		}
-		if tt.b.hply != tt.hply {
-			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.hply, tt.hply)
+		if tt.b.Hply != tt.hply {
+			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.Hply, tt.hply)
 		}
-		if tt.b.ply != tt.ply {
-			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
+		if tt.b.Ply != tt.ply {
+			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.Ply, tt.ply)
 		}
-		if tt.h == nil && len(tt.b.history) != 0 {
-			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.history)
+		if tt.h == nil && len(tt.b.History) != 0 {
+			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.History)
 		} else if tt.h != nil {
-			if len(tt.b.history) != 1 {
-				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.history)
+			if len(tt.b.History) != 1 {
+				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.History)
 			}
-			h := tt.b.history[0]
+			h := tt.b.History[0]
 			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
 				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
-			if !equalMoves(tt.m, h.move) {
+			if !equalMoves(tt.m, h.Move) {
 				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
 			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {
@@ -1066,7 +1066,7 @@ func TestMakeMovePromotion(t *testing.T) {
 			}
 		}
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
-			sqs := tt.b.pieceSquares[i]
+			sqs := tt.b.PieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
 				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
@@ -1327,33 +1327,33 @@ func TestMakeMoveCapture(t *testing.T) {
 			t.Errorf("%s MakeMove returned unexpected result: %t, expected %t", tt.d, res, tt.res)
 		}
 		for i, v := range tt.castle {
-			if tt.b.castle[i] != v {
-				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.castle, tt.castle)
+			if tt.b.Castle[i] != v {
+				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.Castle, tt.castle)
 			}
 		}
-		if tt.b.ep != nil && tt.ep != nil && *tt.b.ep != *tt.ep {
-			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.ep, *tt.ep)
+		if tt.b.Ep != nil && tt.ep != nil && *tt.b.Ep != *tt.ep {
+			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.Ep, *tt.ep)
 		}
-		if tt.b.side != tt.side {
-			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.side, tt.side)
+		if tt.b.Side != tt.side {
+			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.Side, tt.side)
 		}
-		if tt.b.hply != tt.hply {
-			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.hply, tt.hply)
+		if tt.b.Hply != tt.hply {
+			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.Hply, tt.hply)
 		}
-		if tt.b.ply != tt.ply {
-			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
+		if tt.b.Ply != tt.ply {
+			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.Ply, tt.ply)
 		}
-		if tt.h == nil && len(tt.b.history) != 0 {
-			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.history)
+		if tt.h == nil && len(tt.b.History) != 0 {
+			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.History)
 		} else if tt.h != nil {
-			if len(tt.b.history) != 1 {
-				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.history)
+			if len(tt.b.History) != 1 {
+				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.History)
 			}
-			h := tt.b.history[0]
+			h := tt.b.History[0]
 			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
 				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
-			if !equalMoves(tt.m, h.move) {
+			if !equalMoves(tt.m, h.Move) {
 				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
 			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {
@@ -1372,7 +1372,7 @@ func TestMakeMoveCapture(t *testing.T) {
 			}
 		}
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
-			sqs := tt.b.pieceSquares[i]
+			sqs := tt.b.PieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
 				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
@@ -1892,33 +1892,33 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 			t.Errorf("%s MakeMove returned unexpected result: %t, expected %t", tt.d, res, tt.res)
 		}
 		for i, v := range tt.castle {
-			if tt.b.castle[i] != v {
-				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.castle, tt.castle)
+			if tt.b.Castle[i] != v {
+				t.Errorf("%s MakeMove produced unexpected castle permission: %v, expected %v", tt.d, tt.b.Castle, tt.castle)
 			}
 		}
-		if tt.b.ep != nil && tt.ep != nil && *tt.b.ep != *tt.ep {
-			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.ep, *tt.ep)
+		if tt.b.Ep != nil && tt.ep != nil && *tt.b.Ep != *tt.ep {
+			t.Errorf("%s MakeMove resulted in unexpected ep: %d, expected %d", tt.d, *tt.b.Ep, *tt.ep)
 		}
-		if tt.b.side != tt.side {
-			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.side, tt.side)
+		if tt.b.Side != tt.side {
+			t.Errorf("%s MakeMove resulted in unexpected side: %d, expected %d", tt.d, tt.b.Side, tt.side)
 		}
-		if tt.b.hply != tt.hply {
-			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.hply, tt.hply)
+		if tt.b.Hply != tt.hply {
+			t.Errorf("%s MakeMove resulted in unexpected hply: %d, expected %d", tt.d, tt.b.Hply, tt.hply)
 		}
-		if tt.b.ply != tt.ply {
-			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.ply, tt.ply)
+		if tt.b.Ply != tt.ply {
+			t.Errorf("%s MakeMove resulted in unexpected ply: %d, expected %d", tt.d, tt.b.Ply, tt.ply)
 		}
-		if tt.h == nil && len(tt.b.history) != 0 {
-			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.history)
+		if tt.h == nil && len(tt.b.History) != 0 {
+			t.Errorf("%s MakeMove resulted in history when no history was expected: %v", tt.d, tt.b.History)
 		} else if tt.h != nil {
-			if len(tt.b.history) != 1 {
-				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.history)
+			if len(tt.b.History) != 1 {
+				t.Errorf("%s len MakeMove resulted in unexpected history: %v", tt.d, tt.b.History)
 			}
-			h := tt.b.history[0]
+			h := tt.b.History[0]
 			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
 				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
-			if !equalMoves(tt.m, h.move) {
+			if !equalMoves(tt.m, h.Move) {
 				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
 			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {
@@ -1937,7 +1937,7 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 			}
 		}
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
-			sqs := tt.b.pieceSquares[i]
+			sqs := tt.b.PieceSquares[i]
 			if len(sqs) != len(tt.pieceSquares[i]) {
 				t.Errorf("p: %d, expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.pieceSquares[i], tt.m.To)
 			}
@@ -2887,32 +2887,32 @@ func TestUnmakeMove(t *testing.T) {
 		if !res {
 			t.Errorf("%s: MakeMove returned false: %v", tt.d, tt.m)
 		}
-		for i, v := range tt.b.castle {
+		for i, v := range tt.b.Castle {
 			if v != tt.afterMake.castle[i] {
-				t.Errorf("%s: MakeMove resulted in unexpected castle; received: %v, expected: %v", tt.d, tt.b.castle, tt.afterMake.castle)
+				t.Errorf("%s: MakeMove resulted in unexpected castle; received: %v, expected: %v", tt.d, tt.b.Castle, tt.afterMake.castle)
 			}
 		}
-		if (tt.b.ep != nil && tt.afterMake.ep == nil) || (tt.b.ep == nil && tt.afterMake.ep != nil) {
-			t.Errorf("%s: MakeMove resulted in unexpected ep; received: %v, expected: %v", tt.d, tt.b.ep, tt.afterMake.ep)
-		} else if tt.b.ep != nil && tt.afterMake.ep != nil {
-			if *tt.b.ep != *tt.afterMake.ep {
-				t.Errorf("%s: MakeMove resulted in unexpected ep; received: %d, expected: %d", tt.d, *tt.b.ep, *tt.afterMake.ep)
+		if (tt.b.Ep != nil && tt.afterMake.ep == nil) || (tt.b.Ep == nil && tt.afterMake.ep != nil) {
+			t.Errorf("%s: MakeMove resulted in unexpected ep; received: %v, expected: %v", tt.d, tt.b.Ep, tt.afterMake.ep)
+		} else if tt.b.Ep != nil && tt.afterMake.ep != nil {
+			if *tt.b.Ep != *tt.afterMake.ep {
+				t.Errorf("%s: MakeMove resulted in unexpected ep; received: %d, expected: %d", tt.d, *tt.b.Ep, *tt.afterMake.ep)
 			}
 		}
-		if tt.b.hply != tt.afterMake.hply {
-			t.Errorf("%s: MakeMove resulted in unexpected hply; received: %d, expected: %d", tt.d, tt.b.hply, tt.afterMake.hply)
+		if tt.b.Hply != tt.afterMake.hply {
+			t.Errorf("%s: MakeMove resulted in unexpected hply; received: %d, expected: %d", tt.d, tt.b.Hply, tt.afterMake.hply)
 		}
-		if tt.b.ply != tt.afterMake.ply {
-			t.Errorf("%s: MakeMove resulted in unexpected ply; received: %d, expected: %d", tt.d, tt.b.ply, tt.afterMake.ply)
+		if tt.b.Ply != tt.afterMake.ply {
+			t.Errorf("%s: MakeMove resulted in unexpected ply; received: %d, expected: %d", tt.d, tt.b.Ply, tt.afterMake.ply)
 		}
-		if tt.b.side != tt.afterMake.side {
-			t.Errorf("%s: MakeMove resulted in unexpected side; received: %d, expected: %d", tt.d, tt.b.side, tt.afterMake.side)
+		if tt.b.Side != tt.afterMake.side {
+			t.Errorf("%s: MakeMove resulted in unexpected side; received: %d, expected: %d", tt.d, tt.b.Side, tt.afterMake.side)
 		}
-		if len(tt.b.history) != tt.afterMake.hlen {
-			t.Errorf("%s: MakeMove resulted in unexpected history; received: %v, expected len: %d", tt.d, tt.b.history, tt.afterMake.hlen)
+		if len(tt.b.History) != tt.afterMake.hlen {
+			t.Errorf("%s: MakeMove resulted in unexpected history; received: %v, expected len: %d", tt.d, tt.b.History, tt.afterMake.hlen)
 		}
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
-			sqs := tt.b.pieceSquares[i]
+			sqs := tt.b.PieceSquares[i]
 			if len(sqs) != len(tt.afterMake.pieceSquares[i]) {
 				t.Errorf("%s p: %d, MakeMove expected and pieceSquares have different lengths: %v %v %d", tt.d, i, sqs, tt.afterMake.pieceSquares[i], tt.m.To)
 			}
@@ -2923,32 +2923,32 @@ func TestUnmakeMove(t *testing.T) {
 			}
 		}
 		tt.b.UnmakeMove()
-		for i, v := range tt.b.castle {
+		for i, v := range tt.b.Castle {
 			if v != tt.afterUnmake.castle[i] {
-				t.Errorf("%s: UnmakeMove resulted in unexpected castle; received: %v, expected: %v", tt.d, tt.b.castle, tt.afterUnmake.castle)
+				t.Errorf("%s: UnmakeMove resulted in unexpected castle; received: %v, expected: %v", tt.d, tt.b.Castle, tt.afterUnmake.castle)
 			}
 		}
-		if (tt.b.ep != nil && tt.afterUnmake.ep == nil) || (tt.b.ep == nil && tt.afterUnmake.ep != nil) {
-			t.Errorf("%s: UnmakeMove resulted in unexpected ep; received: %v, expected: %v", tt.d, tt.b.ep, tt.afterUnmake.ep)
-		} else if tt.b.ep != nil && tt.afterUnmake.ep != nil {
-			if *tt.b.ep != *tt.afterUnmake.ep {
-				t.Errorf("%s: UnmakeMove resulted in unexpected ep; received: %d, expected: %d", tt.d, *tt.b.ep, *tt.afterUnmake.ep)
+		if (tt.b.Ep != nil && tt.afterUnmake.ep == nil) || (tt.b.Ep == nil && tt.afterUnmake.ep != nil) {
+			t.Errorf("%s: UnmakeMove resulted in unexpected ep; received: %v, expected: %v", tt.d, tt.b.Ep, tt.afterUnmake.ep)
+		} else if tt.b.Ep != nil && tt.afterUnmake.ep != nil {
+			if *tt.b.Ep != *tt.afterUnmake.ep {
+				t.Errorf("%s: UnmakeMove resulted in unexpected ep; received: %d, expected: %d", tt.d, *tt.b.Ep, *tt.afterUnmake.ep)
 			}
 		}
-		if tt.b.hply != tt.afterUnmake.hply {
-			t.Errorf("%s: UnmakeMove resulted in unexpected hply; received: %d, expected: %d", tt.d, tt.b.hply, tt.afterUnmake.hply)
+		if tt.b.Hply != tt.afterUnmake.hply {
+			t.Errorf("%s: UnmakeMove resulted in unexpected hply; received: %d, expected: %d", tt.d, tt.b.Hply, tt.afterUnmake.hply)
 		}
-		if tt.b.ply != tt.afterUnmake.ply {
-			t.Errorf("%s: UnmakeMove resulted in unexpected ply; received: %d, expected: %d", tt.d, tt.b.ply, tt.afterUnmake.ply)
+		if tt.b.Ply != tt.afterUnmake.ply {
+			t.Errorf("%s: UnmakeMove resulted in unexpected ply; received: %d, expected: %d", tt.d, tt.b.Ply, tt.afterUnmake.ply)
 		}
-		if tt.b.side != tt.afterUnmake.side {
-			t.Errorf("%s: UnmakeMove resulted in unexpected side; received: %d, expected: %d", tt.d, tt.b.side, tt.afterUnmake.side)
+		if tt.b.Side != tt.afterUnmake.side {
+			t.Errorf("%s: UnmakeMove resulted in unexpected side; received: %d, expected: %d", tt.d, tt.b.Side, tt.afterUnmake.side)
 		}
-		if len(tt.b.history) != tt.afterUnmake.hlen {
-			t.Errorf("%s: UnmakeMove resulted in unexpected history; received: %v, expected len: %d", tt.d, tt.b.history, tt.afterUnmake.hlen)
+		if len(tt.b.History) != tt.afterUnmake.hlen {
+			t.Errorf("%s: UnmakeMove resulted in unexpected history; received: %v, expected len: %d", tt.d, tt.b.History, tt.afterUnmake.hlen)
 		}
 		for i := WHITE_PAWN; i <= BLACK_KING; i++ {
-			sqs := tt.b.pieceSquares[i]
+			sqs := tt.b.PieceSquares[i]
 			if len(sqs) != len(tt.afterUnmake.pieceSquares[i]) {
 				t.Errorf("p: %d, UnmakeMove expected and pieceSquares have different lengths: %v %v %d", i, sqs, tt.afterUnmake.pieceSquares[i], tt.m.To)
 			}
@@ -3161,7 +3161,7 @@ func TestFiftyMoveDraw(t *testing.T) {
 		false,
 	})
 	if b.FiftyMoveDraw() != true {
-		t.Errorf("hply of %d should indicate 50 move draw; received: false, expected true", b.hply)
+		t.Errorf("hply of %d should indicate 50 move draw; received: false, expected true", b.Hply)
 	}
 }
 

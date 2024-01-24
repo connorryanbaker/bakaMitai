@@ -8,15 +8,14 @@ import (
 // TODO: alphabeta pruning and move sorting
 
 func Search(b *board.Board, depth int) (float64, board.Move) {
-	maximizing := b.Side() == board.WHITE
+	maximizing := b.Side == board.WHITE
 	return minimax(b, maximizing, depth)
 }
 
 func minimax(b *board.Board, maximizing bool, depth int) (float64, board.Move) {
 	if depth == 0 || len(b.LegalMoves()) == 0 {
 		eval := eval.Eval(*b)
-		history := b.History()
-		return eval, history[len(history)-1].Move()
+		return eval, b.History[len(b.History)-1].Move
 	}
 	moves := b.LegalMoves()
 	evals := make([]float64, len(moves))
