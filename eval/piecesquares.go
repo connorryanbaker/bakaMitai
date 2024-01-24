@@ -29,23 +29,34 @@ var BLACK_PAWN_SQ_VALUES = [64]float64{
 
 var KNIGHT_SQ_VALUES = [64]float64{
 	-50, -40, -30, -30, -30, -30, -40, -50,
-	-40, -20, 0, 0, 0, 0, -20, -40,
-	-30, 0, 10, 15, 15, 10, 0, -30,
-	-30, 5, 15, 20, 20, 15, 5, -30,
-	-30, 0, 15, 20, 20, 15, 0, -30,
-	-30, 5, 10, 15, 15, 10, 5, -30,
-	-40, -20, 0, 5, 5, 0, -20, -40,
+	-40, -20,   0,   0,   0,   0, -20, -40,
+	-30,   0,  15,  15,  15,  15,   0, -30,
+	-30,   5,  20,  20,  20,  20,   5, -30,
+	-30,   0,  20,  20,  20,  20,   0, -30,
+	-30,   5,  15,  15,  15,  15,   5, -30,
+	-40, -20,   0,   5,   5,   0, -20, -40,
 	-50, -40, -30, -30, -30, -30, -40, -50,
 }
 
-var BISHOP_SQ_VALUES = [64]float64{
+var WHITE_BISHOP_SQ_VALUES = [64]float64{
 	-20, -10, -10, -10, -10, -10, -10, -20,
-	-10, 0, 0, 0, 0, 0, 0, -10,
-	-10, 0, 5, 10, 10, 5, 0, -10,
-	-10, 5, 5, 10, 10, 5, 5, -10,
-	-10, 0, 10, 10, 10, 10, 0, -10,
-	-10, 10, 10, 10, 10, 10, 10, -10,
-	-10, 5, 0, 0, 0, 0, 5, -10,
+	-10,   0,   0,   0,   0,   0,   0, -10,
+	-10,   0,   5,  10,  10,   5,   0,   5,
+	-10,   5,   5,  10,  10,   5,   5, -10,
+	-10,   0,  10,  10,  10,  10,   0, -10,
+	-10,  10,  10,  10,  10,  10,  10, -10,
+	-10,   5,   0,   0,   0,   0,   5, -10,
+	-20, -10, -10, -10, -10, -10, -10, -20,
+}
+
+var BLACK_BISHOP_SQ_VALUES = [64]float64{
+	-20, -10, -10, -10, -10, -10, -10, -20,
+	-10,   5,   0,   0,   0,   0,   5, -10,
+	-10,  10,  10,  10,  10,  10,  10, -10,
+	-10,   0,  10,  10,  10,  10,   0, -10,
+	-10,   5,   5,  10,  10,   5,   5, -10,
+	-10,   0,   5,  10,  10,   5,   0,   5,
+	-10,   0,   0,   0,   0,   0,   0, -10,
 	-20, -10, -10, -10, -10, -10, -10, -20,
 }
 
@@ -108,25 +119,23 @@ var PIECE_TO_LOOKUP = map[int][64]float64{
 	board.BLACK_PAWN:   BLACK_PAWN_SQ_VALUES,
 	board.WHITE_KNIGHT: KNIGHT_SQ_VALUES,
 	board.BLACK_KNIGHT: KNIGHT_SQ_VALUES,
-	board.WHITE_BISHOP: BISHOP_SQ_VALUES,
-	board.BLACK_BISHOP: BISHOP_SQ_VALUES,
+	board.WHITE_BISHOP: WHITE_BISHOP_SQ_VALUES,
+	board.BLACK_BISHOP: BLACK_BISHOP_SQ_VALUES,
 	board.WHITE_ROOK:   WHITE_ROOK_SQ_VALUES,
 	board.BLACK_ROOK:   BLACK_ROOK_SQ_VALUES,
-	// board.WHITE_QUEEN: QUEEN_SQ_VALUES,
-	// board.BLACK_QUEEN: QUEEN_SQ_VALUES, // TODO: flip / edit
 	board.WHITE_KING: WHITE_KING_MIDDLE_GAME_SQ_VALUES,
 	board.BLACK_KING: BLACK_KING_MIDDLE_GAME_SQ_VALUES,
 }
 
 var PIECE_WEIGHTS = map[int]float64{
-	board.WHITE_PAWN:   1,
-	board.BLACK_PAWN:   -1,
+	board.WHITE_PAWN:   3,
+	board.BLACK_PAWN:   -3,
 	board.WHITE_KNIGHT: 3,
 	board.BLACK_KNIGHT: -3,
 	board.WHITE_BISHOP: 3.5,
 	board.BLACK_BISHOP: -3.5,
-	board.WHITE_ROOK:   5,
-	board.BLACK_ROOK:   -5,
+	board.WHITE_ROOK:   3,
+	board.BLACK_ROOK:   -3,
 	// board.WHITE_QUEEN: 1,
 	// board.BLACK_QUEEN: 1,
 	board.WHITE_KING: 10,
