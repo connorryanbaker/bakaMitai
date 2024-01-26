@@ -18,8 +18,12 @@ func main() {
 func play(b board.Board) {
 	for true {
 		b.Print()
-		m := search.Search(&b, 4)
-		b.MakeMove(m[0])
+		m := search.Search(&b, 5)
+		if m[0].IsNull() {
+			b.MakeMove(b.LegalMoves()[0])
+		} else {
+			b.MakeMove(m[0])
+		}
 		if b.Checkmate() {
 			b.Print()
 			fmt.Println("checkmate!")

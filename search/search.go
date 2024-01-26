@@ -8,7 +8,7 @@ import (
 	"sort"
 )
 
-// TODO: quiescence
+// TODO: quiescence and transposition tables
 
 func Search(b *board.Board, depth int) []board.Move {
 	maximizing := b.Side == board.WHITE

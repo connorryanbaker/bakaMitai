@@ -31,6 +31,13 @@ type Move struct {
 	DoublePawnPush  bool
 }
 
+func (m Move) IsNull() bool {
+	if m.From == 0 && m.To == 0 {
+		return true
+	}
+	return false
+}
+
 func (m Move) Score() int {
 	s := 0
 	if m.Promote {
