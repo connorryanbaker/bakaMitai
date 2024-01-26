@@ -3183,6 +3183,9 @@ func TestUnmakeMoveRegression(t *testing.T) {
 		{
 			"r2qkbnr/ppp1pppp/2n5/1B6/4p1P1/5b1P/PPPP1P2/RNBQK2R b KQkq - 0 6",
 		},
+		{
+			"r2qk1nr/ppp1bpp1/2n1p2p/5b2/4N3/PP1B1N2/1BPP1PPP/R2Q1RK1 b kq - 0 1",
+		},
 	}
 	for _, tt := range tests {
 		b := FromFENString(tt.f)

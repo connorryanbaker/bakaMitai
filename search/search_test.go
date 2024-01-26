@@ -5,6 +5,8 @@ import (
 	"testing"
 )
 
+// TODO: test picking move in lost position
+// may benefit from switching to negamax eval calls in root
 func TestFindMateInOne(t *testing.T) {
 	var tests = []struct {
 		b            board.Board

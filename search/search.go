@@ -4,6 +4,7 @@ import (
 	"github.com/connorryanbaker/engine/board"
 	"github.com/connorryanbaker/engine/eval"
 
+	"fmt"
 	"math"
 	"sort"
 )
@@ -30,9 +31,22 @@ func alphaBeta(b *board.Board, maximizing bool, alpha, beta float64, depth int, 
 	if maximizing {
 		max := math.Inf(-1)
 		for _, m := range moves {
+			bh := b.Hash()
 			b.MakeMove(m)
 			v := alphaBeta(b, !maximizing, alpha, beta, depth-1, line)
 			b.UnmakeMove()
+			if b.Hash() != bh {
+				fmt.Println(depth)
+				for _, m := range b.MoveHistory() {
+					m.Print()
+				}
+				fmt.Println(m)
+				for len(b.History) > 0 {
+					b.Print()
+					b.UnmakeMove()
+				}
+				panic(m.ToString())
+			}
 			if max < v {
 				max = v
 				line[len(line)-depth] = m
@@ -48,9 +62,22 @@ func alphaBeta(b *board.Board, maximizing bool, alpha, beta float64, depth int, 
 	}
 	min := math.Inf(1)
 	for _, m := range moves {
+		bh := b.Hash()
 		b.MakeMove(m)
 		v := alphaBeta(b, !maximizing, alpha, beta, depth-1, line)
 		b.UnmakeMove()
+		if b.Hash() != bh {
+			fmt.Println(depth)
+			for _, m := range b.MoveHistory() {
+				m.Print()
+			}
+			fmt.Println(m)
+			for len(b.History) > 0 {
+				b.Print()
+				b.UnmakeMove()
+			}
+			panic(m.ToString())
+		}
 		if v < min {
 			min = v
 			line[len(line)-depth] = m

@@ -212,17 +212,26 @@ func (b *Board) handlePromotion(m Move) bool {
 	return true
 }
 
+// TODO: explicit tests and cleanup this is ugly
 func (b *Board) updateCastlePermissions(m Move, p int) {
+	if m.Capture && m.To == IH1 {
+		b.Castle[0] = false
+		return
+	}
+	if m.Capture && m.To == IA1 {
+		b.Castle[1] = false
+		return
+	}
+	if m.Capture && m.To == IH8 {
+		b.Castle[2] = false
+		return
+	}
+	if m.Capture && m.To == IA8 {
+		b.Castle[3] = false
+		return
+	}
 	if b.Side == WHITE {
 		if !b.Castle[0] && !b.Castle[1] {
-			return
-		}
-		if m.Capture && m.To == IH8 {
-			b.Castle[2] = false
-			return
-		}
-		if m.Capture && m.To == IA8 {
-			b.Castle[3] = false
 			return
 		}
 		if p != WHITE_ROOK && p != WHITE_KING {
@@ -242,14 +251,6 @@ func (b *Board) updateCastlePermissions(m Move, p int) {
 		}
 	} else {
 		if !b.Castle[2] && !b.Castle[3] {
-			return
-		}
-		if m.Capture && m.To == IH1 {
-			b.Castle[0] = false
-			return
-		}
-		if m.Capture && m.To == IA1 {
-			b.Castle[1] = false
 			return
 		}
 		if p != BLACK_ROOK && p != BLACK_KING {
