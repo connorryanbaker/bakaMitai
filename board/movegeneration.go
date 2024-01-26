@@ -31,6 +31,39 @@ type Move struct {
 	DoublePawnPush  bool
 }
 
+func (m Move) Score() int {
+	s := 0
+	if m.Promote {
+		s += 100
+	}
+	if m.Capture {
+		s += 50
+	}
+	if m.CastleKingside || m.CastleQueenside {
+		s += 50
+	}
+	if m.DoublePawnPush {
+		s += 20
+	}
+	switch m.PromotionPiece {
+	case WHITE_KING, BLACK_KING, WHITE_PAWN, BLACK_PAWN:
+		s += 5
+	case WHITE_KNIGHT, BLACK_KNIGHT, WHITE_BISHOP, BLACK_BISHOP:
+		s += 10
+	case WHITE_QUEEN, BLACK_QUEEN, WHITE_ROOK, BLACK_ROOK:
+		s += 15
+	}
+	return s
+}
+
+func (m Move) Print() {
+	fmt.Printf("%s", m.ToString())
+}
+
+func (m Move) ToString() string {
+	return fmt.Sprintf("%s - %s\n", SQ_NUM_TO_NAME[m.From], SQ_NUM_TO_NAME[m.To])
+}
+
 func equalMoves(m1, m2 Move) bool {
 	if m1.From != m2.From {
 		return false
@@ -60,6 +93,16 @@ func equalMoves(m1, m2 Move) bool {
 }
 
 // these need tests
+
+func (b Board) Captures() []Move {
+	c := make([]Move, 0)
+	for _, m := range b.LegalMoves() {
+		if m.Capture {
+			c = append(c, m)
+		}
+	}
+	return c
+}
 
 func (b Board) LegalMoves() []Move {
 	if b.legalMoves != nil {

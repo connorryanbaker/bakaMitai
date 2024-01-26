@@ -8,7 +8,9 @@ import (
 )
 
 func main() {
-	// b := board.FromFENString("r2qk2r/pppb1ppp/8/1B2N3/1b2p3/8/PPPBPPPP/R2QK2R w KQkq - 1 1")
+	// b := board.FromFENString("r2qkbnr/ppp1pppp/2n5/1B6/4p1b1/5N1P/PPPP1PP1/RNBQK2R b KQkq - 0 5")
+	// b := board.FromFENString("r2qkbnr/ppp1pppp/2n5/1B6/4p1P1/5b1P/PPPP1P2/RNBQK2R b KQkq - 0 6")
+	// b := board.FromFENString("r2qkbnr/ppp1pppp/2n5/1B6/4p3/5b1P/PPPP1PP1/RNBQK2R w KQkq - 0 6")
 	b := board.NewBoard()
 	play(b)
 }
@@ -16,8 +18,8 @@ func main() {
 func play(b board.Board) {
 	for true {
 		b.Print()
-		_, m := search.Search(&b, 3)
-		b.MakeMove(m)
+		m := search.Search(&b, 4)
+		b.MakeMove(m[0])
 		if b.Checkmate() {
 			b.Print()
 			fmt.Println("checkmate!")
