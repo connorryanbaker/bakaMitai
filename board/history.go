@@ -27,3 +27,11 @@ func (b *Board) popHistory() {
 	b.History[len(b.History)-1] = History{}
 	b.History = b.History[:len(b.History)-1]
 }
+
+func (b *Board) MoveHistory() []Move {
+	m := make([]Move, len(b.History))
+	for i := 0; i < len(b.History); i++ {
+		m[i] = b.History[i].Move
+	}
+	return m
+}

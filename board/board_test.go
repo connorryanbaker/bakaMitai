@@ -3174,31 +3174,46 @@ func TestInsufficientMaterial(t *testing.T) {
 
 func TestUnmakeMoveRegression(t *testing.T) {
 	// this fen resulted in bq disappearing
-	b := FromFENString("r2qk2r/pppb1ppp/8/1B2N3/1b2p3/8/PPPBPPPP/R2QK2R w KQkq - 1 1")
-	for _, m := range b.LegalMoves() {
-		bh := b.Hash()
-		r := b.MakeMove(m)
-		if r != true {
-			t.Errorf("legal move %v returned false", m)
-		}
-
-		for _, m2 := range b.LegalMoves() {
-			bh2 := b.Hash()
-			r2 := b.MakeMove(m2)
-			if r2 != true {
+	var tests = []struct {
+		f string
+	}{
+		{
+			"r2qk2r/pppb1ppp/8/1B2N3/1b2p3/8/PPPBPPPP/R2QK2R w KQkq - 1 1",
+		},
+		{
+			"r2qkbnr/ppp1pppp/2n5/1B6/4p1P1/5b1P/PPPP1P2/RNBQK2R b KQkq - 0 6",
+		},
+		{
+			"r2qk1nr/ppp1bpp1/2n1p2p/5b2/4N3/PP1B1N2/1BPP1PPP/R2Q1RK1 b kq - 0 1",
+		},
+	}
+	for _, tt := range tests {
+		b := FromFENString(tt.f)
+		for _, m := range b.LegalMoves() {
+			bh := b.Hash()
+			r := b.MakeMove(m)
+			if r != true {
 				t.Errorf("legal move %v returned false", m)
 			}
-			if m2.CastleQueenside {
-				t.Errorf("illegal move castle queenside :%v", m2)
+
+			for _, m2 := range b.LegalMoves() {
+				bh2 := b.Hash()
+				r2 := b.MakeMove(m2)
+				if r2 != true {
+					t.Errorf("legal move %v returned false", m2)
+				}
+				if m2.CastleQueenside {
+					t.Errorf("illegal move castle queenside :%v", m2)
+				}
+				b.UnmakeMove()
+				if b.Hash() != bh2 {
+					t.Errorf("Unmake move after %v resulted in changed hash", m2)
+				}
 			}
 			b.UnmakeMove()
-			if b.Hash() != bh2 {
-				t.Errorf("Unmake move after %v resulted in changed hash", m2)
+			if b.Hash() != bh {
+				t.Errorf("Unmake move after %v resulted in changed hash", m)
 			}
-		}
-		b.UnmakeMove()
-		if b.Hash() != bh {
-			t.Errorf("Unmake move after %v resulted in changed hash", m)
 		}
 	}
 }

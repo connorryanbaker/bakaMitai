@@ -3,13 +3,93 @@ package search
 import (
 	"github.com/connorryanbaker/engine/board"
 	"github.com/connorryanbaker/engine/eval"
+
+	"fmt"
+	"math"
+	"sort"
 )
 
-// TODO: alphabeta pruning and move sorting
+// TODO: quiescence and transposition tables
 
-func Search(b *board.Board, depth int) (float64, board.Move) {
+func Search(b *board.Board, depth int) []board.Move {
 	maximizing := b.Side == board.WHITE
-	return minimax(b, maximizing, depth)
+	line := make([]board.Move, depth)
+	alphaBeta(b, maximizing, math.Inf(-1), math.Inf(1), depth, line)
+	return line
+}
+
+func alphaBeta(b *board.Board, maximizing bool, alpha, beta float64, depth int, line []board.Move) float64 {
+	if depth == 0 || len(b.LegalMoves()) == 0 {
+		return eval.Eval(*b)
+	}
+
+	moves := b.LegalMoves()
+	sort.Slice(moves, func(a, b int) bool {
+		return moves[a].Score() > moves[b].Score()
+	})
+
+	if maximizing {
+		max := math.Inf(-1)
+		for _, m := range moves {
+			bh := b.Hash()
+			b.MakeMove(m)
+			v := alphaBeta(b, !maximizing, alpha, beta, depth-1, line)
+			b.UnmakeMove()
+			if b.Hash() != bh {
+				fmt.Println(depth)
+				for _, m := range b.MoveHistory() {
+					m.Print()
+				}
+				fmt.Println(m)
+				for len(b.History) > 0 {
+					b.Print()
+					b.UnmakeMove()
+				}
+				panic(m.ToString())
+			}
+			if max < v {
+				max = v
+				line[len(line)-depth] = m
+			}
+			if alpha < max {
+				alpha = max
+			}
+			if beta <= alpha {
+				break
+			}
+		}
+		return max
+	}
+	min := math.Inf(1)
+	for _, m := range moves {
+		bh := b.Hash()
+		b.MakeMove(m)
+		v := alphaBeta(b, !maximizing, alpha, beta, depth-1, line)
+		b.UnmakeMove()
+		if b.Hash() != bh {
+			fmt.Println(depth)
+			for _, m := range b.MoveHistory() {
+				m.Print()
+			}
+			fmt.Println(m)
+			for len(b.History) > 0 {
+				b.Print()
+				b.UnmakeMove()
+			}
+			panic(m.ToString())
+		}
+		if v < min {
+			min = v
+			line[len(line)-depth] = m
+		}
+		if min < beta {
+			beta = min
+		}
+		if beta <= alpha {
+			break
+		}
+	}
+	return min
 }
 
 func minimax(b *board.Board, maximizing bool, depth int) (float64, board.Move) {
