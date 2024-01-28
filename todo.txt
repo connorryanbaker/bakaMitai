@@ -3,13 +3,16 @@ Test node counts move ordering with least valuable attacker / most valuable vict
   - before, depth 3: 41797 total nodes
   - after, depth 3: 35267 total nodes!
   - after with check prioritization, depth 3: 31918 total nodes!
+  - after w/ check prioritization and cap score alone 31883 nodes!
   - before, depth 4: 943698
   - after, depth 4: 896234
   - after with check prioritization, depth 4: 632385
+    - w/ cap score alone 633634
   - continue to cut down on nodes searched
   
 Perft Testing [ ]
 MirrorBoard Testing [ ]
+Update Mobility to be piece-specific, knights, bishops, queen, rook: [ ]
 Investigate the PV calculation [ ]
   - 1st move seems reasonable but 2nd moves less so
   - Being able to use PV array for move ordering is crucial
@@ -29,5 +32,6 @@ Misc
 Github Action [ ]
 Profiling [ ]
 Code Cleanup / Generalization in MoveGeneration [ ]
+PGN Export [ ]
 Rename / README [ ]
 

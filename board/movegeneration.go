@@ -48,7 +48,7 @@ func (m Move) Score(b Board) int {
 		s += 1000
 	}
 	if m.Capture {
-		s += 100
+		//s += 100
 		mp := b.PieceAt(m.From)
 		cp := b.PieceAt(m.To)
 		s += CAPTURE_SCORE[mp][cp] * 100
