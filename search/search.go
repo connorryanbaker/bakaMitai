@@ -4,134 +4,37 @@ import (
 	"github.com/connorryanbaker/engine/board"
 	"github.com/connorryanbaker/engine/eval"
 
-	"fmt"
 	"math"
-	"sort"
 )
 
-// TODO: quiescence and transposition tables
+// TODO:
+// test move ordering and node counts [ ]
+// quiescence [ ]
+// transposition tables [ ]
 
 func Search(b *board.Board, depth int) []board.Move {
-	maximizing := b.Side == board.WHITE
-	line := make([]board.Move, depth)
-	alphaBeta(b, maximizing, math.Inf(-1), math.Inf(1), depth, line)
-	return line
+	pv := make([]board.Move, depth)
+	negamax(b, depth, math.Inf(-1), math.Inf(1), pv)
+	return pv
 }
 
-func alphaBeta(b *board.Board, maximizing bool, alpha, beta float64, depth int, line []board.Move) float64 {
-	if depth == 0 || len(b.LegalMoves()) == 0 {
-		return eval.Eval(*b)
-	}
-
+func negamax(b *board.Board, depth int, alpha, beta float64, line []board.Move) float64 {
 	moves := b.LegalMoves()
-	sort.Slice(moves, func(a, b int) bool {
-		return moves[a].Score() > moves[b].Score()
-	})
-
-	if maximizing {
-		max := math.Inf(-1)
-		for _, m := range moves {
-			bh := b.Hash()
-			b.MakeMove(m)
-			v := alphaBeta(b, !maximizing, alpha, beta, depth-1, line)
-			b.UnmakeMove()
-			if b.Hash() != bh {
-				fmt.Println(depth)
-				for _, m := range b.MoveHistory() {
-					m.Print()
-				}
-				fmt.Println(m)
-				for len(b.History) > 0 {
-					b.Print()
-					b.UnmakeMove()
-				}
-				panic(m.ToString())
-			}
-			if max < v {
-				max = v
-				line[len(line)-depth] = m
-			}
-			if alpha < max {
-				alpha = max
-			}
-			if beta <= alpha {
-				break
-			}
-		}
-		return max
+	if depth == 0 || len(moves) == 0 {
+		return eval.NegamaxEval(*b)
 	}
-	min := math.Inf(1)
+
 	for _, m := range moves {
-		bh := b.Hash()
 		b.MakeMove(m)
-		v := alphaBeta(b, !maximizing, alpha, beta, depth-1, line)
+		v := -negamax(b, depth-1, -beta, -alpha, line)
 		b.UnmakeMove()
-		if b.Hash() != bh {
-			fmt.Println(depth)
-			for _, m := range b.MoveHistory() {
-				m.Print()
-			}
-			fmt.Println(m)
-			for len(b.History) > 0 {
-				b.Print()
-				b.UnmakeMove()
-			}
-			panic(m.ToString())
+		if v >= beta {
+			return beta
 		}
-		if v < min {
-			min = v
+		if v > alpha {
+			alpha = v
 			line[len(line)-depth] = m
 		}
-		if min < beta {
-			beta = min
-		}
-		if beta <= alpha {
-			break
-		}
 	}
-	return min
-}
-
-func minimax(b *board.Board, maximizing bool, depth int) (float64, board.Move) {
-	if depth == 0 || len(b.LegalMoves()) == 0 {
-		eval := eval.Eval(*b)
-		return eval, b.History[len(b.History)-1].Move
-	}
-	moves := b.LegalMoves()
-	evals := make([]float64, len(moves))
-	for i, m := range moves {
-		b.MakeMove(m)
-		eval, _ := minimax(b, !maximizing, depth-1)
-		evals[i] = eval
-		b.UnmakeMove()
-	}
-	var idx int
-	if maximizing {
-		idx = findIdx(evals, func(a, b float64) bool {
-			return a > b
-		})
-	} else {
-		idx = findIdx(evals, func(a, b float64) bool {
-			return a < b
-		})
-	}
-
-	return evals[idx], moves[idx]
-}
-
-func findIdx(e []float64, c func(a, b float64) bool) int {
-	if len(e) == 0 {
-		return -1
-	}
-
-	m := e[0]
-	idx := 0
-	for i := 1; i < len(e); i++ {
-		if c(e[i], m) {
-			m = e[i]
-			idx = i
-		}
-	}
-
-	return idx
+	return alpha
 }

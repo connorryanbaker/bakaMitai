@@ -47,3 +47,41 @@ func TestFindMateInOne(t *testing.T) {
 		}
 	}
 }
+
+func TestFindMateInTwo(t *testing.T) {
+	var tests = []struct {
+		b board.Board
+		l []board.Move
+	}{
+		{
+			board.FromFENString("7k/P7/5K2/8/8/8/8/8 w - - 0 1"),
+			[]board.Move{
+				{board.IF6, board.IG6, false, false, false, false, board.WHITE_KING, false},
+				{board.IH8, board.IG8, false, false, false, false, board.BLACK_KING, false},
+				{board.IA7, board.IA8, false, false, false, true, board.WHITE_QUEEN, false},
+			},
+		},
+		{
+			board.FromFENString("r2qkb1r/pp2nppp/3p4/2pNN1B1/2BnP3/3P4/PPP2PPP/R2bK2R w KQkq - 1 0"),
+			[]board.Move{
+				{board.ID5, board.IF6, false, false, false, false, board.WHITE_KNIGHT, false},
+				{board.IG7, board.IF6, true, false, false, false, board.BLACK_PAWN, false},
+				{board.IC4, board.IF7, true, false, false, false, board.WHITE_BISHOP, false},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		l := Search(&tt.b, 3)
+		for i, _ := range l {
+			if tt.l[i].To != l[i].To {
+				t.Errorf("line[%d] to; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].To], board.SQ_NUM_TO_NAME[tt.l[i].To])
+				t.Errorf("%v", l)
+			}
+			if tt.l[i].From != l[i].From {
+				t.Errorf("line[%d] from; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].From], board.SQ_NUM_TO_NAME[tt.l[i].From])
+				t.Errorf("%v", l)
+			}
+		}
+	}
+}
