@@ -46,6 +46,10 @@ var MAILBOX_64 = [64]int{
 	91, 92, 93, 94, 95, 96, 97, 98,
 }
 
+func file(sq int) int {
+	return sq % 10
+}
+
 var INIT_CASTLE = [4]bool{true, true, true, true}
 
 var INIT_PIECE_SQUARES = map[int][]int{
@@ -61,6 +65,93 @@ var INIT_PIECE_SQUARES = map[int][]int{
 	BLACK_ROOK:   []int{IA8, IH8},
 	BLACK_QUEEN:  []int{ID8},
 	BLACK_KING:   []int{IE8},
+}
+
+var CAPTURE_SCORE = map[int]map[int]int{
+	WHITE_PAWN: map[int]int{
+		BLACK_QUEEN:  1000,
+		BLACK_ROOK:   900,
+		BLACK_BISHOP: 800,
+		BLACK_KNIGHT: 800,
+		BLACK_PAWN:   100,
+	},
+	BLACK_PAWN: map[int]int{
+		WHITE_QUEEN:  1000,
+		WHITE_ROOK:   900,
+		WHITE_BISHOP: 800,
+		WHITE_KNIGHT: 800,
+		WHITE_PAWN:   100,
+	},
+	WHITE_KNIGHT: map[int]int{
+		BLACK_QUEEN:  1000,
+		BLACK_ROOK:   900,
+		BLACK_BISHOP: 100,
+		BLACK_KNIGHT: 100,
+		BLACK_PAWN:   50,
+	},
+	BLACK_KNIGHT: map[int]int{
+		WHITE_QUEEN:  1000,
+		WHITE_ROOK:   900,
+		WHITE_BISHOP: 100,
+		WHITE_KNIGHT: 100,
+		WHITE_PAWN:   50,
+	},
+	WHITE_BISHOP: map[int]int{
+		BLACK_QUEEN:  1000,
+		BLACK_ROOK:   900,
+		BLACK_BISHOP: 100,
+		BLACK_KNIGHT: 100,
+		BLACK_PAWN:   50,
+	},
+	BLACK_BISHOP: map[int]int{
+		WHITE_QUEEN:  1000,
+		WHITE_ROOK:   900,
+		WHITE_BISHOP: 100,
+		WHITE_KNIGHT: 100,
+		WHITE_PAWN:   50,
+	},
+	WHITE_ROOK: map[int]int{
+		BLACK_QUEEN:  1000,
+		BLACK_ROOK:   100,
+		BLACK_BISHOP: 50,
+		BLACK_KNIGHT: 50,
+		BLACK_PAWN:   25,
+	},
+	BLACK_ROOK: map[int]int{
+		WHITE_QUEEN:  1000,
+		WHITE_ROOK:   100,
+		WHITE_BISHOP: 50,
+		WHITE_KNIGHT: 50,
+		WHITE_PAWN:   25,
+	},
+	WHITE_QUEEN: map[int]int{
+		BLACK_QUEEN:  100,
+		BLACK_ROOK:   10,
+		BLACK_BISHOP: 10,
+		BLACK_KNIGHT: 10,
+		BLACK_PAWN:   5,
+	},
+	BLACK_QUEEN: map[int]int{
+		WHITE_QUEEN:  100,
+		WHITE_ROOK:   10,
+		WHITE_BISHOP: 10,
+		WHITE_KNIGHT: 10,
+		WHITE_PAWN:   5,
+	},
+	WHITE_KING: map[int]int{
+		BLACK_QUEEN:  100,
+		BLACK_ROOK:   10,
+		BLACK_BISHOP: 10,
+		BLACK_KNIGHT: 10,
+		BLACK_PAWN:   5,
+	},
+	BLACK_KING: map[int]int{
+		WHITE_QUEEN:  100,
+		WHITE_ROOK:   10,
+		WHITE_BISHOP: 10,
+		WHITE_KNIGHT: 10,
+		WHITE_PAWN:   5,
+	},
 }
 
 const (
