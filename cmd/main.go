@@ -26,7 +26,7 @@ func play(b board.Board) {
 	for true {
 		var nodes int
 		b.Print()
-		moves := search.Search(&b, 4, &nodes)
+		moves := search.SearchNodeCount(&b, 4, &nodes)
 		b.MakeMove(moves[0])
 		nodelist = append(nodelist, nodes)
 		if b.Checkmate() {
