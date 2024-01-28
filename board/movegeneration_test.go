@@ -1422,6 +1422,72 @@ func TestCastling(t *testing.T) {
 	}
 }
 
+func TestMoveCheck(t *testing.T) {
+	var tests = []struct {
+		b Board
+		m Move
+		c bool
+	}{
+		{
+			FromFENString("7k/8/R4K2/8/8/8/8/8 w - - 0 1"),
+			Move{IA6, IA8, false, false, false, false, WHITE_ROOK, false},
+			true,
+		},
+		{
+			FromFENString("7k/8/5K2/6N1/8/8/8/8 w - - 0 1"),
+			Move{IG5, IF7, false, false, false, false, WHITE_KNIGHT, false},
+			true,
+		},
+		{
+			FromFENString("7k/8/5K2/6N1/8/8/8/8 w - - 0 1"),
+			Move{IG5, IE6, false, false, false, false, WHITE_KNIGHT, false},
+			false,
+		},
+		{
+			FromFENString("7k/8/5K1B/8/8/8/8/8 w - - 0 1"),
+			Move{IH6, IG7, false, false, false, false, WHITE_BISHOP, false},
+			true,
+		},
+		{
+			FromFENString("7k/4Q3/5K2/8/8/8/8/8 w - - 0 1"),
+			Move{IE7, IG7, false, false, false, false, WHITE_QUEEN, false},
+			true,
+		},
+		{
+			FromFENString("7K/8/r4k2/8/8/8/8/8 b - - 0 1"),
+			Move{IA6, IA8, false, false, false, false, BLACK_ROOK, false},
+			true,
+		},
+		{
+			FromFENString("7K/8/5k2/6n1/8/8/8/8 b - - 0 1"),
+			Move{IG5, IF7, false, false, false, false, BLACK_KNIGHT, false},
+			true,
+		},
+		{
+			FromFENString("7K/8/5k2/6n1/8/8/8/8 b - - 0 1"),
+			Move{IG5, IE6, false, false, false, false, BLACK_KNIGHT, false},
+			false,
+		},
+		{
+			FromFENString("7K/8/5k1b/8/8/8/8/8 b - - 0 1"),
+			Move{IH6, IG7, false, false, false, false, BLACK_BISHOP, false},
+			true,
+		},
+		{
+			FromFENString("7K/4q3/5k2/8/8/8/8/8 b - - 0 1"),
+			Move{IE7, IG7, false, false, false, false, BLACK_QUEEN, false},
+			true,
+		},
+	}
+
+	for _, tt := range tests {
+		r := tt.m.Check(tt.b)
+		if r != tt.c {
+			t.Errorf("Unexpected check; expected: %t, received: %t, %v", tt.c, r, tt.m)
+		}
+	}
+}
+
 func mapSqIdxToSqNames(s []int) []string {
 	r := make([]string, len(s), len(s))
 	i := 0

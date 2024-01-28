@@ -44,16 +44,19 @@ func (m Move) Score(b Board) int {
 	if m.Promote {
 		s += 100
 	}
+	if m.Check(b) {
+		s += 1000
+	}
 	if m.Capture {
-		s += 50
+		//s += 100
 		mp := b.PieceAt(m.From)
 		cp := b.PieceAt(m.To)
-		s += scoreCapture(mp, cp)
+		s += CAPTURE_SCORE[mp][cp] * 100
 	}
 	if m.CastleKingside || m.CastleQueenside {
 		s += 50
 	}
-	if m.DoublePawnPush {
+	if m.DoublePawnPush && 2 < file(m.To) && file(m.To) < 6 {
 		s += 20
 	}
 	switch m.PromotionPiece {
@@ -67,10 +70,39 @@ func (m Move) Score(b Board) int {
 	return s
 }
 
-func scoreCapture(mp, cp int) int {
-	cv := cp % 6
-	mv := mp % 6
-	return (cv - mv) * 20
+func (m Move) Check(b Board) bool {
+	var kp int
+	p := b.PieceAt(m.From)
+	if b.Side == WHITE {
+		kp = b.PieceSquares[BLACK_KING][0]
+	} else {
+		kp = b.PieceSquares[WHITE_KING][0]
+	}
+
+	switch p {
+	case WHITE_PAWN:
+		return attacksInclude(b.PawnAttacks(m.To, WHITE_PAWN_ATTACKS), kp)
+	case BLACK_PAWN:
+		return attacksInclude(b.PawnAttacks(m.To, BLACK_PAWN_ATTACKS), kp)
+	case WHITE_KNIGHT, BLACK_KNIGHT:
+		return attacksInclude(b.KnightAttacks(m.To), kp)
+	case WHITE_BISHOP, BLACK_BISHOP:
+		return attacksInclude(b.BishopAttacks(m.To), kp)
+	case WHITE_ROOK, BLACK_ROOK:
+		return attacksInclude(b.RookAttacks(m.To), kp)
+	case WHITE_QUEEN, BLACK_QUEEN:
+		return attacksInclude(b.QueenAttacks(m.To), kp)
+	}
+	return false
+}
+
+func attacksInclude(sqs []int, target int) bool {
+	for _, v := range sqs {
+		if v == target {
+			return true
+		}
+	}
+	return false
 }
 
 func (m Move) Print() {
