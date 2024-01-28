@@ -13,11 +13,11 @@ func TestCheckmateEval(t *testing.T) {
 	}{
 		{
 			board.FromFENString("8/8/8/8/8/5K2/6Q1/7k b - - 0 1"),
-			math.Inf(1),
+			math.MaxFloat64,
 		},
 		{
 			board.FromFENString("8/8/8/8/8/5k2/6q1/7K w - - 0 1"),
-			math.Inf(-1),
+			math.MaxFloat64 * -1,
 		},
 	}
 

@@ -1,0 +1,13 @@
+TODO: loosely in order
+Test node counts move ordering with least valuable attacker / most valuable victim [ ]
+Investigate the PV calculation [ ]
+  - 1st move seems reasonable but 2nd moves less so
+  - Being able to use PV array for move ordering is crucial
+Quiescence https://www.chessprogramming.org/Quiescence_Search [ ]
+Iterative Deepening https://www.chessprogramming.org/Iterative_Deepening [ ]
+Static Exchange Evaluation [ ]
+Transposition Tables https://www.chessprogramming.org/Transposition_Table [ ]
+Killer Moves https://www.chessprogramming.org/Killer_Heuristic [ ]
+History Heuristics https://www.chessprogramming.org/History_Heuristic [ ]
+Late Move Reduction https://www.chessprogramming.org/Late_Move_Reductions [ ]
+

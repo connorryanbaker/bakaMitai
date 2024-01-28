@@ -2,6 +2,7 @@ package board
 
 import (
 	"fmt"
+	"sort"
 )
 
 var KNIGHT_DELTAS = [8]int{-21, -19, -12, -8, 12, 21, 19, 8}
@@ -38,13 +39,16 @@ func (m Move) IsNull() bool {
 	return false
 }
 
-func (m Move) Score() int {
+func (m Move) Score(b Board) int {
 	s := 0
 	if m.Promote {
 		s += 100
 	}
 	if m.Capture {
 		s += 50
+		mp := b.PieceAt(m.From)
+		cp := b.PieceAt(m.To)
+		s += scoreCapture(mp, cp)
 	}
 	if m.CastleKingside || m.CastleQueenside {
 		s += 50
@@ -61,6 +65,12 @@ func (m Move) Score() int {
 		s += 15
 	}
 	return s
+}
+
+func scoreCapture(mp, cp int) int {
+	cv := cp % 6
+	mv := mp % 6
+	return (cv - mv) * 20
 }
 
 func (m Move) Print() {
@@ -99,18 +109,6 @@ func equalMoves(m1, m2 Move) bool {
 	return true
 }
 
-// these need tests
-
-func (b Board) Captures() []Move {
-	c := make([]Move, 0)
-	for _, m := range b.LegalMoves() {
-		if m.Capture {
-			c = append(c, m)
-		}
-	}
-	return c
-}
-
 func (b Board) LegalMoves() []Move {
 	if b.legalMoves != nil {
 		return b.legalMoves
@@ -123,6 +121,11 @@ func (b Board) LegalMoves() []Move {
 			moves = append(moves, m)
 		}
 	}
+
+	sort.Slice(moves, func(i, j int) bool {
+		return moves[i].Score(b) > moves[j].Score(b)
+	})
+
 	b.legalMoves = moves
 	return b.legalMoves
 }
