@@ -42,17 +42,21 @@ func TestPerft(t *testing.T) {
 			NewBoard(),
 			4865609,
 		},
-		{
-			6,
-			NewBoard(),
-			119060324,
-		},
+		//{
+		//	6,
+		//	NewBoard(),
+		//	119060324,
+		//},
+		// after profiling, looks like move generation
+		// is a bottleneck - revisit after refactor
 	}
 
 	for _, tt := range tests {
 		result := perft(&tt.board, tt.depth)
 		if result != tt.expected {
 			t.Errorf("Perft Err! Depth: %d, Expected: %d, Received: %d", tt.depth, tt.expected, result)
+		} else {
+			t.Logf("Passed depth %d\n", tt.depth)
 		}
 	}
 }

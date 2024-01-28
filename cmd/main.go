@@ -1,15 +1,26 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"log"
+	"os"
+	"runtime/pprof"
 
 	"github.com/connorryanbaker/engine/board"
 	"github.com/connorryanbaker/engine/search"
 )
 
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
+
 func main() {
+	flag.Parse()
+
 	b := board.NewBoard()
-	// moves := search.Search(&b, 2)
+	if *cpuprofile != "" {
+		profileSearch(b)
+		return
+	}
 	play(b)
 }
 
@@ -72,4 +83,17 @@ func printHistory(b board.Board) {
 	for i := 0; i < len(h); i++ {
 		fmt.Printf("%d: FROM: %s TO: %s\n", i+1, board.SQ_NUM_TO_NAME[h[i].Move.From], board.SQ_NUM_TO_NAME[h[i].Move.To])
 	}
+}
+
+func profileSearch(b board.Board) {
+	f, err := os.Create(*cpuprofile)
+	if err != nil {
+		log.Fatal("couldn't create CPU profile file: ", err)
+	}
+	defer f.Close()
+	if err := pprof.StartCPUProfile(f); err != nil {
+		log.Fatal("couldn't start CPU profile: ", err)
+	}
+	defer pprof.StopCPUProfile()
+	search.Search(&b, 4)
 }
