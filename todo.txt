@@ -1,9 +1,6 @@
 TODO: loosely in order
-Perft Testing [x]
-MirrorBoard Testing [ ]
 Code Refactor in MoveGeneration [ ]
 Update Insufficient Material for knights / bishops [ ]
-Update Mobility to be piece-specific, knights, bishops, queen, rook: [ ]
 Investigate the PV calculation [ ]
   - 1st move seems reasonable but 2nd moves less so
   - Being able to use PV array for move ordering is crucial
@@ -18,5 +15,7 @@ UCI [ ]
 
 Misc
 PGN Export [ ]
+Pawn Structure eval [ ]
+Piece Mobility eval for knights, bishops, queen, rook: [ ]
+Continue Mirrorboard testing [ ]
 Rename / README [ ]
-

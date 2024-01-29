@@ -12,6 +12,7 @@ import (
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
+var depth = flag.Int("depth", 3, "engine halfply search depth")
 
 func main() {
 	flag.Parse()
@@ -37,7 +38,8 @@ func play(b board.Board) {
 	for true {
 		var nodes int
 		b.Print()
-		moves := search.SearchNodeCount(&b, 4, &nodes)
+		moves := search.SearchNodeCount(&b, *depth, &nodes)
+		fmt.Println(nodes)
 		b.MakeMove(moves[0])
 		nodelist = append(nodelist, nodes)
 		if b.Checkmate() {
@@ -95,5 +97,5 @@ func profileSearch(b board.Board) {
 		log.Fatal("couldn't start CPU profile: ", err)
 	}
 	defer pprof.StopCPUProfile()
-	search.Search(&b, 4)
+	search.Search(&b, *depth)
 }

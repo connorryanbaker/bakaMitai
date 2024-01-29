@@ -70,3 +70,24 @@ func TestInsufficientMaterialEval(t *testing.T) {
 		}
 	}
 }
+
+func TestMirrorEval(t *testing.T) {
+	var tests = []struct {
+		b board.Board
+	}{
+		{
+			board.FromFENString("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1"),
+		},
+		{
+			board.FromFENString("r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1"),
+		},
+	}
+
+	for _, tt := range tests {
+		e := Eval(tt.b)
+		me := Eval(*board.Mirror(tt.b))
+		if me != e*-1 {
+			t.Errorf("Unexpected mirror evaluation; e: %f, me: %f", e, me)
+		}
+	}
+}
