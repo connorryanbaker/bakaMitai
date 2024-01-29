@@ -136,8 +136,8 @@ var PIECE_WEIGHTS = map[int]float64{
 	board.BLACK_BISHOP: -3.5,
 	board.WHITE_ROOK:   3,
 	board.BLACK_ROOK:   -3,
-	board.WHITE_KING:   10,
-	board.BLACK_KING:   -10,
+	board.WHITE_KING:   5,
+	board.BLACK_KING:   -5,
 }
 
 func evalPieceSquares(b board.Board) float64 {
