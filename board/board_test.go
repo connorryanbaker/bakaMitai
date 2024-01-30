@@ -97,7 +97,7 @@ func TestInCheck(t *testing.T) {
 			"init",
 		},
 		{
-			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"),
 			BLACK,
 			false,
 			"init",
@@ -155,7 +155,8 @@ func TestInCheck(t *testing.T) {
 	for _, tt := range tests {
 		received := tt.b.InCheck(tt.side)
 		if received != tt.inCheck {
-			t.Errorf("dsc: %s, received %t, expected %t", tt.description, received, tt.inCheck)
+			tt.b.Print()
+			t.Errorf("dsc: %s, side: %d, received %t, expected %t", tt.description, tt.side, received, tt.inCheck)
 		}
 	}
 }

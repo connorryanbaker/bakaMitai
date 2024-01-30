@@ -1,11 +1,13 @@
 TODO: loosely in order
-Code Refactor in MoveGeneration [ ]
+Kill PieceSquares [ ]
 Update Insufficient Material for knights / bishops [ ]
 Investigate the PV calculation [ ]
   - 1st move seems reasonable but 2nd moves less so
   - Being able to use PV array for move ordering is crucial
 Quiescence https://www.chessprogramming.org/Quiescence_Search [ ]
 Iterative Deepening https://www.chessprogramming.org/Iterative_Deepening [ ]
+Legal Move Generation with Bitboards to remove need to make / unmake moves to
+determine legality [ ]
 Static Exchange Evaluation [ ]
 Transposition Tables https://www.chessprogramming.org/Transposition_Table [ ]
 Killer Moves https://www.chessprogramming.org/Killer_Heuristic [ ]
