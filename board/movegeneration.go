@@ -5,21 +5,66 @@ import (
 	"sort"
 )
 
-var KNIGHT_DELTAS = [8]int{-21, -19, -12, -8, 12, 21, 19, 8}
-var BISHOP_DELTAS = [4]int{-11, -9, 9, 11}
-var ROOK_DELTAS = [4]int{-10, -1, 1, 10}
-var QUEEN_DELTAS = [8]int{-11, -10, -9, -1, 1, 9, 10, 11}
+var PIECE_COLORS = map[int]map[int]bool{
+	WHITE: map[int]bool{
+		WHITE_PAWN:   true,
+		WHITE_KNIGHT: true,
+		WHITE_BISHOP: true,
+		WHITE_ROOK:   true,
+		WHITE_QUEEN:  true,
+		WHITE_KING:   true,
+	},
+	BLACK: map[int]bool{
+		BLACK_PAWN:   true,
+		BLACK_KNIGHT: true,
+		BLACK_BISHOP: true,
+		BLACK_ROOK:   true,
+		BLACK_QUEEN:  true,
+		BLACK_KING:   true,
+	},
+}
+
+var PAWNS = map[int]bool{
+	WHITE_PAWN: true,
+	BLACK_PAWN: true,
+}
+
+var SLIDING_PIECES = map[int]bool{
+	WHITE_KNIGHT: false,
+	WHITE_BISHOP: true,
+	WHITE_ROOK:   true,
+	WHITE_QUEEN:  true,
+	WHITE_KING:   false,
+	BLACK_KNIGHT: false,
+	BLACK_BISHOP: true,
+	BLACK_ROOK:   true,
+	BLACK_QUEEN:  true,
+	BLACK_KING:   false,
+}
+
+var OFFSETS = map[int][]int{
+	WHITE_KNIGHT: []int{-21, -19, -12, -8, 12, 21, 19, 8},
+	BLACK_KNIGHT: []int{-21, -19, -12, -8, 12, 21, 19, 8},
+	WHITE_BISHOP: []int{-11, -9, 9, 11},
+	BLACK_BISHOP: []int{-11, -9, 9, 11},
+	WHITE_ROOK:   []int{-10, -1, 1, 10},
+	BLACK_ROOK:   []int{-10, -1, 1, 10},
+	WHITE_QUEEN:  []int{-11, -10, -9, -1, 1, 9, 10, 11},
+	BLACK_QUEEN:  []int{-11, -10, -9, -1, 1, 9, 10, 11},
+	WHITE_KING:   []int{-11, -10, -9, -1, 1, 9, 10, 11},
+	BLACK_KING:   []int{-11, -10, -9, -1, 1, 9, 10, 11},
+}
+
 var WHITE_PAWN_ATTACKS = [2]int{-11, -9}
 var BLACK_PAWN_ATTACKS = [2]int{11, 9}
 var WHITE_PAWN_DELTAS = [2]int{-10, -20}
 var BLACK_PAWN_DELTAS = [2]int{10, 20}
+var KNIGHT_DELTAS = [8]int{-21, -19, -12, -8, 12, 21, 19, 8}
+var BISHOP_DELTAS = [4]int{-11, -9, 9, 11}
+var ROOK_DELTAS = [4]int{-10, -1, 1, 10}
+var QUEEN_DELTAS = [8]int{-11, -10, -9, -1, 1, 9, 10, 11}
 var WHITE_PROMOTION_PIECES = [4]int{WHITE_QUEEN, WHITE_ROOK, WHITE_BISHOP, WHITE_KNIGHT}
 var BLACK_PROMOTION_PIECES = [4]int{BLACK_QUEEN, BLACK_ROOK, BLACK_BISHOP, BLACK_KNIGHT}
-
-// let's just get on the board
-// easy to get trapped in analysis paralysis
-// this is obviously suboptimal but we go again
-// should go without saying that these methods can be consolidated
 
 type Move struct {
 	From            int
@@ -44,65 +89,19 @@ func (m Move) Score(b Board) int {
 	if m.Promote {
 		s += 100
 	}
-	if m.Check(b) {
-		s += 1000
-	}
 	if m.Capture {
-		//s += 100
+		s += 100
 		mp := b.PieceAt(m.From)
 		cp := b.PieceAt(m.To)
 		s += CAPTURE_SCORE[mp][cp] * 100
 	}
 	if m.CastleKingside || m.CastleQueenside {
-		s += 50
+		s += 100
 	}
 	if m.DoublePawnPush && 2 < file(m.To) && file(m.To) < 6 {
-		s += 20
-	}
-	switch m.PromotionPiece {
-	case WHITE_KING, BLACK_KING, WHITE_PAWN, BLACK_PAWN:
-		s += 5
-	case WHITE_KNIGHT, BLACK_KNIGHT, WHITE_BISHOP, BLACK_BISHOP:
-		s += 10
-	case WHITE_QUEEN, BLACK_QUEEN, WHITE_ROOK, BLACK_ROOK:
-		s += 15
+		s += 100
 	}
 	return s
-}
-
-func (m Move) Check(b Board) bool {
-	var kp int
-	p := b.PieceAt(m.From)
-	if b.Side == WHITE {
-		kp = b.PieceSquares[BLACK_KING][0]
-	} else {
-		kp = b.PieceSquares[WHITE_KING][0]
-	}
-
-	switch p {
-	case WHITE_PAWN:
-		return attacksInclude(b.PawnAttacks(m.To, WHITE_PAWN_ATTACKS), kp)
-	case BLACK_PAWN:
-		return attacksInclude(b.PawnAttacks(m.To, BLACK_PAWN_ATTACKS), kp)
-	case WHITE_KNIGHT, BLACK_KNIGHT:
-		return attacksInclude(b.KnightAttacks(m.To), kp)
-	case WHITE_BISHOP, BLACK_BISHOP:
-		return attacksInclude(b.BishopAttacks(m.To), kp)
-	case WHITE_ROOK, BLACK_ROOK:
-		return attacksInclude(b.RookAttacks(m.To), kp)
-	case WHITE_QUEEN, BLACK_QUEEN:
-		return attacksInclude(b.QueenAttacks(m.To), kp)
-	}
-	return false
-}
-
-func attacksInclude(sqs []int, target int) bool {
-	for _, v := range sqs {
-		if v == target {
-			return true
-		}
-	}
-	return false
 }
 
 func (m Move) Print() {
@@ -146,7 +145,8 @@ func (b Board) LegalMoves() []Move {
 		return b.legalMoves
 	}
 	moves := make([]Move, 0)
-	for _, m := range b.Moves() {
+	// for _, m := range b.Moves() {
+	for _, m := range b.genMoves() {
 		r := b.MakeMove(m)
 		if r == true {
 			b.UnmakeMove()
@@ -162,548 +162,323 @@ func (b Board) LegalMoves() []Move {
 	return b.legalMoves
 }
 
-func (b Board) Moves() []Move {
+func (b Board) genMoves() []Move {
 	m := make([]Move, 0)
+	for i := 0; i < 64; i++ {
+		sq := MAILBOX_64[i]
+		p := b.PieceAt(sq)
+		if _, ok := PIECE_COLORS[b.Side][p]; !ok {
+			continue
+		}
+		if _, ok := PAWNS[p]; ok {
+			m = append(m, b.genPawnMoves(sq)...)
+		} else {
+			m = append(m, b.genOffsetMoves(p, sq)...)
+		}
+	}
+	return m
+}
+
+func (b Board) genPawnMoves(sq int) []Move {
+  moves := make([]Move, 0)
 	if b.Side == WHITE {
-		for i := WHITE_PAWN; i <= WHITE_KING; i++ {
-			if b.PieceSquares[i] != nil {
-				for j := 0; j < len(b.PieceSquares[i]); j++ {
-					moves, err := b.MovesForPiece(b.PieceSquares[i][j])
-					if err != nil {
-						panic(err)
-					}
-					m = append(m, moves...)
-				}
+    for _, d := range WHITE_PAWN_ATTACKS {
+      ns := sq + d
+      p := b.PieceAt(ns)
+      if _, ok := PIECE_COLORS[b.Side^1][p]; ok {
+        if ns <= IH8 { // check promotion
+          for _, piece := range WHITE_PROMOTION_PIECES {
+            moves = append(moves, Move{sq, ns, true, false, false, true, piece, false})
+          }
+        } else {
+          moves = append(moves, Move{sq, ns, true, false, false, false, WHITE_PAWN, false})
+        }
+      } else if b.Ep != nil && *b.Ep == ns {
+        moves = append(moves, Move{sq, ns, true, false, false, false, WHITE_PAWN, false})
+      }
+    } // one sq push
+    if b.PieceAt(sq+WHITE_PAWN_DELTAS[0]) == EMPTY_SQUARE {
+      ns := sq + WHITE_PAWN_DELTAS[0]
+      if ns <= IH8 { // check promotion
+        for _, piece := range WHITE_PROMOTION_PIECES {
+          moves = append(moves, Move{sq, ns, false, false, false, true, piece, false})
+        }
+      } else {
+        moves = append(moves, Move{sq, ns, false, false, false, false, WHITE_PAWN, false})
+        if IA2 <= sq && sq <= IH2 && b.PieceAt(sq+WHITE_PAWN_DELTAS[1]) == EMPTY_SQUARE {
+          moves = append(moves, Move{sq, sq + WHITE_PAWN_DELTAS[1], false, false, false, false, WHITE_PAWN, true})
+        } // opening two sq push
+      }
+    }
+	} else {
+    for _, d := range BLACK_PAWN_ATTACKS {
+      ns := sq + d
+      p := b.PieceAt(ns)
+      if _, ok := PIECE_COLORS[b.Side^1][p]; ok {
+        if ns >= IA1 { // check promotion
+          for _, piece := range BLACK_PROMOTION_PIECES {
+            moves = append(moves, Move{sq, ns, true, false, false, true, piece, false})
+          }
+        } else {
+          moves = append(moves, Move{sq, ns, true, false, false, false, BLACK_PAWN, false})
+        }
+      } else if b.Ep != nil && *b.Ep == ns {
+        moves = append(moves, Move{sq, ns, true, false, false, false, BLACK_PAWN, false})
+      }
+    } // one sq push
+    if b.PieceAt(sq+BLACK_PAWN_DELTAS[0]) == EMPTY_SQUARE {
+      ns := sq + BLACK_PAWN_DELTAS[0]
+      if ns >= IA1 { // check promotion
+        for _, piece := range BLACK_PROMOTION_PIECES {
+          moves = append(moves, Move{sq, ns, false, false, false, true, piece, false})
+        }
+      } else {
+        moves = append(moves, Move{sq, ns, false, false, false, false, BLACK_PAWN, false})
+        if IA7 <= sq && sq <= IH7 && b.PieceAt(sq+BLACK_PAWN_DELTAS[1]) == EMPTY_SQUARE {
+          moves = append(moves, Move{sq, sq + BLACK_PAWN_DELTAS[1], false, false, false, false, BLACK_PAWN, true})
+        }
+      } // opening two sq push
+    }
+  }
+	return moves
+}
+
+func (b Board) genOffsetMoves(p, sq int) []Move {
+	if p == WHITE_KING || p == BLACK_KING {
+		return b.genKingMoves(p, sq)
+	}
+
+	moves := make([]Move, 0)
+
+	for _, d := range OFFSETS[p] {
+		nsq := sq + d
+		if v, _ := SLIDING_PIECES[p]; v {
+			for b.PieceAt(nsq) == EMPTY_SQUARE {
+				moves = append(moves, Move{sq, nsq, false, false, false, false, p, false})
+				nsq += d
 			}
+		}
+		mp := b.PieceAt(nsq)
+		if mp == EMPTY_SQUARE {
+			moves = append(moves, Move{sq, nsq, false, false, false, false, p, false})
+		}
+		if _, ok := PIECE_COLORS[b.Side^1][mp]; ok {
+			moves = append(moves, Move{sq, nsq, true, false, false, false, p, false})
+		}
+	}
+
+	return moves
+}
+
+func (b Board) genKingMoves(p, sq int) []Move {
+	moves := make([]Move, 0)
+
+	for _, d := range OFFSETS[p] {
+		if b.isAttacked(sq+d, b.Side) {
+			continue
+		}
+		p := b.PieceAt(sq + d)
+		if p == EMPTY_SQUARE {
+			moves = append(moves, Move{sq, sq + d, false, false, false, false, p, false})
+		}
+		if _, ok := PIECE_COLORS[b.Side^1][p]; ok {
+			moves = append(moves, Move{sq, sq + d, true, false, false, false, p, false})
+		}
+	}
+	kc := b.genKingsideCastle(p, sq)
+	qc := b.genQueensideCastle(p, sq)
+	if kc != nil {
+		moves = append(moves, *kc)
+	}
+	if qc != nil {
+		moves = append(moves, *qc)
+	}
+	return moves
+}
+
+func (b Board) genKingsideCastle(p, sq int) *Move {
+	if p == WHITE_KING {
+		if !b.Castle[0] {
+			return nil
+		}
+		if b.PieceAt(IF1) != EMPTY_SQUARE || b.PieceAt(IG1) != EMPTY_SQUARE {
+			return nil
+		}
+
+		for i := IE1; i < IH1; i++ {
+			if b.isAttacked(i, WHITE) {
+				return nil
+			}
+		}
+
+		return &Move{sq, IG1, false, true, false, false, p, false}
+	} else {
+		if !b.Castle[2] {
+			return nil
+		}
+		if b.PieceAt(IF8) != EMPTY_SQUARE || b.PieceAt(IG8) != EMPTY_SQUARE {
+			return nil
+		}
+
+		for i := IE8; i < IH8; i++ {
+			if b.isAttacked(i, BLACK) {
+				return nil
+			}
+		}
+
+		return &Move{sq, IG8, false, true, false, false, p, false}
+	}
+}
+
+func (b Board) genQueensideCastle(p, sq int) *Move {
+	if p == WHITE_KING {
+		if !b.Castle[1] {
+			return nil
+		}
+
+		for i := IB1; i < IE1; i++ {
+			if b.PieceAt(i) != EMPTY_SQUARE {
+				return nil
+			}
+		}
+
+		for i := IC1; i < IF1; i++ {
+			if b.isAttacked(i, WHITE) {
+				return nil
+			}
+		}
+
+		return &Move{sq, IC1, false, false, true, false, p, false}
+	} else {
+		if !b.Castle[3] {
+			return nil
+		}
+
+		for i := IB8; i < IE8; i++ {
+			if b.PieceAt(i) != EMPTY_SQUARE {
+				return nil
+			}
+		}
+
+		for i := IC8; i < IF8; i++ {
+			if b.isAttacked(i, BLACK) {
+				return nil
+			}
+		}
+
+		return &Move{sq, IC8, false, false, true, false, p, false}
+	}
+}
+
+// side indicates who we're checking is / isn't attacked
+func (b Board) isAttacked(sq, side int) bool {
+	return b.isPawnAttacked(sq, side) || b.isJumpAttacked(sq, side) || b.isCardinalAttacked(sq, side) || b.isOrdinalAttacked(sq, side) || b.isKingAttacked(sq, side)
+}
+
+func (b Board) isPawnAttacked(sq, side int) bool {
+	if b.PieceAt(sq) == OFF_BOARD {
+		return false
+	}
+	if side == WHITE {
+		if b.PieceAt(sq-9) == BLACK_PAWN || b.PieceAt(sq-11) == BLACK_PAWN {
+			return true
 		}
 	} else {
-		for i := BLACK_PAWN; i <= BLACK_KING; i++ {
-			if b.PieceSquares[i] != nil {
-				for j := 0; j < len(b.PieceSquares[i]); j++ {
-					moves, err := b.MovesForPiece(b.PieceSquares[i][j])
-					if err != nil {
-						panic(err)
-					}
-					m = append(m, moves...)
-				}
-			}
+		if b.PieceAt(sq+9) == WHITE_PAWN || b.PieceAt(sq+11) == WHITE_PAWN {
+			return true
 		}
 	}
-	return m
+	return false
 }
 
-func (b Board) MovesForPiece(sq int) ([]Move, error) {
-	piece := b.PieceAt(sq)
-	switch piece {
-	case WHITE_PAWN:
-		return b.WhitePawnMoves(sq), nil
-	case WHITE_KNIGHT:
-		return b.WhiteKnightMoves(sq), nil
-	case WHITE_BISHOP:
-		return b.WhiteBishopMoves(sq), nil
-	case WHITE_ROOK:
-		return b.WhiteRookMoves(sq), nil
-	case WHITE_QUEEN:
-		return b.WhiteQueenMoves(sq), nil
-	case WHITE_KING:
-		return b.WhiteKingMoves(sq), nil
-	case BLACK_PAWN:
-		return b.BlackPawnMoves(sq), nil
-	case BLACK_KNIGHT:
-		return b.BlackKnightMoves(sq), nil
-	case BLACK_BISHOP:
-		return b.BlackBishopMoves(sq), nil
-	case BLACK_ROOK:
-		return b.BlackRookMoves(sq), nil
-	case BLACK_QUEEN:
-		return b.BlackQueenMoves(sq), nil
-	case BLACK_KING:
-		return b.BlackKingMoves(sq), nil
-	default:
-		return nil, fmt.Errorf("invalid square: %d", sq)
+func (b Board) isJumpAttacked(sq, side int) bool {
+	if b.PieceAt(sq) == OFF_BOARD {
+		return false
 	}
-}
-
-func (b Board) WhitePawnMoves(sq int) []Move {
-	moves := make([]Move, 14, 14)
-	mi := 0
-	for _, d := range WHITE_PAWN_ATTACKS {
-		ns := sq + d
-		p := b.PieceAt(ns)
-		if 6 < p && p < 12 { // black piece
-			if ns <= IH8 { // check promotion
-				for _, piece := range WHITE_PROMOTION_PIECES {
-					moves[mi] = Move{sq, ns, true, false, false, true, piece, false}
-					mi += 1
-				}
-			} else {
-				moves[mi] = Move{sq, ns, true, false, false, false, WHITE_PAWN, false}
-				mi += 1
-			}
-		} else if b.Ep != nil && *b.Ep == ns {
-			moves[mi] = Move{sq, ns, true, false, false, false, WHITE_PAWN, false}
-			mi += 1
-		}
-	} // one sq push
-	if b.PieceAt(sq+WHITE_PAWN_DELTAS[0]) == EMPTY_SQUARE {
-		ns := sq + WHITE_PAWN_DELTAS[0]
-		if ns <= IH8 { // check promotion
-			for _, piece := range WHITE_PROMOTION_PIECES {
-				moves[mi] = Move{sq, ns, false, false, false, true, piece, false}
-				mi += 1
-			}
-		} else {
-			moves[mi] = Move{sq, ns, false, false, false, false, WHITE_PAWN, false}
-			mi += 1
-			if IA2 <= sq && sq <= IH2 && b.PieceAt(sq+WHITE_PAWN_DELTAS[1]) == EMPTY_SQUARE {
-				moves[mi] = Move{sq, sq + WHITE_PAWN_DELTAS[1], false, false, false, false, WHITE_PAWN, true}
-				mi += 1
-			}
-		}
-	} // opening two sq push
-	return moves[:mi]
-}
-
-func (b Board) BlackPawnMoves(sq int) []Move {
-	moves := make([]Move, 14, 14)
-	mi := 0
-	for _, d := range BLACK_PAWN_ATTACKS {
-		ns := sq + d
-		p := b.PieceAt(ns)
-		if 0 < p && p < 6 { // white piece
-			if ns >= IA1 { // check promotion
-				for _, piece := range BLACK_PROMOTION_PIECES {
-					moves[mi] = Move{sq, ns, true, false, false, true, piece, false}
-					mi += 1
-				}
-			} else {
-				moves[mi] = Move{sq, ns, true, false, false, false, BLACK_PAWN, false}
-				mi += 1
-			}
-		} else if b.Ep != nil && *b.Ep == ns {
-			moves[mi] = Move{sq, ns, true, false, false, false, BLACK_PAWN, false}
-			mi += 1
-		}
-	} // one sq push
-	if b.PieceAt(sq+BLACK_PAWN_DELTAS[0]) == EMPTY_SQUARE {
-		ns := sq + BLACK_PAWN_DELTAS[0]
-		if ns >= IA1 { // check promotion
-			for _, piece := range BLACK_PROMOTION_PIECES {
-				moves[mi] = Move{sq, ns, false, false, false, true, piece, false}
-				mi += 1
-			}
-		} else {
-			moves[mi] = Move{sq, ns, false, false, false, false, BLACK_PAWN, false}
-			mi += 1
-			if IA7 <= sq && sq <= IH7 && b.PieceAt(sq+BLACK_PAWN_DELTAS[1]) == EMPTY_SQUARE {
-				moves[mi] = Move{sq, sq + BLACK_PAWN_DELTAS[1], false, false, false, false, BLACK_PAWN, true}
-				mi += 1
-			}
-		}
-	} // opening two sq push
-	return moves[:mi]
-}
-
-func (b Board) WhiteKnightMoves(sq int) []Move {
-	moves := make([]Move, 8, 8)
-	mi := 0
+	enemyPiece := WHITE_KNIGHT
+	if side == WHITE {
+		enemyPiece = BLACK_KNIGHT
+	}
 	for _, d := range KNIGHT_DELTAS {
-		ns := d + sq
-		p := b.PieceAt(ns)
-		if 6 < p && p < 12 {
-			moves[mi] = Move{sq, ns, true, false, false, false, WHITE_KNIGHT, false}
-			mi += 1
-		} else if p == EMPTY_SQUARE {
-			moves[mi] = Move{sq, ns, false, false, false, false, WHITE_KNIGHT, false}
-			mi += 1
+		if b.PieceAt(sq+d) == enemyPiece {
+			return true
 		}
 	}
-
-	return moves[:mi]
+	return false
 }
 
-func (b Board) BlackKnightMoves(sq int) []Move {
-	moves := make([]Move, 8, 8)
-	mi := 0
-	for _, d := range KNIGHT_DELTAS {
-		ns := d + sq
-		p := b.PieceAt(ns)
-		if 0 < p && p < 6 {
-			moves[mi] = Move{sq, ns, true, false, false, false, BLACK_KNIGHT, false}
-			mi += 1
-		} else if p == EMPTY_SQUARE {
-			moves[mi] = Move{sq, ns, false, false, false, false, BLACK_KNIGHT, false}
-			mi += 1
-		}
+var CARDINAL_ATTACKERS = map[int]map[int]bool{
+	WHITE: map[int]bool{
+		BLACK_ROOK:  true,
+		BLACK_QUEEN: true,
+	},
+	BLACK: map[int]bool{
+		WHITE_ROOK:  true,
+		WHITE_QUEEN: true,
+	},
+}
+
+func (b Board) isCardinalAttacked(sq, side int) bool {
+	if b.PieceAt(sq) == OFF_BOARD {
+		return false
 	}
-
-	return moves[:mi]
-}
-
-func (b Board) WhiteBishopMoves(sq int) []Move {
-	moves := make([]Move, 13, 13)
-	mi := 0
-	for _, d := range BISHOP_DELTAS {
-		ns := d + sq
-		for b.PieceAt(ns) == EMPTY_SQUARE {
-			moves[mi] = Move{sq, ns, false, false, false, false, WHITE_BISHOP, false}
-			mi += 1
-			ns += d
-		}
-		p := b.PieceAt(ns)
-		if 6 < p && p < 12 {
-			moves[mi] = Move{sq, ns, true, false, false, false, WHITE_BISHOP, false}
-			mi += 1
-		}
-	}
-	return moves[:mi]
-}
-
-func (b Board) BlackBishopMoves(sq int) []Move {
-	moves := make([]Move, 13, 13)
-	mi := 0
-	for _, d := range BISHOP_DELTAS {
-		ns := d + sq
-		for b.PieceAt(ns) == EMPTY_SQUARE {
-			moves[mi] = Move{sq, ns, false, false, false, false, BLACK_BISHOP, false}
-			mi += 1
-			ns += d
-		}
-		p := b.PieceAt(ns)
-		if 0 < p && p < 6 {
-			moves[mi] = Move{sq, ns, true, false, false, false, BLACK_BISHOP, false}
-			mi += 1
-		}
-	}
-	return moves[:mi]
-}
-
-func (b Board) WhiteRookMoves(sq int) []Move {
-	moves := make([]Move, 14, 14)
-	mi := 0
 	for _, d := range ROOK_DELTAS {
-		ns := d + sq
-		for b.PieceAt(ns) == EMPTY_SQUARE {
-			moves[mi] = Move{sq, ns, false, false, false, false, WHITE_ROOK, false}
-			mi += 1
-			ns += d
+		nsq := sq + d
+		for b.PieceAt(nsq) == EMPTY_SQUARE {
+			nsq += d
 		}
-		p := b.PieceAt(ns)
-		if 6 < p && p < 12 {
-			moves[mi] = Move{sq, ns, true, false, false, false, WHITE_ROOK, false}
-			mi += 1
+		p := b.PieceAt(nsq)
+		if _, ok := CARDINAL_ATTACKERS[side][p]; ok {
+			return true
 		}
 	}
-	return moves[:mi]
+
+	return false
 }
 
-func (b Board) BlackRookMoves(sq int) []Move {
-	moves := make([]Move, 14, 14)
-	mi := 0
-	for _, d := range ROOK_DELTAS {
-		ns := d + sq
-		for b.PieceAt(ns) == EMPTY_SQUARE {
-			moves[mi] = Move{sq, ns, false, false, false, false, BLACK_ROOK, false}
-			mi += 1
-			ns += d
-		}
-		p := b.PieceAt(ns)
-		if 0 < p && p < 6 {
-			moves[mi] = Move{sq, ns, true, false, false, false, BLACK_ROOK, false}
-			mi += 1
-		}
-	}
-	return moves[:mi]
+var ORDINAL_ATTACKERS = map[int]map[int]bool{
+	WHITE: map[int]bool{
+		BLACK_BISHOP: true,
+		BLACK_QUEEN:  true,
+	},
+	BLACK: map[int]bool{
+		WHITE_BISHOP: true,
+		WHITE_QUEEN:  true,
+	},
 }
 
-func (b Board) WhiteQueenMoves(sq int) []Move {
-	moves := append(b.WhiteBishopMoves(sq), b.WhiteRookMoves(sq)...)
-	for i, _ := range moves {
-		moves[i].PromotionPiece = WHITE_QUEEN // might as well lean into this silly convention
-	}
-	return moves
-}
-
-func (b Board) BlackQueenMoves(sq int) []Move {
-	moves := append(b.BlackBishopMoves(sq), b.BlackRookMoves(sq)...)
-	for i, _ := range moves {
-		moves[i].PromotionPiece = BLACK_QUEEN
-	}
-	return moves
-}
-
-func (b Board) WhiteKingMoves(sq int) []Move {
-	attackedSquares := toLookupMap(b.SquaresAttackedByBlackPieces())
-	moves := make([]Move, 10, 10)
-	mi := 0
-	for _, d := range QUEEN_DELTAS {
-		if attackedSquares[sq+d] {
-			continue
-		}
-
-		p := b.PieceAt(sq + d)
-		if p == EMPTY_SQUARE {
-			moves[mi] = Move{sq, sq + d, false, false, false, false, WHITE_KING, false}
-			mi += 1
-		} else if 6 < p && p < 12 {
-			moves[mi] = Move{sq, sq + d, true, false, false, false, WHITE_KING, false}
-			mi += 1
-		}
-	}
-	if b.checkWhiteCastleKingside(attackedSquares) {
-		moves[mi] = Move{sq, sq + 2, false, true, false, false, WHITE_KING, false}
-		mi += 1
-	}
-	if b.checkWhiteCastleQueenside(attackedSquares) {
-		moves[mi] = Move{sq, sq - 2, false, false, true, false, WHITE_KING, false}
-		mi += 1
-	}
-	return moves[:mi]
-}
-
-func (b Board) checkWhiteCastleKingside(attackedSquares map[int]bool) bool {
-	if !b.Castle[0] {
+func (b Board) isOrdinalAttacked(sq, side int) bool {
+	if b.PieceAt(sq) == OFF_BOARD {
 		return false
 	}
-
-	if b.PieceAt(IF1) != EMPTY_SQUARE || b.PieceAt(IG1) != EMPTY_SQUARE {
-		return false
-	}
-
-	for i := IE1; i < IH1; i++ {
-		if attackedSquares[i] == true {
-			return false
-		}
-	}
-
-	return true
-}
-
-func (b Board) checkWhiteCastleQueenside(attackedSquares map[int]bool) bool {
-	if !b.Castle[1] {
-		return false
-	}
-
-	for i := IB1; i < IE1; i++ {
-		if b.PieceAt(i) != EMPTY_SQUARE {
-			return false
-		}
-	}
-
-	for i := IC1; i < IF1; i++ {
-		if attackedSquares[i] == true {
-			return false
-		}
-	}
-
-	return true
-}
-
-func (b Board) BlackKingMoves(sq int) []Move {
-	attackedSquares := toLookupMap(b.SquaresAttackedByWhitePieces())
-	moves := make([]Move, 10, 10)
-	mi := 0
-	for _, d := range QUEEN_DELTAS {
-		if attackedSquares[sq+d] {
-			continue
-		}
-
-		p := b.PieceAt(sq + d)
-		if p == EMPTY_SQUARE {
-			moves[mi] = Move{sq, sq + d, false, false, false, false, BLACK_KING, false}
-			mi += 1
-		} else if 0 < p && p < 6 {
-			moves[mi] = Move{sq, sq + d, true, false, false, false, BLACK_KING, false}
-			mi += 1
-		}
-	}
-	if b.checkBlackCastleKingside(attackedSquares) {
-		moves[mi] = Move{sq, sq + 2, false, true, false, false, BLACK_KING, false}
-		mi += 1
-	}
-	if b.checkBlackCastleQueenside(attackedSquares) {
-		moves[mi] = Move{sq, sq - 2, false, false, true, false, BLACK_KING, false}
-		mi += 1
-	}
-	return moves[:mi]
-}
-
-func (b Board) checkBlackCastleKingside(attackedSquares map[int]bool) bool {
-	if !b.Castle[2] {
-		return false
-	}
-
-	if b.PieceAt(IF8) != EMPTY_SQUARE || b.PieceAt(IG8) != EMPTY_SQUARE {
-		return false
-	}
-
-	for i := IE8; i < IH8; i++ {
-		if attackedSquares[i] == true {
-			return false
-		}
-	}
-
-	return true
-}
-
-func (b Board) checkBlackCastleQueenside(attackedSquares map[int]bool) bool {
-	if !b.Castle[3] {
-		return false
-	}
-
-	for i := IB8; i < IE8; i++ {
-		if b.PieceAt(i) != EMPTY_SQUARE {
-			return false
-		}
-	}
-
-	for i := IC8; i < IF8; i++ {
-		if attackedSquares[i] == true {
-			return false
-		}
-	}
-
-	return true
-}
-
-func (b Board) SquaresAttackedByWhitePieces() []int {
-	attackedSquares := make([]int, 0)
-	for i := WHITE_PAWN; i <= WHITE_KING; i++ {
-		sqs, ok := b.PieceSquares[i]
-		if ok {
-			for _, sq := range sqs {
-				switch i {
-				case WHITE_PAWN:
-					attackedSquares = append(attackedSquares, b.PawnAttacks(sq, WHITE_PAWN_ATTACKS)...)
-				case WHITE_KNIGHT:
-					attackedSquares = append(attackedSquares, b.KnightAttacks(sq)...)
-				case WHITE_BISHOP:
-					attackedSquares = append(attackedSquares, b.BishopAttacks(sq)...)
-				case WHITE_ROOK:
-					attackedSquares = append(attackedSquares, b.RookAttacks(sq)...)
-				case WHITE_QUEEN:
-					attackedSquares = append(attackedSquares, b.QueenAttacks(sq)...)
-				case WHITE_KING:
-					attackedSquares = append(attackedSquares, b.KingAttacks(sq)...)
-				}
-			}
-		}
-	}
-
-	return attackedSquares
-}
-
-func (b Board) SquaresAttackedByBlackPieces() []int {
-	attackedSquares := make([]int, 0)
-	for i := BLACK_PAWN; i <= BLACK_KING; i++ {
-		sqs, ok := b.PieceSquares[i]
-		if ok {
-			for _, sq := range sqs {
-				switch i {
-				case BLACK_PAWN:
-					attackedSquares = append(attackedSquares, b.PawnAttacks(sq, BLACK_PAWN_ATTACKS)...)
-				case BLACK_KNIGHT:
-					attackedSquares = append(attackedSquares, b.KnightAttacks(sq)...)
-				case BLACK_BISHOP:
-					attackedSquares = append(attackedSquares, b.BishopAttacks(sq)...)
-				case BLACK_ROOK:
-					attackedSquares = append(attackedSquares, b.RookAttacks(sq)...)
-				case BLACK_QUEEN:
-					attackedSquares = append(attackedSquares, b.QueenAttacks(sq)...)
-				case BLACK_KING:
-					attackedSquares = append(attackedSquares, b.KingAttacks(sq)...)
-				}
-			}
-		}
-	}
-
-	return attackedSquares
-}
-
-func (b Board) PawnAttacks(sq int, deltas [2]int) []int {
-	attacks := make([]int, 2, 2)
-	mi := 0
-	for _, d := range deltas {
-		ns := d + sq
-		if b.PieceAt(ns) != OFF_BOARD {
-			attacks[mi] = ns
-			mi += 1
-		}
-	}
-	return attacks[:mi]
-}
-
-func (b Board) KnightAttacks(sq int) []int {
-	attacks := make([]int, 8, 8)
-	mi := 0
-	for _, d := range KNIGHT_DELTAS {
-		ns := d + sq
-		if b.PieceAt(ns) != OFF_BOARD {
-			attacks[mi] = ns
-			mi += 1
-		}
-	}
-	return attacks[:mi]
-}
-
-func (b Board) BishopAttacks(sq int) []int {
-	attacks := make([]int, 13, 13)
-	mi := 0
 	for _, d := range BISHOP_DELTAS {
-		ns := d + sq
-		for b.PieceAt(ns) == EMPTY_SQUARE {
-			attacks[mi] = ns
-			mi += 1
-			ns += d
+		nsq := sq + d
+		for b.PieceAt(nsq) == EMPTY_SQUARE {
+			nsq += d
 		}
-		if b.PieceAt(ns) != OFF_BOARD {
-			attacks[mi] = ns
-			mi += 1
+		p := b.PieceAt(nsq)
+		if _, ok := ORDINAL_ATTACKERS[side][p]; ok {
+			return true
 		}
 	}
-	return attacks[:mi]
+
+	return false
 }
 
-func (b Board) RookAttacks(sq int) []int {
-	attacks := make([]int, 14, 14)
-	mi := 0
-	for _, d := range ROOK_DELTAS {
-		ns := d + sq
-		for b.PieceAt(ns) == EMPTY_SQUARE {
-			attacks[mi] = ns
-			mi += 1
-			ns += d
-		}
-		if b.PieceAt(ns) != OFF_BOARD {
-			attacks[mi] = ns
-			mi += 1
-		}
+var KING_ATTACKER = map[int]int{
+	WHITE: BLACK_KING,
+	BLACK: WHITE_KING,
+}
+
+func (b Board) isKingAttacked(sq, side int) bool {
+	if b.PieceAt(sq) == OFF_BOARD {
+		return false
 	}
-	return attacks[:mi]
-}
-
-func (b Board) QueenAttacks(sq int) []int {
-	return append(b.BishopAttacks(sq), b.RookAttacks(sq)...)
-}
-
-func (b Board) KingAttacks(sq int) []int {
-	attacks := make([]int, 8, 8)
-	mi := 0
 	for _, d := range QUEEN_DELTAS {
-		ns := sq + d
-		if b.PieceAt(ns) != OFF_BOARD {
-			attacks[mi] = ns
-			mi += 1
+		if b.PieceAt(sq+d) == KING_ATTACKER[side] {
+			return true
 		}
 	}
-	return attacks[:mi]
-}
 
-// TODO: generic
-func toLookupMap(sqs []int) map[int]bool {
-	m := make(map[int]bool)
-	for _, s := range sqs {
-		m[s] = true
-	}
-	return m
+	return false
 }

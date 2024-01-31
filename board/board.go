@@ -376,14 +376,19 @@ func (b Board) PieceAt(idx int) int {
 
 func (b Board) InCheck(side int) bool {
 	if side == WHITE {
-		kingPos := b.PieceSquares[WHITE_KING][0]
-		attackedSquares := toLookupMap(b.SquaresAttackedByBlackPieces())
-		return attackedSquares[kingPos] == true
+		return b.isAttacked(b.pos(WHITE_KING), b.Side)
 	}
 
-	kingPos := b.PieceSquares[BLACK_KING][0]
-	attackedSquares := toLookupMap(b.SquaresAttackedByWhitePieces())
-	return attackedSquares[kingPos] == true
+	return b.isAttacked(b.pos(BLACK_KING), b.Side)
+}
+
+func (b Board) pos(p int) int {
+	for i := 0; i < 64; i++ {
+		if b.PieceAt(MAILBOX_64[i]) == p {
+			return MAILBOX_64[i]
+		}
+	}
+	return -1
 }
 
 func (b Board) Checkmate() bool {
