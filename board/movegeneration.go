@@ -180,66 +180,66 @@ func (b Board) genMoves() []Move {
 }
 
 func (b Board) genPawnMoves(sq int) []Move {
-  moves := make([]Move, 0)
+	moves := make([]Move, 0)
 	if b.Side == WHITE {
-    for _, d := range WHITE_PAWN_ATTACKS {
-      ns := sq + d
-      p := b.PieceAt(ns)
-      if _, ok := PIECE_COLORS[b.Side^1][p]; ok {
-        if ns <= IH8 { // check promotion
-          for _, piece := range WHITE_PROMOTION_PIECES {
-            moves = append(moves, Move{sq, ns, true, false, false, true, piece, false})
-          }
-        } else {
-          moves = append(moves, Move{sq, ns, true, false, false, false, WHITE_PAWN, false})
-        }
-      } else if b.Ep != nil && *b.Ep == ns {
-        moves = append(moves, Move{sq, ns, true, false, false, false, WHITE_PAWN, false})
-      }
-    } // one sq push
-    if b.PieceAt(sq+WHITE_PAWN_DELTAS[0]) == EMPTY_SQUARE {
-      ns := sq + WHITE_PAWN_DELTAS[0]
-      if ns <= IH8 { // check promotion
-        for _, piece := range WHITE_PROMOTION_PIECES {
-          moves = append(moves, Move{sq, ns, false, false, false, true, piece, false})
-        }
-      } else {
-        moves = append(moves, Move{sq, ns, false, false, false, false, WHITE_PAWN, false})
-        if IA2 <= sq && sq <= IH2 && b.PieceAt(sq+WHITE_PAWN_DELTAS[1]) == EMPTY_SQUARE {
-          moves = append(moves, Move{sq, sq + WHITE_PAWN_DELTAS[1], false, false, false, false, WHITE_PAWN, true})
-        } // opening two sq push
-      }
-    }
+		for _, d := range WHITE_PAWN_ATTACKS {
+			ns := sq + d
+			p := b.PieceAt(ns)
+			if _, ok := PIECE_COLORS[b.Side^1][p]; ok {
+				if ns <= IH8 { // check promotion
+					for _, piece := range WHITE_PROMOTION_PIECES {
+						moves = append(moves, Move{sq, ns, true, false, false, true, piece, false})
+					}
+				} else {
+					moves = append(moves, Move{sq, ns, true, false, false, false, WHITE_PAWN, false})
+				}
+			} else if b.Ep != nil && *b.Ep == ns {
+				moves = append(moves, Move{sq, ns, true, false, false, false, WHITE_PAWN, false})
+			}
+		} // one sq push
+		if b.PieceAt(sq+WHITE_PAWN_DELTAS[0]) == EMPTY_SQUARE {
+			ns := sq + WHITE_PAWN_DELTAS[0]
+			if ns <= IH8 { // check promotion
+				for _, piece := range WHITE_PROMOTION_PIECES {
+					moves = append(moves, Move{sq, ns, false, false, false, true, piece, false})
+				}
+			} else {
+				moves = append(moves, Move{sq, ns, false, false, false, false, WHITE_PAWN, false})
+				if IA2 <= sq && sq <= IH2 && b.PieceAt(sq+WHITE_PAWN_DELTAS[1]) == EMPTY_SQUARE {
+					moves = append(moves, Move{sq, sq + WHITE_PAWN_DELTAS[1], false, false, false, false, WHITE_PAWN, true})
+				} // opening two sq push
+			}
+		}
 	} else {
-    for _, d := range BLACK_PAWN_ATTACKS {
-      ns := sq + d
-      p := b.PieceAt(ns)
-      if _, ok := PIECE_COLORS[b.Side^1][p]; ok {
-        if ns >= IA1 { // check promotion
-          for _, piece := range BLACK_PROMOTION_PIECES {
-            moves = append(moves, Move{sq, ns, true, false, false, true, piece, false})
-          }
-        } else {
-          moves = append(moves, Move{sq, ns, true, false, false, false, BLACK_PAWN, false})
-        }
-      } else if b.Ep != nil && *b.Ep == ns {
-        moves = append(moves, Move{sq, ns, true, false, false, false, BLACK_PAWN, false})
-      }
-    } // one sq push
-    if b.PieceAt(sq+BLACK_PAWN_DELTAS[0]) == EMPTY_SQUARE {
-      ns := sq + BLACK_PAWN_DELTAS[0]
-      if ns >= IA1 { // check promotion
-        for _, piece := range BLACK_PROMOTION_PIECES {
-          moves = append(moves, Move{sq, ns, false, false, false, true, piece, false})
-        }
-      } else {
-        moves = append(moves, Move{sq, ns, false, false, false, false, BLACK_PAWN, false})
-        if IA7 <= sq && sq <= IH7 && b.PieceAt(sq+BLACK_PAWN_DELTAS[1]) == EMPTY_SQUARE {
-          moves = append(moves, Move{sq, sq + BLACK_PAWN_DELTAS[1], false, false, false, false, BLACK_PAWN, true})
-        }
-      } // opening two sq push
-    }
-  }
+		for _, d := range BLACK_PAWN_ATTACKS {
+			ns := sq + d
+			p := b.PieceAt(ns)
+			if _, ok := PIECE_COLORS[b.Side^1][p]; ok {
+				if ns >= IA1 { // check promotion
+					for _, piece := range BLACK_PROMOTION_PIECES {
+						moves = append(moves, Move{sq, ns, true, false, false, true, piece, false})
+					}
+				} else {
+					moves = append(moves, Move{sq, ns, true, false, false, false, BLACK_PAWN, false})
+				}
+			} else if b.Ep != nil && *b.Ep == ns {
+				moves = append(moves, Move{sq, ns, true, false, false, false, BLACK_PAWN, false})
+			}
+		} // one sq push
+		if b.PieceAt(sq+BLACK_PAWN_DELTAS[0]) == EMPTY_SQUARE {
+			ns := sq + BLACK_PAWN_DELTAS[0]
+			if ns >= IA1 { // check promotion
+				for _, piece := range BLACK_PROMOTION_PIECES {
+					moves = append(moves, Move{sq, ns, false, false, false, true, piece, false})
+				}
+			} else {
+				moves = append(moves, Move{sq, ns, false, false, false, false, BLACK_PAWN, false})
+				if IA7 <= sq && sq <= IH7 && b.PieceAt(sq+BLACK_PAWN_DELTAS[1]) == EMPTY_SQUARE {
+					moves = append(moves, Move{sq, sq + BLACK_PAWN_DELTAS[1], false, false, false, false, BLACK_PAWN, true})
+				}
+			} // opening two sq push
+		}
+	}
 	return moves
 }
 

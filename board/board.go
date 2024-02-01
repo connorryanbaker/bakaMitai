@@ -421,7 +421,24 @@ func (b Board) ThreefoldRepetition() bool {
 }
 
 func (b Board) InsufficientMaterial() bool {
-	return len(b.PieceSquares) == 2
+	if len(b.PieceSquares) == 2 {
+		return true
+	}
+	if len(b.PieceSquares) == 3 {
+		if _, ok := b.PieceSquares[WHITE_KNIGHT]; ok {
+			return true
+		}
+		if _, ok := b.PieceSquares[BLACK_KNIGHT]; ok {
+			return true
+		}
+		if _, ok := b.PieceSquares[WHITE_BISHOP]; ok {
+			return true
+		}
+		if _, ok := b.PieceSquares[BLACK_BISHOP]; ok {
+			return true
+		}
+	}
+	return false
 }
 
 func (b Board) Drawn() bool {
