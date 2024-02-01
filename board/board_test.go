@@ -3167,9 +3167,52 @@ func TestFiftyMoveDraw(t *testing.T) {
 }
 
 func TestInsufficientMaterial(t *testing.T) {
-	b := FromFENString("8/8/8/8/8/4k3/8/7K w - - 30 100")
-	if b.InsufficientMaterial() != true {
-		t.Errorf("Kings only on the board should be ruled insufficient material")
+	var tests = []struct {
+		b Board
+		r bool
+	}{
+		{
+			FromFENString("8/8/8/8/8/4k3/8/7K w - - 30 100"),
+			true,
+		},
+		{
+			FromFENString("5k2/8/8/8/8/8/6B1/4K3 w - - 0 1"),
+			true,
+		},
+		{
+			FromFENString("5k2/8/8/8/8/8/6N1/4K3 w - - 0 1"),
+			true,
+		},
+		{
+			FromFENString("5k2/8/8/8/8/8/6b1/4K3 w - - 0 1"),
+			true,
+		},
+		{
+			FromFENString("5k2/8/8/8/8/8/6b1/4K3 w - - 0 1"),
+			true,
+		},
+		{
+			FromFENString("5k2/8/8/8/8/8/6r1/4K3 w - - 0 1"),
+			false,
+		},
+		{
+			FromFENString("5k2/8/8/8/8/8/6R1/4K3 w - - 0 1"),
+			false,
+		},
+		{
+			FromFENString("5k2/8/8/8/8/8/6bn/4K3 w - - 0 1"),
+			false,
+		},
+		{
+			FromFENString("5k2/8/8/8/8/8/6BN/4K3 w - - 0 1"),
+			false,
+		},
+	}
+	for _, tt := range tests {
+		if tt.b.InsufficientMaterial() != tt.r {
+			tt.b.Print()
+			t.Errorf("Unexpected result for insufficient material call")
+		}
 	}
 }
 
