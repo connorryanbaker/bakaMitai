@@ -20,7 +20,7 @@ func Eval(b board.Board) float64 {
 	// TODO:
 	// more mirror tests to ensure balance of evals
 	// re-add piece mobility
-	return evalMaterial(b) + evalPieceSquares(b)*5
+	return evalMaterial(b) + evalPieceSquares(b)*5 + evalMobility(b)*100 + evalPawnStructure(b)*1000
 }
 
 func NegamaxEval(b board.Board) float64 {

@@ -34,31 +34,43 @@ func negamax(b *board.Board, depth int, alpha, beta float64, line []board.Move) 
 	return alpha
 }
 
-// tmp: hacky workaround for dev metrics
+// s/o bruce moreland pv collection
 
-func SearchNodeCount(b *board.Board, depth int, nodes *int) []board.Move {
-	pv := make([]board.Move, depth)
-	negamaxNodeCount(b, depth, math.Inf(-1), math.Inf(1), pv, nodes)
-	return pv
+type line struct {
+	nummoves int
+	moves    []board.Move
 }
 
-func negamaxNodeCount(b *board.Board, depth int, alpha, beta float64, line []board.Move, nodes *int) float64 {
+// tmp: hacky workaround for dev metrics
+func SearchNodeCount(b *board.Board, depth int, nodes *int) []board.Move {
+	pv := line{depth, make([]board.Move, depth)}
+	negamaxNodeCount(b, depth, math.Inf(-1), math.Inf(1), pv, nodes)
+	return pv.moves
+}
+
+func negamaxNodeCount(b *board.Board, depth int, alpha, beta float64, pv line, nodes *int) float64 {
+	lpv := line{depth, make([]board.Move, depth)}
 	moves := b.LegalMoves()
 	if depth == 0 || len(moves) == 0 {
 		*nodes += 1
+		pv.nummoves = 0
 		return eval.NegamaxEval(*b)
 	}
 
 	for _, m := range moves {
 		b.MakeMove(m)
-		v := -negamaxNodeCount(b, depth-1, -beta, -alpha, line, nodes)
+		v := -negamaxNodeCount(b, depth-1, -beta, -alpha, lpv, nodes)
 		b.UnmakeMove()
 		if v >= beta {
 			return beta
 		}
 		if v > alpha {
 			alpha = v
-			line[len(line)-depth] = m
+			pv.moves[0] = m
+			for i := 0; i < lpv.nummoves-1; i++ {
+				pv.moves[i+1] = lpv.moves[i]
+			}
+			pv.nummoves = lpv.nummoves + 1
 		}
 	}
 	return alpha
