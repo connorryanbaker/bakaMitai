@@ -1,7 +1,8 @@
 TODO: loosely in order
-Investigate the PV calculation [ ]
+Investigate the PV calculation and PV search [ ]
   - 1st move seems reasonable but 2nd moves less so
   - Being able to use PV array for move ordering is crucial
+  - try to feed move into search to search that move first
 Quiescence https://www.chessprogramming.org/Quiescence_Search [ ]
 Iterative Deepening https://www.chessprogramming.org/Iterative_Deepening [ ]
 Legal Move Generation with Bitboards to remove need to make / unmake moves to

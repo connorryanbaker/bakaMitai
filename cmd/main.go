@@ -40,6 +40,7 @@ func play(b board.Board) {
 		b.Print()
 		moves := search.SearchNodeCount(&b, *depth, &nodes)
 		fmt.Println(nodes)
+		fmt.Println(moves)
 		b.MakeMove(moves[0])
 		nodelist = append(nodelist, nodes)
 		if b.Checkmate() {
