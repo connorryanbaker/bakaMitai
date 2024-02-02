@@ -34,7 +34,6 @@ func sum(n []int) int {
 }
 
 func play(b board.Board) {
-	nodelist := make([]int, 0)
 	for true {
 		var nodes int
 		b.Print()
@@ -42,49 +41,32 @@ func play(b board.Board) {
 		fmt.Println(nodes)
 		fmt.Println(moves)
 		b.MakeMove(moves[0])
-		nodelist = append(nodelist, nodes)
 		if b.Checkmate() {
 			b.Print()
 			fmt.Println("checkmate!")
-			printHistory(b)
-			fmt.Println(sum(nodelist))
+			fmt.Println(board.ToPGN(b.History))
 			return
 		} else if b.Stalemate() {
 			b.Print()
 			fmt.Println("stalemate!")
-			printHistory(b)
-			fmt.Println(sum(nodelist))
-			fmt.Println(nodelist)
+			fmt.Println(board.ToPGN(b.History))
 			return
 		} else if b.FiftyMoveDraw() {
 			b.Print()
 			fmt.Println("50 move draw!")
-			printHistory(b)
-			fmt.Println(sum(nodelist))
-			fmt.Println(nodelist)
+			fmt.Println(board.ToPGN(b.History))
 			return
 		} else if b.ThreefoldRepetition() {
 			b.Print()
 			fmt.Println("3fold!")
-			printHistory(b)
-			fmt.Println(sum(nodelist))
-			fmt.Println(nodelist)
+			fmt.Println(board.ToPGN(b.History))
 			return
 		} else if b.InsufficientMaterial() {
 			b.Print()
 			fmt.Println("insufficient material!")
-			printHistory(b)
-			fmt.Println(sum(nodelist))
-			fmt.Println(nodelist)
+			fmt.Println(board.ToPGN(b.History))
 			return
 		}
-	}
-}
-
-func printHistory(b board.Board) {
-	h := b.History
-	for i := 0; i < len(h); i++ {
-		fmt.Printf("%d: FROM: %s TO: %s\n", i+1, board.SQ_NUM_TO_NAME[h[i].Move.From], board.SQ_NUM_TO_NAME[h[i].Move.To])
 	}
 }
 

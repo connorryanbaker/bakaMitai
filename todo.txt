@@ -1,19 +1,26 @@
-TODO: loosely in order
-Search PV move first [ ]
+TODO:
+
+SEARCH
+Search PV move first [ ] 2/8
 Quiescence https://www.chessprogramming.org/Quiescence_Search [ ]
-Iterative Deepening https://www.chessprogramming.org/Iterative_Deepening [ ]
-Legal Move Generation with Bitboards to remove need to make / unmake moves to
-determine legality [ ]
-Transposition Tables https://www.chessprogramming.org/Transposition_Table [ ]
 Static Exchange Evaluation [ ]
+Iterative Deepening https://www.chessprogramming.org/Iterative_Deepening [ ]
+Transposition Tables https://www.chessprogramming.org/Transposition_Table [ ]
 Killer Moves https://www.chessprogramming.org/Killer_Heuristic [ ]
 History Heuristics https://www.chessprogramming.org/History_Heuristic [ ]
 Late Move Reduction https://www.chessprogramming.org/Late_Move_Reductions [ ]
+
+MOVEGENERATION
+Legal Move Generation with Bitboards to remove need to make / unmake moves to determine legality [ ]
+
+EVAL
+Tuning and Testing w/ Mirrorboard [ ] 2/8
+  - pawn structure
+  - mobility
+
+UI
 UCI [ ]
 
 Misc
-PGN Export [ ]
-Pawn Structure eval [ ]
-Piece Mobility eval for knights, bishops, queen(?), rook: [ ]
-Continue Mirrorboard testing [ ]
+PGN export edge cases [ ]
 Rename / README [ ]

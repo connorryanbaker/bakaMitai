@@ -3,8 +3,8 @@ package eval
 import "github.com/connorryanbaker/engine/board"
 
 func evalMobility(b board.Board) float64 {
-	wt := 0
-	bt := 0
+	var wt float64
+	var bt float64
 	if b.Side == board.WHITE {
 		wt = pieceMoveCount(b.LegalMoves(), b)
 		b.Side ^= 1
@@ -14,20 +14,20 @@ func evalMobility(b board.Board) float64 {
 		b.Side ^= 1
 		wt = pieceMoveCount(b.LegalMoves(), b)
 	}
-	return float64(wt - bt)
+	return wt - bt
 }
 
-func pieceMoveCount(m []board.Move, b board.Board) int {
-	total := 0
+func pieceMoveCount(m []board.Move, b board.Board) float64 {
+	var total float64
 	for _, m := range m {
 		p := b.PieceAt(m.From)
 		switch p {
-		case board.WHITE_KNIGHT, board.BLACK_KNIGHT:
-			total += 1
+		case board.WHITE_KNIGHT, board.BLACK_KNIGHT, board.WHITE_QUEEN, board.BLACK_QUEEN:
+			total += 1.5
 		case board.WHITE_BISHOP, board.BLACK_BISHOP:
-			total += 2
-		case board.WHITE_ROOK, board.BLACK_ROOK, board.WHITE_QUEEN, board.BLACK_QUEEN:
-			total += 3
+			total += 2.0
+		case board.WHITE_ROOK, board.BLACK_ROOK:
+			total += 3.0
 		}
 	}
 	return total
