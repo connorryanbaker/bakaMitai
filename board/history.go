@@ -94,7 +94,7 @@ func parsePawnMove(b Board, m Move) string {
 		return fmt.Sprintf("%s%s", SQ_NUM_TO_NAME[m.To], PGN_PIECE_TRANSLATION[m.PromotionPiece])
 	}
 	if m.Capture {
-		return fmt.Sprintf("%bx%s", fileName(m.From), SQ_NUM_TO_NAME[m.To])
+		return fmt.Sprintf("%sx%s", string(fileName(m.From)), SQ_NUM_TO_NAME[m.To])
 	}
 	return SQ_NUM_TO_NAME[m.To]
 }

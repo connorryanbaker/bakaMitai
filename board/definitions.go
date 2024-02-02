@@ -51,7 +51,7 @@ func file(sq int) int {
 }
 
 func fileName(sq int) byte {
-	return FILES[file(sq)]
+	return FILES[file(sq)-1]
 }
 
 var INIT_CASTLE = [4]bool{true, true, true, true}
