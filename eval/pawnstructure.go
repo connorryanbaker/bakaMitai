@@ -1,6 +1,6 @@
 package eval
 
-import "github.com/connorryanbaker/engine/board"
+import "github.com/connorryanbaker/bakaMitai/board"
 
 func evalPawnStructure(b board.Board) float64 {
 	// return doubledPawnPenalties(b) + isolatedPawnPenalties(b)

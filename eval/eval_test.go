@@ -1,7 +1,7 @@
 package eval
 
 import (
-	"github.com/connorryanbaker/engine/board"
+	"github.com/connorryanbaker/bakaMitai/board"
 	"math"
 	"testing"
 )

@@ -1,6 +1,6 @@
 package eval
 
-import "github.com/connorryanbaker/engine/board"
+import "github.com/connorryanbaker/bakaMitai/board"
 
 func evalMobility(b board.Board) float64 {
 	var wt float64

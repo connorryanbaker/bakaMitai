@@ -1,8 +1,8 @@
 package search
 
 import (
-	"github.com/connorryanbaker/engine/board"
-	"github.com/connorryanbaker/engine/eval"
+	"github.com/connorryanbaker/bakaMitai/board"
+	"github.com/connorryanbaker/bakaMitai/eval"
 
 	"math"
 )

@@ -1,7 +1,7 @@
 package search
 
 import (
-	"github.com/connorryanbaker/engine/board"
+	"github.com/connorryanbaker/bakaMitai/board"
 	"testing"
 )
 
