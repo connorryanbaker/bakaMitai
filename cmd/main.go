@@ -7,8 +7,8 @@ import (
 	"os"
 	"runtime/pprof"
 
-	"github.com/connorryanbaker/engine/board"
-	"github.com/connorryanbaker/engine/search"
+	"github.com/connorryanbaker/bakaMitai/board"
+	"github.com/connorryanbaker/bakaMitai/search"
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")

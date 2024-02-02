@@ -1,7 +1,7 @@
 package eval
 
 import (
-	"github.com/connorryanbaker/engine/board"
+	"github.com/connorryanbaker/bakaMitai/board"
 )
 
 // definitions from chess programming simplified evaluation function

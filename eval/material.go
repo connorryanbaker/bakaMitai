@@ -1,6 +1,6 @@
 package eval
 
-import "github.com/connorryanbaker/engine/board"
+import "github.com/connorryanbaker/bakaMitai/board"
 
 var PIECE_VALUES = map[int]float64{
 	board.WHITE_PAWN:   1000,
