@@ -19,7 +19,6 @@ func Eval(b board.Board) float64 {
 
 	// TODO:
 	// more mirror tests to ensure balance of evals
-	// re-add piece mobility
 	return (evalMaterial(b)*100 + evalPieceSquares(b) + evalMobility(b) + evalPawnStructure(b)) / 1000
 }
 
