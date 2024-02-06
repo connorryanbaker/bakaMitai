@@ -81,6 +81,18 @@ func TestMirrorEval(t *testing.T) {
 		{
 			board.FromFENString("r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1"),
 		},
+		{
+			board.FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1"),
+		},
+		{
+			board.FromFENString("rnbqkb1r/pppppppp/5n2/8/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 0 1"),
+		},
+		{
+			board.FromFENString("rnbqkb1r/ppp1pppp/5n2/3p4/4P3/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 1"),
+		},
+		{
+			board.FromFENString("rnbqkb1r/ppp1pppp/5n2/3P4/8/2N5/PPPP1PPP/R1BQKBNR b KQkq - 0 1"),
+		},
 	}
 
 	for _, tt := range tests {
@@ -88,6 +100,45 @@ func TestMirrorEval(t *testing.T) {
 		me := Eval(*board.Mirror(tt.b))
 		if me != e*-1 {
 			t.Errorf("Unexpected mirror evaluation; e: %f, me: %f", e, me)
+		}
+	}
+}
+
+func TestEval(t *testing.T) {
+	var tests = []struct {
+		b board.Board
+		e float64
+	}{
+		{
+			board.FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1"),
+			float64(-0.9195),
+		},
+		{
+			board.FromFENString("r1bqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1"),
+			float64(1.9605),
+		},
+		{
+			board.FromFENString("rnbqkb1r/pppppppp/5n2/1N6/8/8/PPPPPPPP/R1BQKBNR b KQkq - 0 1"),
+			float64(-0.0285),
+		},
+		{
+			board.FromFENString("rnbqkb1r/pppppppp/5n2/8/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 0 1"),
+			float64(0.1675),
+		},
+		{
+			board.FromFENString("rnbqkb1r/ppp1pppp/5n2/3p4/4P3/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 1"),
+			float64(0.003),
+		},
+		{
+			board.FromFENString("rnbqkb1r/ppp1pppp/5n2/3P4/8/2N5/PPPP1PPP/R1BQKBNR b KQkq - 0 1"),
+			float64(1.095), // TODO: this should take SSE into account
+		},
+	}
+
+	for _, tt := range tests {
+		v := Eval(tt.b)
+		if v != tt.e {
+			t.Errorf("Unexpected evaluation; received: %f, expected: %f", v, tt.e)
 		}
 	}
 }
