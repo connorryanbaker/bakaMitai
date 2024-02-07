@@ -8,6 +8,7 @@ import (
 	"runtime/pprof"
 
 	"github.com/connorryanbaker/bakaMitai/board"
+	"github.com/connorryanbaker/bakaMitai/engine"
 	"github.com/connorryanbaker/bakaMitai/search"
 )
 
@@ -34,13 +35,11 @@ func sum(n []int) int {
 }
 
 func play(b board.Board) {
+	e := engine.New(*depth)
 	for true {
-		var nodes int
 		b.Print()
-		moves := search.SearchNodeCount(&b, *depth, &nodes)
-		fmt.Println(nodes)
-		fmt.Println(moves)
-		b.MakeMove(moves[0])
+		m := e.GenMove(&b)
+		b.MakeMove(m)
 		if b.Checkmate() {
 			b.Print()
 			fmt.Println("checkmate!")
@@ -80,5 +79,6 @@ func profileSearch(b board.Board) {
 		log.Fatal("couldn't start CPU profile: ", err)
 	}
 	defer pprof.StopCPUProfile()
-	search.Search(&b, *depth)
+	pv := search.NewLine(*depth)
+	search.Search(&b, *depth, &pv)
 }

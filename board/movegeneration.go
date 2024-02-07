@@ -112,7 +112,7 @@ func (m Move) ToString() string {
 	return fmt.Sprintf("%s - %s\n", SQ_NUM_TO_NAME[m.From], SQ_NUM_TO_NAME[m.To])
 }
 
-func equalMoves(m1, m2 Move) bool {
+func EqualMoves(m1, m2 Move) bool {
 	if m1.From != m2.From {
 		return false
 	}
@@ -277,11 +277,11 @@ func (b Board) genKingMoves(p, sq int) []Move {
 		if b.isAttacked(sq+d, b.Side) {
 			continue
 		}
-		p := b.PieceAt(sq + d)
-		if p == EMPTY_SQUARE {
+		mp := b.PieceAt(sq + d)
+		if mp == EMPTY_SQUARE {
 			moves = append(moves, Move{sq, sq + d, false, false, false, false, p, false})
 		}
-		if _, ok := PIECE_COLORS[b.Side^1][p]; ok {
+		if _, ok := PIECE_COLORS[b.Side^1][mp]; ok {
 			moves = append(moves, Move{sq, sq + d, true, false, false, false, p, false})
 		}
 	}
