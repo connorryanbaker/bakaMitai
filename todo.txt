@@ -13,14 +13,9 @@ Late Move Reduction https://www.chessprogramming.org/Late_Move_Reductions [ ]
 MOVEGENERATION
 Legal Move Generation with Bitboards to remove need to make / unmake moves to determine legality [ ]
 
-EVAL
-Tuning and Testing w/ Mirrorboard [ ] 2/8
-  - pawn structure
-  - mobility
-
 UI
 UCI [ ]
 
 Misc
 PGN export edge cases [ ]
-Rename / README [ ]
+Look into avoiding repetitions in winning positions [ ]

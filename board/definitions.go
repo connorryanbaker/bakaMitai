@@ -50,9 +50,11 @@ func file(sq int) int {
 	return sq % 10
 }
 
-func fileName(sq int) byte {
-	return FILES[file(sq)-1]
+func fileName(sq int) string {
+	return string(FILES[file(sq)-1])
 }
+
+const FILES = "abcdefgh"
 
 var INIT_CASTLE = [4]bool{true, true, true, true}
 
@@ -508,8 +510,6 @@ var IA8_TO_IH1 = [8][8]int{
 		IH1,
 	},
 }
-
-const FILES = "abcdefgh"
 
 func epSquareFile(ep *int) int {
 	if ep == nil { // should return error

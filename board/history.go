@@ -89,12 +89,12 @@ func ToPGN(h []History) string {
 func parsePawnMove(b Board, m Move) string {
 	if m.Promote {
 		if m.Capture {
-			return fmt.Sprintf("%bx%s%s", fileName(m.From), SQ_NUM_TO_NAME[m.To], PGN_PIECE_TRANSLATION[m.PromotionPiece])
+			return fmt.Sprintf("%sx%s%s", fileName(m.From), SQ_NUM_TO_NAME[m.To], PGN_PIECE_TRANSLATION[m.PromotionPiece])
 		}
 		return fmt.Sprintf("%s%s", SQ_NUM_TO_NAME[m.To], PGN_PIECE_TRANSLATION[m.PromotionPiece])
 	}
 	if m.Capture {
-		return fmt.Sprintf("%sx%s", string(fileName(m.From)), SQ_NUM_TO_NAME[m.To])
+		return fmt.Sprintf("%sx%s", fileName(m.From), SQ_NUM_TO_NAME[m.To])
 	}
 	return SQ_NUM_TO_NAME[m.To]
 }
