@@ -18,3 +18,4 @@ UCI [ ]
 
 Misc
 PGN export edge cases [ ]
+Look into avoiding repetitions in winning positions [ ]

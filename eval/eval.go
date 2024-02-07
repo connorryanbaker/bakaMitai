@@ -17,7 +17,7 @@ func Eval(b board.Board) float64 {
 		return 0
 	}
 
-	return (evalMaterial(b) + evalPieceSquares(b) + evalMobility(b) + evalPawnStructure(b)) / 1000
+	return (evalMaterial(b) + evalPieceSquares(b) + evalMobility(b)*10 + evalPawnStructure(b)*100) / 1000
 }
 
 func NegamaxEval(b board.Board) float64 {

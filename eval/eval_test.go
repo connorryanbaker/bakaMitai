@@ -111,33 +111,38 @@ func TestEval(t *testing.T) {
 	}{
 		{
 			board.FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1"),
-			float64(-0.9195),
+			float64(-0.735),
 		},
 		{
 			board.FromFENString("r1bqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1"),
-			float64(1.9605),
+			float64(2.145),
 		},
 		{
 			board.FromFENString("rnbqkb1r/pppppppp/5n2/1N6/8/8/PPPPPPPP/R1BQKBNR b KQkq - 0 1"),
-			float64(-0.0285),
+			float64(-0.015),
 		},
 		{
 			board.FromFENString("rnbqkb1r/pppppppp/5n2/8/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 0 1"),
-			float64(0.1675),
+			float64(0.325),
+		},
+		{
+			board.FromFENString("rnbqkb1r/ppp1pppp/5n2/8/8/2N2P2/PP1P1PPP/R1BQKBNR b KQkq - 0 1"),
+			float64(-0.305),
 		},
 		{
 			board.FromFENString("rnbqkb1r/ppp1pppp/5n2/3p4/4P3/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 1"),
-			float64(0.003),
+			float64(0.03),
 		},
 		{
 			board.FromFENString("rnbqkb1r/ppp1pppp/5n2/3P4/8/2N5/PPPP1PPP/R1BQKBNR b KQkq - 0 1"),
-			float64(1.095), // TODO: this should take SSE into account
+			float64(0.996), // TODO: this should take SSE into account
 		},
 	}
 
 	for _, tt := range tests {
 		v := Eval(tt.b)
 		if v != tt.e {
+			tt.b.Print()
 			t.Errorf("Unexpected evaluation; received: %f, expected: %f", v, tt.e)
 		}
 	}
