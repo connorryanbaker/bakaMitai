@@ -825,7 +825,7 @@ func TestMakeMoveEPCapture(t *testing.T) {
 			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
 				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
-			if !equalMoves(tt.m, h.Move) {
+			if !EqualMoves(tt.m, h.Move) {
 				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
 			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {
@@ -1048,7 +1048,7 @@ func TestMakeMovePromotion(t *testing.T) {
 			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
 				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
-			if !equalMoves(tt.m, h.Move) {
+			if !EqualMoves(tt.m, h.Move) {
 				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
 			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {
@@ -1354,7 +1354,7 @@ func TestMakeMoveCapture(t *testing.T) {
 			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
 				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
-			if !equalMoves(tt.m, h.Move) {
+			if !EqualMoves(tt.m, h.Move) {
 				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
 			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {
@@ -1919,7 +1919,7 @@ func TestMakeMoveQuietMoves(t *testing.T) {
 			if h.previousSquareOccupant != tt.h.previousSquareOccupant {
 				t.Errorf("%s pso MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
-			if !equalMoves(tt.m, h.Move) {
+			if !EqualMoves(tt.m, h.Move) {
 				t.Errorf("%s move MakeMove resulted in unexpected history; received: %v, expected: %v", tt.d, h, tt.h)
 			}
 			if h.ep != nil && tt.h.ep != nil && *h.ep != *tt.h.ep {

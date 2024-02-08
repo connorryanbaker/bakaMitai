@@ -36,7 +36,8 @@ func TestFindMateInOne(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		l := Search(&tt.b, 2)
+		pv := NewLine(2)
+		l := Search(&tt.b, 2, &pv)
 		m := l[0]
 		if m.To != tt.expectedTo {
 			tt.b.Print()
@@ -69,18 +70,64 @@ func TestFindMateInTwo(t *testing.T) {
 				{board.IC4, board.IF7, true, false, false, false, board.WHITE_BISHOP, false},
 			},
 		},
+		{
+			board.FromFENString("2k1r2r/ppp3p1/3b4/3pq2b/7p/2NP1P2/PPP2Q1P/R5RK b - - 0 1"),
+			[]board.Move{
+				{board.IH5, board.IF3, true, false, false, false, board.BLACK_BISHOP, false},
+				{board.IF2, board.IF3, true, false, false, false, board.WHITE_QUEEN, false},
+				{board.IE5, board.IH2, true, false, false, false, board.BLACK_QUEEN, false},
+			},
+		},
+		{
+			board.FromFENString("3k4/1p3Bp1/p5r1/2b5/P3P1N1/5Pp1/1P1r4/2R4K b - - 0 1"),
+			[]board.Move{
+				{board.ID2, board.IH2, false, false, false, false, board.BLACK_ROOK, false},
+				{board.IG4, board.IH2, true, false, false, false, board.WHITE_KNIGHT, false},
+				{board.IG3, board.IG2, false, false, false, false, board.BLACK_PAWN, false},
+			},
+		},
 	}
 
 	for _, tt := range tests {
-		l := Search(&tt.b, 3)
+		pv := NewLine(3)
+		l := Search(&tt.b, 3, &pv)
 		for i, _ := range l {
-			if tt.l[i].To != l[i].To {
+			if !board.EqualMoves(tt.l[i], l[i]) {
 				t.Errorf("line[%d] to; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].To], board.SQ_NUM_TO_NAME[tt.l[i].To])
-				t.Errorf("%v", l)
-			}
-			if tt.l[i].From != l[i].From {
 				t.Errorf("line[%d] from; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].From], board.SQ_NUM_TO_NAME[tt.l[i].From])
-				t.Errorf("%v", l)
+				t.Errorf("received line: %v", l)
+				t.Errorf("expected line: %v", tt.l)
+				tt.b.Print()
+			}
+		}
+	}
+}
+func TestFindMateInThree(t *testing.T) {
+	var tests = []struct {
+		b board.Board
+		l []board.Move
+	}{
+		{
+			board.FromFENString("r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1"),
+			[]board.Move{
+				{board.IF8, board.IC5, false, false, false, false, board.BLACK_BISHOP, false},
+				{board.ID4, board.IC5, true, false, false, false, board.WHITE_KING, false},
+				{board.IF6, board.IB6, false, false, false, false, board.BLACK_QUEEN, false},
+				{board.IC5, board.ID5, false, false, false, false, board.WHITE_KING, false},
+				{board.IB6, board.ID6, false, false, false, false, board.BLACK_QUEEN, false},
+			},
+		},
+	}
+	for _, tt := range tests {
+		pv := NewLine(5)
+		l := Search(&tt.b, 5, &pv)
+		for i, _ := range l {
+			if !board.EqualMoves(tt.l[i], l[i]) {
+				t.Errorf("line[%d] to; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].To], board.SQ_NUM_TO_NAME[tt.l[i].To])
+				t.Errorf("line[%d] from; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].From], board.SQ_NUM_TO_NAME[tt.l[i].From])
+				t.Errorf("received line: %v", l)
+				t.Errorf("expected line: %v", tt.l)
+				tt.b.Print()
 			}
 		}
 	}
