@@ -1,7 +1,6 @@
 TODO:
 
 SEARCH
-Search PV move first [ ] 2/8
 Quiescence https://www.chessprogramming.org/Quiescence_Search [ ]
 Static Exchange Evaluation [ ]
 Iterative Deepening https://www.chessprogramming.org/Iterative_Deepening [ ]
@@ -19,3 +18,4 @@ UCI [ ]
 Misc
 PGN export edge cases [ ]
 Look into avoiding repetitions in winning positions [ ]
+Missing checkmates [ ]
