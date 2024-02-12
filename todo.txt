@@ -11,6 +11,18 @@ Late Move Reduction https://www.chessprogramming.org/Late_Move_Reductions [ ]
 
 MOVEGENERATION
 Legal Move Generation with Bitboards to remove need to make / unmake moves to determine legality [ ]
+bitboards
+- pawn moves [x]
+- knight moves [ ]
+- king moves
+- bishop moves
+- rook moves
+- queen moves
+- attacks
+- castling / ep?
+- translating bitboard results to move structs
+- generating legal moves
+
 
 UI
 UCI [ ]

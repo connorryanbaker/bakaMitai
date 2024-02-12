@@ -193,3 +193,59 @@ func TestPushTwoBlackPawns(t *testing.T) {
   }
 }
 
+func TestWhitePawnAttacks(t *testing.T) {
+  var tests = []struct{
+    bb bitboard
+    e  BB
+  }{
+    {
+      NewBitboard(),
+      0x0000000000FF0000,
+    },
+    {
+      bitboard{
+        0b0000000000000000000000000000000000000000000000001000000100000000,
+        INIT_BLACK_PAWN_BB,
+      },
+      0b0000000000000000000000000000000000000000010000100000000000000000,
+    },
+  }
+
+  for _, tt := range tests {
+    res := tt.bb.whitePawnAttacks()
+    if tt.e != res {
+      printBB(tt.bb.whitePawnAttacks())
+      t.Errorf("Unexpected white pawn attacks; expected %b, received %b", tt.e, res)
+    }
+  }
+}
+
+func TestBlackPawnAttacks(t *testing.T) {
+  var tests = []struct{
+    bb bitboard
+    e  BB
+  }{
+    {
+      NewBitboard(),
+      0x0000FF0000000000,
+    },
+    {
+      bitboard{
+        INIT_WHITE_PAWN_BB,
+        0b0000000010000001000000000000000000000000000000000000000000000000,
+      },
+      0b0000000000000000010000100000000000000000000000000000000000000000,
+    },
+  }
+
+  for _, tt := range tests {
+    res := tt.bb.blackPawnAttacks()
+    if tt.e != res {
+      printBB(tt.bb.blackPawnAttacks())
+      printBB(tt.e)
+      t.Errorf("Unexpected black pawn attacks; expected %b, received %b", tt.e, res)
+    }
+  }
+}
+
+
