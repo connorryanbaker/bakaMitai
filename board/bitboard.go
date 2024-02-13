@@ -3,8 +3,11 @@ package board
 import "fmt"
 
 type BB uint64
+
 const INIT_BLACK_PAWN_BB BB = 0b0000000011111111000000000000000000000000000000000000000000000000
 const INIT_WHITE_PAWN_BB BB = 0b0000000000000000000000000000000000000000000000001111111100000000
+const INIT_BLACK_KNIGHT_BB BB = 0b0100001000000000000000000000000000000000000000000000000000000000
+const INIT_WHITE_KNIGHT_BB BB = 0b0000000000000000000000000000000000000000000000000000000001000010
 const BOARDMASK BB = 0xFFFFFFFFFFFFFFFF
 
 // LEFT SHIFTS
@@ -12,6 +15,7 @@ const NORTHEAST = 9
 const NORTH = 8
 const NORTHWEST = 7
 const EAST = 1
+
 // RIGHT SHIFTS
 const WEST = -1
 const SOUTHEAST = -7
@@ -36,106 +40,139 @@ var RANK7 BB = 0b000000001111111100000000000000000000000000000000000000000000000
 var RANK8 BB = 0b1111111100000000000000000000000000000000000000000000000000000000
 
 type bitboard struct {
-  whitepawns BB
-  blackpawns BB
+	whitepawns   BB
+	whiteknights BB
+	blackpawns   BB
+	blackknights BB
 }
 
 func NewBitboard() bitboard {
-  return bitboard{
-    whitepawns: INIT_WHITE_PAWN_BB,
-    blackpawns: INIT_BLACK_PAWN_BB,
-  }
+	return bitboard{
+		whitepawns:   INIT_WHITE_PAWN_BB,
+		whiteknights: INIT_WHITE_KNIGHT_BB,
+		blackpawns:   INIT_BLACK_PAWN_BB,
+		blackknights: INIT_BLACK_KNIGHT_BB,
+	}
 }
 
 func (bb bitboard) emptySquares() BB {
-  return BOARDMASK ^ bb.allPieces()
+	return BOARDMASK ^ bb.allPieces()
 }
 
-// update below as more pieces added 
+// update below as more pieces added
 func (bb bitboard) whitePieces() BB {
-  return bb.whitepawns
+	return bb.whitepawns | bb.whiteknights
 }
 
 func (bb bitboard) blackPieces() BB {
-  return bb.blackpawns
+	return bb.blackpawns | bb.blackknights
 }
 
 func (bb bitboard) allPieces() BB {
-  return bb.whitePieces() | bb.blackPieces()
+	return bb.whitePieces() | bb.blackPieces()
 }
 
 func (bb bitboard) pushOneWhitePawns() BB {
-  return shiftBB(bb.emptySquares(), SOUTH) & bb.whitepawns
+	return shiftBB(bb.emptySquares(), SOUTH) & bb.whitepawns
 }
 
 func (bb bitboard) pushOneBlackPawns() BB {
-  return shiftBB(bb.emptySquares(), NORTH) & bb.blackpawns
+	return shiftBB(bb.emptySquares(), NORTH) & bb.blackpawns
 }
 
 func (bb bitboard) pushTwoWhitePawns() BB {
-  var fourthRank BB = 0x00000000FF000000
-  emptyThirdRank := shiftBB(fourthRank & bb.emptySquares(), SOUTH) & bb.emptySquares()
-  return shiftBB(emptyThirdRank, SOUTH) & bb.whitepawns
+	var fourthRank BB = 0x00000000FF000000
+	emptyThirdRank := shiftBB(fourthRank&bb.emptySquares(), SOUTH) & bb.emptySquares()
+	return shiftBB(emptyThirdRank, SOUTH) & bb.whitepawns
 }
 
 func (bb bitboard) pushTwoBlackPawns() BB {
-  var fifthRank BB = 0x000000FF00000000
-  emptySixthRank := shiftBB(fifthRank & bb.emptySquares(), NORTH) & bb.emptySquares()
-  return shiftBB(emptySixthRank, NORTH) & bb.blackpawns
+	var fifthRank BB = 0x000000FF00000000
+	emptySixthRank := shiftBB(fifthRank&bb.emptySquares(), NORTH) & bb.emptySquares()
+	return shiftBB(emptySixthRank, NORTH) & bb.blackpawns
 }
 
 func (bb bitboard) whitePawnAttacks() BB {
-  return bb.whitePawnWestAttacks() | bb.whitePawnEastAttacks()
+	return bb.whitePawnWestAttacks() | bb.whitePawnEastAttacks()
 }
 
 func (bb bitboard) whitePawnWestAttacks() BB {
-  return shiftBB(bb.whitepawns, NORTHWEST) & ^HFILE
+	return shiftBB(bb.whitepawns, NORTHWEST) & ^HFILE
 }
 
 func (bb bitboard) whitePawnEastAttacks() BB {
-  return shiftBB(bb.whitepawns, NORTHEAST) & ^AFILE
+	return shiftBB(bb.whitepawns, NORTHEAST) & ^AFILE
 }
 
 func (bb bitboard) blackPawnAttacks() BB {
-  return bb.blackPawnWestAttacks() | bb.blackPawnEastAttacks()
+	return bb.blackPawnWestAttacks() | bb.blackPawnEastAttacks()
 }
 
 func (bb bitboard) blackPawnWestAttacks() BB {
-  return shiftBB(bb.blackpawns, SOUTHWEST) & ^HFILE
+	return shiftBB(bb.blackpawns, SOUTHWEST) & ^HFILE
 }
 
 func (bb bitboard) blackPawnEastAttacks() BB {
-  return shiftBB(bb.blackpawns, SOUTHEAST) & ^AFILE
+	return shiftBB(bb.blackpawns, SOUTHEAST) & ^AFILE
+}
+
+// KNIGHT OFFSETS
+const NORTHNORTHWEST = 15
+const NORTHNORTHEAST = 17
+const NORTHWESTWEST = 6
+const NORTHEASTEAST = 10
+const SOUTHWESTWEST = -10
+const SOUTHEASTEAST = -6
+const SOUTHSOUTHWEST = -17
+const SOUTHSOUTHEAST = -15
+
+func (bb bitboard) whiteKnightMoves() BB {
+	return bb.knightMoves(bb.whiteknights) & (bb.emptySquares() | bb.blackPieces())
+}
+
+func (bb bitboard) blackKnightMoves() BB {
+	return bb.knightMoves(bb.blackknights) & (bb.emptySquares() | bb.whitePieces())
+}
+
+func (bb bitboard) knightMoves(k BB) BB {
+	return shiftBB(k&(^GFILE & ^HFILE), NORTHEASTEAST) |
+		shiftBB(k & ^HFILE, NORTHNORTHEAST) |
+		shiftBB(k&(^GFILE & ^HFILE), SOUTHEASTEAST) |
+		shiftBB(k & ^HFILE, SOUTHSOUTHEAST) |
+		shiftBB(k & ^AFILE, NORTHNORTHWEST) |
+		shiftBB(k&(^AFILE & ^BFILE), NORTHWESTWEST) |
+		shiftBB(k&(^AFILE & ^BFILE), SOUTHWESTWEST) |
+		shiftBB(k & ^AFILE, SOUTHSOUTHWEST)
 }
 
 func shiftBB(bb BB, d int) BB {
-  if d < 0 {
-    s := d * -1
-    return bb >> s
-  }
-  return bb << d
+	if d < 0 {
+		s := d * -1
+		return bb >> s
+	}
+	return bb << d
 }
 
 func printBB(b BB) {
-  var sqs [8][8]int
+	var sqs [8][8]int
 
-  m := BB(1)
-  f := 0
-  r := 7
+	m := BB(1)
+	f := 0
+	r := 7
 
-  for i := 0; i < 64; i++ {
-    if b & (m << i) != BB(0) {
-      sqs[r][f] = 1
-    }
-    f += 1
-    if f == 8 {
-      r -= 1
-      f = 0
-    }
-  }
+	for i := 0; i < 64; i++ {
+		if b&(m<<i) != BB(0) {
+			sqs[r][f] = 1
+		}
+		f += 1
+		if f == 8 {
+			r -= 1
+			f = 0
+		}
+	}
 
-  for i := 0; i < 8; i++ {
-    fmt.Println(sqs[i])
-  }
-  fmt.Printf("\n")
+	for i := 0; i < 8; i++ {
+		fmt.Println(sqs[i])
+	}
+	fmt.Printf("\n")
 }

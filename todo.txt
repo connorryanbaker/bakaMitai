@@ -13,15 +13,15 @@ MOVEGENERATION
 Legal Move Generation with Bitboards to remove need to make / unmake moves to determine legality [ ]
 bitboards
 - pawn moves [x]
-- knight moves [ ]
-- king moves
+- knight moves [x]
+- king moves [ ]
 - bishop moves
 - rook moves
 - queen moves
 - attacks
 - castling / ep?
 - translating bitboard results to move structs
-- generating legal moves
+- generating legal moves https://www.chessprogramming.org/Bitboard_Serialization
 
 
 UI
