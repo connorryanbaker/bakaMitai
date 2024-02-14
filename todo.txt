@@ -14,14 +14,16 @@ Legal Move Generation with Bitboards to remove need to make / unmake moves to de
 bitboards
 - pawn moves [x]
 - knight moves [x]
-- king moves [ ]
-- bishop moves
+- king moves [x]
+- bishop moves [ ]
 - rook moves
 - queen moves
 - attacks
 - castling / ep?
 - translating bitboard results to move structs
 - generating legal moves https://www.chessprogramming.org/Bitboard_Serialization
+- for each piece (not pawns?), generate array of 64 bitboards w/ a1 as 0 and h8
+  as 63 at startup time
 
 
 UI

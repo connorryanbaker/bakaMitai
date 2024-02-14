@@ -29,15 +29,6 @@ const RANK6 BB = 0b0000000000000000111111110000000000000000000000000000000000000
 const RANK7 BB = 0b0000000011111111000000000000000000000000000000000000000000000000
 const RANK8 BB = 0b1111111100000000000000000000000000000000000000000000000000000000
 
-const NORTHEAST = 9
-const NORTH = 8
-const NORTHWEST = 7
-const EAST = 1
-const WEST = -1
-const SOUTHEAST = -7
-const SOUTH = -8
-const SOUTHWEST = -9
-
 type bitboard struct {
 	whitepawns   BB
 	whiteknights BB
@@ -136,6 +127,83 @@ func (bb bitboard) kingMoves(k BB) BB {
 		shiftBB(k & ^HFILE, NORTHEAST) |
 		shiftBB(k & ^HFILE, EAST) |
 		shiftBB(k & ^HFILE, SOUTHEAST)
+}
+
+const NORTHEAST = 9
+const NORTH = 8
+const NORTHWEST = 7
+const EAST = 1
+const WEST = -1
+const SOUTHEAST = -7
+const SOUTH = -8
+const SOUTHWEST = -9
+
+// starting w/ dumb7fil now
+// todo: these probably shouldn't be methods
+// will need to rethink bitboard struct purpose
+// this can be xor'd w/ origin square to give east moves, etc.
+func (bb bitboard) fillEast(p BB) BB {
+  e := bb.emptySquares() & ^AFILE
+  for i := 0; i < 7; i++ {
+    p = p | (e & shiftBB(p, EAST))
+  }
+  return p
+}
+
+func (bb bitboard) fillNorthEast(p BB) BB {
+  e := bb.emptySquares() & ^AFILE
+  for i := 0; i < 7; i++ {
+    p = p | (e & shiftBB(p, NORTHEAST))
+  }
+  return p
+}
+
+func (bb bitboard) fillSouthEast(p BB) BB {
+  e := bb.emptySquares() & ^AFILE
+  for i := 0; i < 7; i++ {
+    p = p | (e & shiftBB(p, SOUTHEAST))
+  }
+  return p
+}
+
+func (bb bitboard) fillWest(p BB) BB {
+  e := bb.emptySquares() & ^HFILE
+  for i := 0; i < 7; i++ {
+    p = p | (e & shiftBB(p, WEST))
+  }
+  return p
+}
+
+func (bb bitboard) fillNorthWest(p BB) BB {
+  e := bb.emptySquares() & ^HFILE
+  for i := 0; i < 7; i++ {
+    p = p | (e & shiftBB(p, NORTHWEST))
+  }
+  return p
+}
+
+func (bb bitboard) fillSouthWest(p BB) BB {
+  e := bb.emptySquares() & ^HFILE
+  for i := 0; i < 7; i++ {
+    p = p | (e & shiftBB(p, SOUTHWEST))
+  }
+  return p
+}
+
+func (bb bitboard) fillNorth(p BB) BB {
+  e := bb.emptySquares()
+  for i := 0; i < 7; i++ {
+    p = p | (e & shiftBB(p, NORTH))
+  }
+  return p
+}
+
+func (bb bitboard) fillSouth(p BB) BB {
+  e := bb.emptySquares()
+  for i := 0; i < 7; i++ {
+    p = p | (e & shiftBB(p, SOUTH))
+  }
+  return p
 }
 
 // KNIGHT OFFSETS
