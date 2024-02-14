@@ -143,67 +143,67 @@ const SOUTHWEST = -9
 // will need to rethink bitboard struct purpose
 // this can be xor'd w/ origin square to give east moves, etc.
 func (bb bitboard) fillEast(p BB) BB {
-  e := bb.emptySquares() & ^AFILE
-  for i := 0; i < 7; i++ {
-    p = p | (e & shiftBB(p, EAST))
-  }
-  return p
+	e := bb.emptySquares() & ^AFILE
+	for i := 0; i < 7; i++ {
+		p = p | (e & shiftBB(p, EAST))
+	}
+	return p
 }
 
 func (bb bitboard) fillNorthEast(p BB) BB {
-  e := bb.emptySquares() & ^AFILE
-  for i := 0; i < 7; i++ {
-    p = p | (e & shiftBB(p, NORTHEAST))
-  }
-  return p
+	e := bb.emptySquares() & ^AFILE
+	for i := 0; i < 7; i++ {
+		p = p | (e & shiftBB(p, NORTHEAST))
+	}
+	return p
 }
 
 func (bb bitboard) fillSouthEast(p BB) BB {
-  e := bb.emptySquares() & ^AFILE
-  for i := 0; i < 7; i++ {
-    p = p | (e & shiftBB(p, SOUTHEAST))
-  }
-  return p
+	e := bb.emptySquares() & ^AFILE
+	for i := 0; i < 7; i++ {
+		p = p | (e & shiftBB(p, SOUTHEAST))
+	}
+	return p
 }
 
 func (bb bitboard) fillWest(p BB) BB {
-  e := bb.emptySquares() & ^HFILE
-  for i := 0; i < 7; i++ {
-    p = p | (e & shiftBB(p, WEST))
-  }
-  return p
+	e := bb.emptySquares() & ^HFILE
+	for i := 0; i < 7; i++ {
+		p = p | (e & shiftBB(p, WEST))
+	}
+	return p
 }
 
 func (bb bitboard) fillNorthWest(p BB) BB {
-  e := bb.emptySquares() & ^HFILE
-  for i := 0; i < 7; i++ {
-    p = p | (e & shiftBB(p, NORTHWEST))
-  }
-  return p
+	e := bb.emptySquares() & ^HFILE
+	for i := 0; i < 7; i++ {
+		p = p | (e & shiftBB(p, NORTHWEST))
+	}
+	return p
 }
 
 func (bb bitboard) fillSouthWest(p BB) BB {
-  e := bb.emptySquares() & ^HFILE
-  for i := 0; i < 7; i++ {
-    p = p | (e & shiftBB(p, SOUTHWEST))
-  }
-  return p
+	e := bb.emptySquares() & ^HFILE
+	for i := 0; i < 7; i++ {
+		p = p | (e & shiftBB(p, SOUTHWEST))
+	}
+	return p
 }
 
 func (bb bitboard) fillNorth(p BB) BB {
-  e := bb.emptySquares()
-  for i := 0; i < 7; i++ {
-    p = p | (e & shiftBB(p, NORTH))
-  }
-  return p
+	e := bb.emptySquares()
+	for i := 0; i < 7; i++ {
+		p = p | (e & shiftBB(p, NORTH))
+	}
+	return p
 }
 
 func (bb bitboard) fillSouth(p BB) BB {
-  e := bb.emptySquares()
-  for i := 0; i < 7; i++ {
-    p = p | (e & shiftBB(p, SOUTH))
-  }
-  return p
+	e := bb.emptySquares()
+	for i := 0; i < 7; i++ {
+		p = p | (e & shiftBB(p, SOUTH))
+	}
+	return p
 }
 
 // KNIGHT OFFSETS
