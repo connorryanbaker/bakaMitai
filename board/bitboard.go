@@ -129,6 +129,16 @@ func (bb bitboard) kingMoves(k BB) BB {
 		shiftBB(k & ^HFILE, SOUTHEAST)
 }
 
+var KING_ATTACKS [64]BB
+
+func initKingAttacks() {
+	bb := bitboard{}
+	for i := 0; i < 64; i++ {
+		sq := BB(1 << i)
+		KING_ATTACKS[i] = bb.kingMoves(sq)
+	}
+}
+
 const NORTHEAST = 9
 const NORTH = 8
 const NORTHWEST = 7
@@ -137,6 +147,48 @@ const WEST = -1
 const SOUTHEAST = -7
 const SOUTH = -8
 const SOUTHWEST = -9
+
+// NORTH clockwise through NORTHWEST a1-h8
+// mapping might get annoying to remember
+var RAYS = [8]int{
+	NORTH,
+	NORTHEAST,
+	EAST,
+	SOUTHEAST,
+	SOUTH,
+	SOUTHWEST,
+	WEST,
+	NORTHWEST,
+}
+var RAY_ATTACKS [8][64]BB
+
+func initRayAttacks() {
+	bb := bitboard{} // empty board
+
+	for i := 0; i < 64; i++ {
+		sq := BB(1 << i)
+		for j := 0; j < 8; j++ {
+			switch j {
+			case 0:
+				RAY_ATTACKS[j][i] = bb.fillNorth(sq) ^ sq
+			case 1:
+				RAY_ATTACKS[j][i] = bb.fillNorthEast(sq) ^ sq
+			case 2:
+				RAY_ATTACKS[j][i] = bb.fillEast(sq) ^ sq
+			case 3:
+				RAY_ATTACKS[j][i] = bb.fillSouthEast(sq) ^ sq
+			case 4:
+				RAY_ATTACKS[j][i] = bb.fillSouth(sq) ^ sq
+			case 5:
+				RAY_ATTACKS[j][i] = bb.fillSouthWest(sq) ^ sq
+			case 6:
+				RAY_ATTACKS[j][i] = bb.fillWest(sq) ^ sq
+			case 7:
+				RAY_ATTACKS[j][i] = bb.fillNorthWest(sq) ^ sq
+			}
+		}
+	}
+}
 
 // starting w/ dumb7fil now
 // todo: these probably shouldn't be methods
@@ -216,6 +268,16 @@ const SOUTHEASTEAST = -6
 const SOUTHSOUTHWEST = -17
 const SOUTHSOUTHEAST = -15
 
+var KNIGHT_ATTACKS [64]BB
+
+func initKnightAttacks() {
+	bb := bitboard{}
+	for i := 0; i < 64; i++ {
+		sq := BB(1 << i)
+		KNIGHT_ATTACKS[i] = bb.knightMoves(sq)
+	}
+}
+
 func (bb bitboard) whiteKnightMoves() BB {
 	return bb.knightMoves(bb.whiteknights) & (bb.emptySquares() | bb.blackPieces())
 }
@@ -265,4 +327,10 @@ func printBB(b BB) {
 		fmt.Println(sqs[i])
 	}
 	fmt.Printf("\n")
+}
+
+func init() {
+	initKingAttacks()
+	initKnightAttacks()
+	initRayAttacks()
 }

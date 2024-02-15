@@ -439,21 +439,11 @@ func TestBlackKingMoves(t *testing.T) {
 	}
 }
 
-func TestFillEast(t *testing.T) {
-	bb := bitboard{}
-	printBB(bb.fillEast(0x0000000000000001) ^ 0x0000000000000001)
-	printBB(bb.fillEast(0x0000000000000002) ^ 0x0000000000000002)
-	printBB(bb.fillWest(0x0000000000000080))
-	printBB(bb.fillWest(0x0000000000000080) ^ 0x0000000000000080)
-	b := BB(0x0000000008000000)
-	printBB((bb.fillWest(b) |
-		bb.fillEast(b) |
-		bb.fillNorth(b) |
-		bb.fillSouth(b) |
-		bb.fillNorthWest(b) |
-		bb.fillSouthWest(b) |
-		bb.fillNorthEast(b) |
-		bb.fillSouthEast(b)) ^ b) // possible queen moves on d4
+func TestInitAttacks(t *testing.T) {
+	initKingAttacks()
+	for i := 0; i < 64; i++ {
+		printBB(KING_ATTACKS[i])
+	}
 	if 1 != 1 {
 		t.Errorf("uh oh")
 	}
