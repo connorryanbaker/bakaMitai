@@ -33,20 +33,15 @@ type bitboard struct {
 	whitepawns   BB
 	whiteknights BB
 	whiteking    BB
+  whiterooks BB
+  whitebishops BB
+  whitequeen BB
 	blackpawns   BB
 	blackknights BB
 	blackking    BB
-}
-
-func NewBitboard() bitboard {
-	return bitboard{
-		whitepawns:   INIT_WHITE_PAWN_BB,
-		whiteknights: INIT_WHITE_KNIGHT_BB,
-		whiteking:    INIT_WHITE_KING_BB,
-		blackpawns:   INIT_BLACK_PAWN_BB,
-		blackknights: INIT_BLACK_KNIGHT_BB,
-		blackking:    INIT_BLACK_KING_BB,
-	}
+  blackrooks BB
+  blackbishops BB
+  blackqueen BB
 }
 
 func (bb bitboard) emptySquares() BB {
@@ -55,11 +50,21 @@ func (bb bitboard) emptySquares() BB {
 
 // update below as more pieces added
 func (bb bitboard) whitePieces() BB {
-	return bb.whitepawns | bb.whiteknights
+	return bb.whitepawns |
+         bb.whiteknights |
+         bb.whitebishops |
+         bb.whiterooks |
+         bb.whitequeen |
+         bb.whiteking
 }
 
 func (bb bitboard) blackPieces() BB {
-	return bb.blackpawns | bb.blackknights
+	return bb.blackpawns |
+         bb.blackknights |
+         bb.blackbishops |
+         bb.blackrooks |
+         bb.blackqueen |
+         bb.blackking
 }
 
 func (bb bitboard) allPieces() BB {
@@ -333,4 +338,125 @@ func init() {
 	initKingAttacks()
 	initKnightAttacks()
 	initRayAttacks()
+}
+
+var MAILBOX_TO_BB = [99]int{
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  56, 57, 58, 59, 60, 61, 62, 63, -1, -1,
+  48, 49, 50, 51, 52, 53, 54, 55, -1, -1,
+  40, 41, 42, 43, 44, 45, 46, 47, -1, -1,
+  32, 33, 34, 35, 36, 37, 38, 39, -1, -1,
+  24, 25, 26, 27, 28, 29, 30, 31, -1, -1,
+  16, 17, 18, 19, 20, 21, 22, 23, -1, -1,
+   8,  9, 10, 11, 12, 13, 14, 15, -1, -1,
+   0,  1,  2,  3,  4,  5,  6,  7,
+}
+
+var BB_TO_BOARDSQUARE = [64]int{
+	91, 92, 93, 94, 95, 96, 97, 98,
+	81, 82, 83, 84, 85, 86, 87, 88,
+	71, 72, 73, 74, 75, 76, 77, 78,
+	61, 62, 63, 64, 65, 66, 67, 68,
+	51, 52, 53, 54, 55, 56, 57, 58,
+	41, 42, 43, 44, 45, 46, 47, 48,
+	31, 32, 33, 34, 35, 36, 37, 38,
+	21, 22, 23, 24, 25, 26, 27, 28,
+}
+
+// tranform piecelist to bitboards
+func (b Board) newBitboard() *bitboard {
+  return &bitboard{
+    whitepawns: pieceSquareToBB(b, WHITE_PAWN),
+    whiteknights: pieceSquareToBB(b, WHITE_KNIGHT),
+    whitebishops: pieceSquareToBB(b, WHITE_BISHOP),
+    whiterooks: pieceSquareToBB(b, WHITE_ROOK),
+    whitequeen: pieceSquareToBB(b, WHITE_QUEEN),
+    whiteking: pieceSquareToBB(b, WHITE_KING),
+    blackpawns: pieceSquareToBB(b, BLACK_PAWN),
+    blackknights: pieceSquareToBB(b, BLACK_KNIGHT),
+    blackbishops: pieceSquareToBB(b, BLACK_BISHOP),
+    blackrooks: pieceSquareToBB(b, BLACK_ROOK),
+    blackqueen: pieceSquareToBB(b, BLACK_QUEEN),
+    blackking: pieceSquareToBB(b, BLACK_KING),
+  }
+}
+
+func pieceSquareToBB(b Board, p int) BB {
+  bb := BB(0)
+  if sqs, ok := b.PieceSquares[p]; ok {
+    for _, sq := range sqs {
+      bb |= BB(1 << MAILBOX_TO_BB[sq])
+    }
+  }
+  return bb
+}
+
+func popCount(x BB) int {
+  count := 0
+  for x > 0 {
+    count += 1
+    x &= (x - 1)
+  }
+  return count
+}
+
+// for each piece, gen moves
+
+func (b Board) GenerateBitboardMoves() []Move {
+  // to start just generate pawn moves in a dumb way
+  // don't consider absolute pins for now
+  bb := b.newBitboard()
+  moves := make([]Move, 0)
+
+  if b.Side == WHITE {
+    singlePawnPush := bb.pushOneWhitePawns()
+    doublePawnPush := bb.pushTwoWhitePawns()
+    for singlePawnPush > 0 {
+      lsb := deBruijnBitscan(singlePawnPush)
+      sq := BB_TO_BOARDSQUARE[lsb]
+      moves = append(moves, Move{sq, sq-10, false, false, false, false, WHITE_PAWN, false})
+      singlePawnPush ^= BB(1 << lsb)
+    }
+    for doublePawnPush > 0 {
+      lsb := deBruijnBitscan(doublePawnPush)
+      sq := BB_TO_BOARDSQUARE[lsb]
+      moves = append(moves, Move{sq, sq-20, false, false, false, false, WHITE_PAWN, true})
+      doublePawnPush ^= BB(1 << lsb)
+    }
+  } else {
+    singlePawnPush := bb.pushOneBlackPawns()
+    doublePawnPush := bb.pushTwoBlackPawns()
+    for singlePawnPush > 0 {
+      lsb := deBruijnBitscan(singlePawnPush)
+      sq := BB_TO_BOARDSQUARE[lsb]
+      moves = append(moves, Move{sq, sq+10, false, false, false, false, BLACK_PAWN, false})
+      singlePawnPush ^= BB(1 << lsb)
+    }
+    for doublePawnPush > 0 {
+      lsb := deBruijnBitscan(doublePawnPush)
+      sq := BB_TO_BOARDSQUARE[lsb]
+      moves = append(moves, Move{sq, sq+20, false, false, false, false, BLACK_PAWN, true})
+      doublePawnPush ^= BB(1 << lsb)
+    }
+  }
+
+  return moves
+}
+
+var deBruijnIndex64 = [64]int{
+  0,  1, 48,  2, 57, 49, 28,  3,
+  61, 58, 50, 42, 38, 29, 17,  4,
+  62, 55, 59, 36, 53, 51, 43, 22,
+  45, 39, 33, 30, 24, 18, 12,  5,
+  63, 47, 56, 27, 60, 41, 37, 16,
+  54, 35, 52, 21, 44, 32, 23, 11,
+  46, 26, 40, 15, 34, 20, 31, 10,
+  25, 14, 19,  9, 13,  8,  7,  6,
+}
+
+const deBruijnSeq BB = 0x03f79d71b4cb0a89
+
+func deBruijnBitscan(bb BB) int {
+  return deBruijnIndex64[((bb & -bb) * deBruijnSeq) >> 58]
 }
