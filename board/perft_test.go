@@ -125,3 +125,30 @@ func TestCustomFENPerft(t *testing.T) {
 		}
 	}
 }
+
+func TestBBPerft(t *testing.T) {
+	var tests = []struct {
+		depth    int
+		board    Board
+		expected uint64
+	}{
+		{
+			1,
+			NewBoard(),
+			20,
+		},
+		{
+			2,
+			NewBoard(),
+			400,
+		},
+	}
+	for _, tt := range tests {
+		result := bbperft(&tt.board, tt.depth)
+		if result != tt.expected {
+			t.Errorf("BBPerft Err! Depth: %d, Expected: %d, Received: %d", tt.depth, tt.expected, result)
+		} else {
+			t.Logf("Passed depth %d\n", tt.depth)
+		}
+	}
+}

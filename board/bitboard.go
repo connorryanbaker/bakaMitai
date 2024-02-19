@@ -91,28 +91,24 @@ func (bb bitboard) pushTwoBlackPawns() BB {
 	return shiftBB(emptySixthRank, NORTH) & bb.blackpawns
 }
 
-func (bb bitboard) whitePawnAttacks() BB {
-	return bb.whitePawnWestAttacks() | bb.whitePawnEastAttacks()
+func (bb bitboard) whitePawnsCaptureWest() BB {
+	targets := shiftBB(bb.whitepawns, NORTHWEST) & (^HFILE & bb.blackPieces())
+	return shiftBB(targets, SOUTHEAST) & bb.whitepawns
 }
 
-func (bb bitboard) whitePawnWestAttacks() BB {
-	return shiftBB(bb.whitepawns, NORTHWEST) & ^HFILE
+func (bb bitboard) whitePawnsCaptureEast() BB {
+	targets := shiftBB(bb.whitepawns, NORTHEAST) & (^AFILE & bb.blackPieces())
+	return shiftBB(targets, SOUTHWEST) & bb.whitepawns
 }
 
-func (bb bitboard) whitePawnEastAttacks() BB {
-	return shiftBB(bb.whitepawns, NORTHEAST) & ^AFILE
+func (bb bitboard) blackPawnsCaptureWest() BB {
+	targets := shiftBB(bb.blackpawns, SOUTHWEST) & (^HFILE & bb.whitePieces())
+	return shiftBB(targets, NORTHEAST) & bb.blackpawns
 }
 
-func (bb bitboard) blackPawnAttacks() BB {
-	return bb.blackPawnWestAttacks() | bb.blackPawnEastAttacks()
-}
-
-func (bb bitboard) blackPawnWestAttacks() BB {
-	return shiftBB(bb.blackpawns, SOUTHWEST) & ^HFILE
-}
-
-func (bb bitboard) blackPawnEastAttacks() BB {
-	return shiftBB(bb.blackpawns, SOUTHEAST) & ^AFILE
+func (bb bitboard) blackPawnsCaptureEast() BB {
+	targets := shiftBB(bb.blackpawns, SOUTHEAST) & (^AFILE & bb.whitePieces())
+	return shiftBB(targets, NORTHWEST) & bb.blackpawns
 }
 
 func (bb bitboard) whiteKingMoves() BB {
@@ -404,41 +400,111 @@ func popCount(x BB) int {
 // for each piece, gen moves
 
 func (b Board) GenerateBitboardMoves() []Move {
-	// to start just generate pawn moves in a dumb way
-	// don't consider absolute pins for now
 	bb := b.newBitboard()
 	moves := make([]Move, 0)
+	// TODO:
+	// non-castling king moves
+	// sliding piece moves
+	// ep capture & promotions
+	// castling
+	// absolute pins / legal moves / taboo sqs
+	moves = append(moves, b.generateBitboardPawnMoves(*bb)...)
+	moves = append(moves, b.generateBitboardKnightMoves(*bb)...)
 
+	return moves
+}
+
+func (b Board) generateBitboardKnightMoves(bb bitboard) []Move {
 	if b.Side == WHITE {
-		singlePawnPush := bb.pushOneWhitePawns()
-		doublePawnPush := bb.pushTwoWhitePawns()
-		for singlePawnPush > 0 {
-			lsb := deBruijnBitscan(singlePawnPush)
-			sq := BB_TO_BOARDSQUARE[lsb]
-			moves = append(moves, Move{sq, sq - 10, false, false, false, false, WHITE_PAWN, false})
-			singlePawnPush ^= BB(1 << lsb)
+		return generateKnightMovesForSide(
+			bb.whiteknights, bb.blackPieces(), bb.emptySquares(), WHITE_KNIGHT,
+		)
+	}
+	return generateKnightMovesForSide(
+		bb.blackknights, bb.whitePieces(), bb.emptySquares(), BLACK_KNIGHT,
+	)
+}
+
+func generateKnightMovesForSide(knights, oppPieces, emptySqs BB, piece int) []Move {
+	moves := make([]Move, 0)
+	for knights > 0 {
+		lsb := deBruijnBitscan(knights)
+		sq := BB_TO_BOARDSQUARE[lsb]
+		captures := KNIGHT_ATTACKS[lsb] & oppPieces
+		quietmoves := KNIGHT_ATTACKS[lsb] & emptySqs
+		for captures > 0 {
+			clsb := deBruijnBitscan(captures)
+			csq := BB_TO_BOARDSQUARE[clsb]
+			moves = append(
+				moves,
+				Move{sq, csq, true, false, false, false, piece, false},
+			)
+			captures ^= BB(1 << clsb)
 		}
-		for doublePawnPush > 0 {
-			lsb := deBruijnBitscan(doublePawnPush)
-			sq := BB_TO_BOARDSQUARE[lsb]
-			moves = append(moves, Move{sq, sq - 20, false, false, false, false, WHITE_PAWN, true})
-			doublePawnPush ^= BB(1 << lsb)
+		for quietmoves > 0 {
+			qlsb := deBruijnBitscan(quietmoves)
+			qsq := BB_TO_BOARDSQUARE[qlsb]
+			moves = append(
+				moves,
+				Move{sq, qsq, false, false, false, false, piece, false},
+			)
+			quietmoves ^= BB(1 << qlsb)
 		}
+		knights ^= BB(1 << lsb)
+	}
+	return moves
+}
+
+func (b Board) generateBitboardPawnMoves(bb bitboard) []Move {
+	moves := make([]Move, 0)
+	if b.Side == WHITE {
+		moves = append(
+			moves,
+			pawnMovesFromBB(bb.pushOneWhitePawns(), -10, WHITE_PAWN, false, false)...,
+		)
+		moves = append(
+			moves,
+			pawnMovesFromBB(bb.pushTwoWhitePawns(), -20, WHITE_PAWN, false, true)...,
+		)
+		moves = append(
+			moves,
+			pawnMovesFromBB(bb.whitePawnsCaptureWest(), -11, WHITE_PAWN, true, false)...,
+		)
+		moves = append(
+			moves,
+			pawnMovesFromBB(bb.whitePawnsCaptureEast(), -9, WHITE_PAWN, true, false)...,
+		)
 	} else {
-		singlePawnPush := bb.pushOneBlackPawns()
-		doublePawnPush := bb.pushTwoBlackPawns()
-		for singlePawnPush > 0 {
-			lsb := deBruijnBitscan(singlePawnPush)
-			sq := BB_TO_BOARDSQUARE[lsb]
-			moves = append(moves, Move{sq, sq + 10, false, false, false, false, BLACK_PAWN, false})
-			singlePawnPush ^= BB(1 << lsb)
-		}
-		for doublePawnPush > 0 {
-			lsb := deBruijnBitscan(doublePawnPush)
-			sq := BB_TO_BOARDSQUARE[lsb]
-			moves = append(moves, Move{sq, sq + 20, false, false, false, false, BLACK_PAWN, true})
-			doublePawnPush ^= BB(1 << lsb)
-		}
+		moves = append(
+			moves,
+			pawnMovesFromBB(bb.pushOneBlackPawns(), 10, BLACK_PAWN, false, false)...,
+		)
+		moves = append(
+			moves,
+			pawnMovesFromBB(bb.pushTwoBlackPawns(), 20, BLACK_PAWN, false, true)...,
+		)
+		moves = append(
+			moves,
+			pawnMovesFromBB(bb.blackPawnsCaptureWest(), 9, BLACK_PAWN, true, false)...,
+		)
+		moves = append(
+			moves,
+			pawnMovesFromBB(bb.blackPawnsCaptureEast(), 11, BLACK_PAWN, true, false)...,
+		)
+	}
+
+	return moves
+}
+
+func pawnMovesFromBB(bb BB, delta, piece int, capture, doublePush bool) []Move {
+	moves := make([]Move, 0)
+
+	for bb > 0 {
+		lsb := deBruijnBitscan(bb)
+		sq := BB_TO_BOARDSQUARE[lsb]
+		// TODO: promotion checking
+		moves = append(moves, Move{sq, sq + delta, capture, false, false, false, piece, doublePush})
+		bb ^= BB(1 << lsb)
 	}
 
 	return moves
