@@ -403,14 +403,57 @@ func (b Board) GenerateBitboardMoves() []Move {
 	bb := b.newBitboard()
 	moves := make([]Move, 0)
 	// TODO:
-	// non-castling king moves
 	// sliding piece moves
 	// ep capture & promotions
 	// castling
 	// absolute pins / legal moves / taboo sqs
 	moves = append(moves, b.generateBitboardPawnMoves(*bb)...)
 	moves = append(moves, b.generateBitboardKnightMoves(*bb)...)
+	moves = append(moves, b.generateBitboardKingMoves(*bb)...)
 
+	return moves
+}
+
+func (b Board) generateBitboardKingMoves(bb bitboard) []Move {
+	// TODO: castling
+	if b.Side == WHITE {
+		return generateKingMovesForSide(
+			bb.whiteking, bb.blackPieces(), bb.emptySquares(), WHITE_KING,
+		)
+	}
+	return generateKingMovesForSide(
+		bb.blackking, bb.whitePieces(), bb.emptySquares(), BLACK_KING,
+	)
+}
+
+// TODO: update to pass attacks constant to reuse for king / knight
+func generateKingMovesForSide(king, oppPieces, emptySqs BB, piece int) []Move {
+	moves := make([]Move, 0)
+	for king > 0 {
+		lsb := deBruijnBitscan(king)
+		sq := BB_TO_BOARDSQUARE[lsb]
+		captures := KING_ATTACKS[lsb] & oppPieces
+		quietmoves := KING_ATTACKS[lsb] & emptySqs
+		for captures > 0 {
+			clsb := deBruijnBitscan(captures)
+			csq := BB_TO_BOARDSQUARE[clsb]
+			moves = append(
+				moves,
+				Move{sq, csq, true, false, false, false, piece, false},
+			)
+			captures ^= BB(1 << clsb)
+		}
+		for quietmoves > 0 {
+			qlsb := deBruijnBitscan(quietmoves)
+			qsq := BB_TO_BOARDSQUARE[qlsb]
+			moves = append(
+				moves,
+				Move{sq, qsq, false, false, false, false, piece, false},
+			)
+			quietmoves ^= BB(1 << qlsb)
+		}
+		king ^= BB(1 << lsb)
+	}
 	return moves
 }
 
