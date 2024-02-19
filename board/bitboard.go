@@ -1,6 +1,9 @@
 package board
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 type BB uint64
 
@@ -35,13 +38,13 @@ type bitboard struct {
 	whiteking    BB
 	whiterooks   BB
 	whitebishops BB
-	whitequeen   BB
+	whitequeens  BB
 	blackpawns   BB
 	blackknights BB
 	blackking    BB
 	blackrooks   BB
 	blackbishops BB
-	blackqueen   BB
+	blackqueens  BB
 }
 
 func (bb bitboard) emptySquares() BB {
@@ -54,7 +57,7 @@ func (bb bitboard) whitePieces() BB {
 		bb.whiteknights |
 		bb.whitebishops |
 		bb.whiterooks |
-		bb.whitequeen |
+		bb.whitequeens |
 		bb.whiteking
 }
 
@@ -63,7 +66,7 @@ func (bb bitboard) blackPieces() BB {
 		bb.blackknights |
 		bb.blackbishops |
 		bb.blackrooks |
-		bb.blackqueen |
+		bb.blackqueens |
 		bb.blackking
 }
 
@@ -149,18 +152,17 @@ const SOUTHEAST = -7
 const SOUTH = -8
 const SOUTHWEST = -9
 
-// NORTH clockwise through NORTHWEST a1-h8
-// mapping might get annoying to remember
-var RAYS = [8]int{
-	NORTH,
-	NORTHEAST,
-	EAST,
-	SOUTHEAST,
-	SOUTH,
-	SOUTHWEST,
-	WEST,
-	NORTHWEST,
-}
+const (
+	NORTH_IDX     = iota
+	NORTHEAST_IDX = iota
+	EAST_IDX      = iota
+	SOUTHEAST_IDX = iota
+	SOUTH_IDX     = iota
+	SOUTHWEST_IDX = iota
+	WEST_IDX      = iota
+	NORTHWEST_IDX = iota
+)
+
 var RAY_ATTACKS [8][64]BB
 
 func initRayAttacks() {
@@ -195,12 +197,22 @@ func initRayAttacks() {
 // todo: these probably shouldn't be methods
 // will need to rethink bitboard struct purpose
 // this can be xor'd w/ origin square to give east moves, etc.
+
+// TODO: consolidate and generalize, duplication is unneccessary
 func (bb bitboard) fillEast(p BB) BB {
 	e := bb.emptySquares() & ^AFILE
 	for i := 0; i < 7; i++ {
 		p = p | (e & shiftBB(p, EAST))
 	}
 	return p
+}
+
+func fillEast(emptySquares, piece BB) BB {
+	emptySquares &= ^AFILE
+	for i := 0; i < 7; i++ {
+		piece = piece | (emptySquares & shiftBB(piece, EAST))
+	}
+	return piece
 }
 
 func (bb bitboard) fillNorthEast(p BB) BB {
@@ -211,12 +223,28 @@ func (bb bitboard) fillNorthEast(p BB) BB {
 	return p
 }
 
+func fillNorthEast(emptySquares, piece BB) BB {
+	emptySquares &= ^AFILE
+	for i := 0; i < 7; i++ {
+		piece = piece | (emptySquares & shiftBB(piece, NORTHEAST))
+	}
+	return piece
+}
+
 func (bb bitboard) fillSouthEast(p BB) BB {
 	e := bb.emptySquares() & ^AFILE
 	for i := 0; i < 7; i++ {
 		p = p | (e & shiftBB(p, SOUTHEAST))
 	}
 	return p
+}
+
+func fillSouthEast(emptySquares, piece BB) BB {
+	emptySquares &= ^AFILE
+	for i := 0; i < 7; i++ {
+		piece = piece | (emptySquares & shiftBB(piece, SOUTHEAST))
+	}
+	return piece
 }
 
 func (bb bitboard) fillWest(p BB) BB {
@@ -227,12 +255,28 @@ func (bb bitboard) fillWest(p BB) BB {
 	return p
 }
 
+func fillWest(emptySquares, piece BB) BB {
+	emptySquares &= ^HFILE
+	for i := 0; i < 7; i++ {
+		piece = piece | (emptySquares & shiftBB(piece, WEST))
+	}
+	return piece
+}
+
 func (bb bitboard) fillNorthWest(p BB) BB {
 	e := bb.emptySquares() & ^HFILE
 	for i := 0; i < 7; i++ {
 		p = p | (e & shiftBB(p, NORTHWEST))
 	}
 	return p
+}
+
+func fillNorthWest(emptySquares, piece BB) BB {
+	emptySquares &= ^HFILE
+	for i := 0; i < 7; i++ {
+		piece = piece | (emptySquares & shiftBB(piece, NORTHWEST))
+	}
+	return piece
 }
 
 func (bb bitboard) fillSouthWest(p BB) BB {
@@ -243,6 +287,14 @@ func (bb bitboard) fillSouthWest(p BB) BB {
 	return p
 }
 
+func fillSouthWest(emptySquares, piece BB) BB {
+	emptySquares &= ^HFILE
+	for i := 0; i < 7; i++ {
+		piece = piece | (emptySquares & shiftBB(piece, SOUTHWEST))
+	}
+	return piece
+}
+
 func (bb bitboard) fillNorth(p BB) BB {
 	e := bb.emptySquares()
 	for i := 0; i < 7; i++ {
@@ -251,12 +303,26 @@ func (bb bitboard) fillNorth(p BB) BB {
 	return p
 }
 
+func fillNorth(emptySquares, piece BB) BB {
+	for i := 0; i < 7; i++ {
+		piece = piece | (emptySquares & shiftBB(piece, NORTH))
+	}
+	return piece
+}
+
 func (bb bitboard) fillSouth(p BB) BB {
 	e := bb.emptySquares()
 	for i := 0; i < 7; i++ {
 		p = p | (e & shiftBB(p, SOUTH))
 	}
 	return p
+}
+
+func fillSouth(emptySquares, piece BB) BB {
+	for i := 0; i < 7; i++ {
+		piece = piece | (emptySquares & shiftBB(piece, SOUTH))
+	}
+	return piece
 }
 
 // KNIGHT OFFSETS
@@ -367,13 +433,13 @@ func (b Board) newBitboard() *bitboard {
 		whiteknights: pieceSquareToBB(b, WHITE_KNIGHT),
 		whitebishops: pieceSquareToBB(b, WHITE_BISHOP),
 		whiterooks:   pieceSquareToBB(b, WHITE_ROOK),
-		whitequeen:   pieceSquareToBB(b, WHITE_QUEEN),
+		whitequeens:  pieceSquareToBB(b, WHITE_QUEEN),
 		whiteking:    pieceSquareToBB(b, WHITE_KING),
 		blackpawns:   pieceSquareToBB(b, BLACK_PAWN),
 		blackknights: pieceSquareToBB(b, BLACK_KNIGHT),
 		blackbishops: pieceSquareToBB(b, BLACK_BISHOP),
 		blackrooks:   pieceSquareToBB(b, BLACK_ROOK),
-		blackqueen:   pieceSquareToBB(b, BLACK_QUEEN),
+		blackqueens:  pieceSquareToBB(b, BLACK_QUEEN),
 		blackking:    pieceSquareToBB(b, BLACK_KING),
 	}
 }
@@ -403,15 +469,315 @@ func (b Board) GenerateBitboardMoves() []Move {
 	bb := b.newBitboard()
 	moves := make([]Move, 0)
 	// TODO:
-	// sliding piece moves
 	// ep capture & promotions
-	// castling
 	// absolute pins / legal moves / taboo sqs
+	// castling
 	moves = append(moves, b.generateBitboardPawnMoves(*bb)...)
 	moves = append(moves, b.generateBitboardKnightMoves(*bb)...)
 	moves = append(moves, b.generateBitboardKingMoves(*bb)...)
+	moves = append(moves, b.generateBitboardBishopMoves(*bb)...)
+	moves = append(moves, b.generateBitboardRookMoves(*bb)...)
+	moves = append(moves, b.generateBitboardQueenMoves(*bb)...)
+
+	sort.Slice(moves, func(i, j int) bool {
+		return moves[i].Score(b) > moves[j].Score(b)
+	})
 
 	return moves
+}
+
+func (b Board) generateBitboardQueenMoves(bb bitboard) []Move {
+	if b.Side == WHITE {
+		return generateBitboardQueenMovesForSide(bb.whitequeens, bb.emptySquares(), bb.whitePieces(), bb.blackPieces(), WHITE_QUEEN)
+	}
+	return generateBitboardQueenMovesForSide(bb.blackqueens, bb.emptySquares(), bb.blackPieces(), bb.whitePieces(), BLACK_QUEEN)
+}
+
+func generateBitboardQueenMovesForSide(queens, empty, fpieces, opieces BB, piece int) []Move {
+	moves := make([]Move, 0)
+	for queens > 0 {
+		lsb := deBruijnLSB(queens)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				NORTH_IDX,
+				NORTH,
+				fillNorth,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				NORTHEAST_IDX,
+				NORTHEAST,
+				fillNorthEast,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				EAST_IDX,
+				EAST,
+				fillEast,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				SOUTHEAST_IDX,
+				SOUTHEAST,
+				fillSouthEast,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				SOUTH_IDX,
+				SOUTH,
+				fillSouth,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				SOUTHWEST_IDX,
+				SOUTHWEST,
+				fillSouthWest,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				WEST_IDX,
+				WEST,
+				fillWest,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				NORTHWEST_IDX,
+				NORTHWEST,
+				fillNorthWest,
+			)...,
+		)
+		queens ^= BB(1 << lsb)
+	}
+	return moves
+}
+
+func (b Board) generateBitboardRookMoves(bb bitboard) []Move {
+	if b.Side == WHITE {
+		return generateBitboardRookMovesForSide(bb.whiterooks, bb.emptySquares(), bb.whitePieces(), bb.blackPieces(), WHITE_ROOK)
+	}
+	return generateBitboardRookMovesForSide(bb.blackrooks, bb.emptySquares(), bb.blackPieces(), bb.whitePieces(), BLACK_ROOK)
+}
+
+func generateBitboardRookMovesForSide(rooks, empty, fpieces, opieces BB, piece int) []Move {
+	moves := make([]Move, 0)
+	for rooks > 0 {
+		lsb := deBruijnLSB(rooks)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				NORTH_IDX,
+				NORTH,
+				fillNorth,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				WEST_IDX,
+				WEST,
+				fillWest,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				SOUTH_IDX,
+				SOUTH,
+				fillSouth,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				EAST_IDX,
+				EAST,
+				fillEast,
+			)...,
+		)
+		rooks ^= BB(1 << lsb)
+	}
+	return moves
+}
+
+func (b Board) generateBitboardBishopMoves(bb bitboard) []Move {
+	if b.Side == WHITE {
+		return generateBitboardBishopMovesForSide(bb.whitebishops, bb.emptySquares(), bb.whitePieces(), bb.blackPieces(), WHITE_BISHOP)
+	}
+	return generateBitboardBishopMovesForSide(bb.blackbishops, bb.emptySquares(), bb.blackPieces(), bb.whitePieces(), BLACK_BISHOP)
+}
+
+func generateBitboardBishopMovesForSide(bishops, empty, fpieces, opieces BB, piece int) []Move {
+	moves := make([]Move, 0)
+	for bishops > 0 {
+		lsb := deBruijnLSB(bishops)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				NORTHEAST_IDX,
+				NORTHEAST,
+				fillNorthEast,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				NORTHWEST_IDX,
+				NORTHWEST,
+				fillNorthWest,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				SOUTHEAST_IDX,
+				SOUTHEAST,
+				fillSouthEast,
+			)...,
+		)
+		moves = append(
+			moves,
+			generateRayAttackMoves(
+				lsb,
+				empty,
+				fpieces,
+				opieces,
+				piece,
+				SOUTHWEST_IDX,
+				SOUTHWEST,
+				fillSouthWest,
+			)...,
+		)
+		bishops ^= BB(1 << lsb)
+	}
+	return moves
+}
+
+// need piece, friendlyPieces, oppPieces BB, shift delta fill function(BB BB)BB
+// yikes this fn should be broken up
+func generateRayAttackMoves(lsb int, empty, fpieces, opieces BB, pieceType, rayIdx, shiftDelta int, fill func(e, p BB) BB) []Move {
+	moves := make([]Move, 0)
+
+	sq := BB_TO_BOARDSQUARE[lsb]
+	moveRay := RAY_ATTACKS[rayIdx][lsb]
+	friendlyUnion := moveRay & fpieces
+	moveRay &= ^fill(BOARDMASK, cutoffBitboard(friendlyUnion, shiftDelta > 0))
+	if moveRay == 0 {
+		return moves
+	}
+	oppUnionLsb := cutoffBitboard(moveRay&opieces, shiftDelta > 0)
+	moveRay &= ^fill(BOARDMASK, shiftBB(oppUnionLsb, shiftDelta))
+	for moveRay > 0 {
+		moveLsb := deBruijnLSB(moveRay)
+		isCapture := (opieces & BB(1<<moveLsb)) > 0
+		destSq := BB_TO_BOARDSQUARE[moveLsb]
+		moves = append(
+			moves,
+			Move{sq, destSq, isCapture, false, false, false, pieceType, false},
+		)
+		moveRay ^= BB(1 << moveLsb)
+	}
+
+	return moves
+}
+
+func cutoffBitboard(bb BB, fromLSB bool) BB {
+	if bb == 0 {
+		return 0
+	}
+	if fromLSB {
+		return BB(1 << deBruijnLSB(bb))
+	}
+	return BB(1 << deBruijnMSB(bb))
 }
 
 func (b Board) generateBitboardKingMoves(bb bitboard) []Move {
@@ -430,12 +796,12 @@ func (b Board) generateBitboardKingMoves(bb bitboard) []Move {
 func generateKingMovesForSide(king, oppPieces, emptySqs BB, piece int) []Move {
 	moves := make([]Move, 0)
 	for king > 0 {
-		lsb := deBruijnBitscan(king)
+		lsb := deBruijnLSB(king)
 		sq := BB_TO_BOARDSQUARE[lsb]
 		captures := KING_ATTACKS[lsb] & oppPieces
 		quietmoves := KING_ATTACKS[lsb] & emptySqs
 		for captures > 0 {
-			clsb := deBruijnBitscan(captures)
+			clsb := deBruijnLSB(captures)
 			csq := BB_TO_BOARDSQUARE[clsb]
 			moves = append(
 				moves,
@@ -444,7 +810,7 @@ func generateKingMovesForSide(king, oppPieces, emptySqs BB, piece int) []Move {
 			captures ^= BB(1 << clsb)
 		}
 		for quietmoves > 0 {
-			qlsb := deBruijnBitscan(quietmoves)
+			qlsb := deBruijnLSB(quietmoves)
 			qsq := BB_TO_BOARDSQUARE[qlsb]
 			moves = append(
 				moves,
@@ -471,12 +837,12 @@ func (b Board) generateBitboardKnightMoves(bb bitboard) []Move {
 func generateKnightMovesForSide(knights, oppPieces, emptySqs BB, piece int) []Move {
 	moves := make([]Move, 0)
 	for knights > 0 {
-		lsb := deBruijnBitscan(knights)
+		lsb := deBruijnLSB(knights)
 		sq := BB_TO_BOARDSQUARE[lsb]
 		captures := KNIGHT_ATTACKS[lsb] & oppPieces
 		quietmoves := KNIGHT_ATTACKS[lsb] & emptySqs
 		for captures > 0 {
-			clsb := deBruijnBitscan(captures)
+			clsb := deBruijnLSB(captures)
 			csq := BB_TO_BOARDSQUARE[clsb]
 			moves = append(
 				moves,
@@ -485,7 +851,7 @@ func generateKnightMovesForSide(knights, oppPieces, emptySqs BB, piece int) []Mo
 			captures ^= BB(1 << clsb)
 		}
 		for quietmoves > 0 {
-			qlsb := deBruijnBitscan(quietmoves)
+			qlsb := deBruijnLSB(quietmoves)
 			qsq := BB_TO_BOARDSQUARE[qlsb]
 			moves = append(
 				moves,
@@ -543,7 +909,7 @@ func pawnMovesFromBB(bb BB, delta, piece int, capture, doublePush bool) []Move {
 	moves := make([]Move, 0)
 
 	for bb > 0 {
-		lsb := deBruijnBitscan(bb)
+		lsb := deBruijnLSB(bb)
 		sq := BB_TO_BOARDSQUARE[lsb]
 		// TODO: promotion checking
 		moves = append(moves, Move{sq, sq + delta, capture, false, false, false, piece, doublePush})
@@ -553,7 +919,7 @@ func pawnMovesFromBB(bb BB, delta, piece int, capture, doublePush bool) []Move {
 	return moves
 }
 
-var deBruijnIndex64 = [64]int{
+var deBruijnLSBIndex = [64]int{
 	0, 1, 48, 2, 57, 49, 28, 3,
 	61, 58, 50, 42, 38, 29, 17, 4,
 	62, 55, 59, 36, 53, 51, 43, 22,
@@ -564,8 +930,29 @@ var deBruijnIndex64 = [64]int{
 	25, 14, 19, 9, 13, 8, 7, 6,
 }
 
+var deBruijnMSBIndex = [64]int{
+	0, 47, 1, 56, 48, 27, 2, 60,
+	57, 49, 41, 37, 28, 16, 3, 61,
+	54, 58, 35, 52, 50, 42, 21, 44,
+	38, 32, 29, 23, 17, 11, 4, 62,
+	46, 55, 26, 59, 40, 36, 15, 53,
+	34, 51, 20, 43, 31, 22, 10, 45,
+	25, 39, 14, 33, 19, 30, 9, 24,
+	13, 18, 8, 12, 7, 6, 5, 63,
+}
+
 const deBruijnSeq BB = 0x03f79d71b4cb0a89
 
-func deBruijnBitscan(bb BB) int {
-	return deBruijnIndex64[((bb&-bb)*deBruijnSeq)>>58]
+func deBruijnLSB(bb BB) int {
+	return deBruijnLSBIndex[((bb&-bb)*deBruijnSeq)>>58]
+}
+
+func deBruijnMSB(bb BB) int {
+	bb |= bb >> 1
+	bb |= bb >> 2
+	bb |= bb >> 4
+	bb |= bb >> 8
+	bb |= bb >> 16
+	bb |= bb >> 32
+	return deBruijnMSBIndex[(bb*deBruijnSeq)>>58]
 }
