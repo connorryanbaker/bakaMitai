@@ -12,27 +12,12 @@ Late Move Reduction https://www.chessprogramming.org/Late_Move_Reductions [ ]
 MOVEGENERATION
 Legal Move Generation with Bitboards to remove need to make / unmake moves to determine legality [ ]
 bitboards
-- pawn moves [x]
-- knight moves [x]
-- king moves [x]
-- rayAttacks [x]
-  - bishop moves
-  - rook moves
-  - queen moves
-- pre-generate rayAttacks[8][64], kingAttacks[64], knightAttacks[64] [ ]
-- attacks
-  - for each ray
-  - get ray on empty board
-  - get intersection w/ occupied squares
-  - find lsb of intersection
-  - get ray from lsb on empty board and xor that w/ original ray
-  - will have to differ depending on if piece is friendly or opponent
-  - example https://www.chessprogramming.org/Classical_Approach#Conditional
-- translating bitboard results to move structs - > helpful so https://stackoverflow.com/questions/72296626/chess-bitboard-move-generation
 - generating legal moves https://www.chessprogramming.org/Bitboard_Serialization
   - https://peterellisjones.com/posts/generating-legal-chess-moves-efficiently/
-- for each piece (not pawns?), generate array of 64 bitboards w/ a1 as 0 and h8
-  as 63 at startup time
+- decouple attack bitboard generation from move array generation [ ]
+- taboo squares [ ]
+- double check [ ]
+- updating MakeMove() [ ]
 
 
 UI
