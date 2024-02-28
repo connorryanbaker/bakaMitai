@@ -125,7 +125,7 @@ func blackPawnAttacks(pawns BB, fpieces BB) BB {
 }
 
 func (bb bitboard) whiteKingMoves() BB {
-	return bb.kingMoves(bb.whiteking) & (bb.emptySquares() | bb.blackPieces()) // todo: taboo
+	return bb.kingMoves(bb.whiteking) & (bb.emptySquares() | bb.blackPieces())
 }
 
 func (bb bitboard) blackKingMoves() BB {
@@ -475,20 +475,63 @@ func popCount(x BB) int {
 
 // for each piece, gen moves
 
+func (b Board) inCheck(bb bitboard) bool {
+	wp := bb.whitePieces()
+	bp := bb.blackPieces()
+	em := bb.emptySquares()
+
+	if b.Side == WHITE {
+		return attackers(bb, WHITE, bb.whiteking, em, wp, bp) > 0
+	}
+	return attackers(bb, BLACK, bb.blackking, em, bp, wp) > 0
+}
+
+func (b Board) doubleCheck(bb bitboard) bool {
+	// TODO: organize to minimize these calls
+	// could potentially return two values from inCheck
+	wp := bb.whitePieces()
+	bp := bb.blackPieces()
+	em := bb.emptySquares()
+
+	if b.Side == WHITE {
+		return popCount(attackers(bb, WHITE, bb.whiteking, em, wp, bp)) > 1
+	}
+	return popCount(attackers(bb, BLACK, bb.blackking, em, bp, wp)) > 1
+}
+
+func attackers(bb bitboard, side int, piece, empty, fpieces, opieces BB) BB {
+	var attackers BB
+	sq := deBruijnLSB(piece)
+	if side == WHITE {
+		attackers |= KNIGHT_ATTACKS[sq] & bb.blackknights
+		attackers |= bishopAttacks(sq, empty, fpieces, opieces) & bb.blackbishops
+		attackers |= rookAttacks(sq, empty, fpieces, opieces) & bb.blackrooks
+		attackers |= queenAttacks(sq, empty, fpieces, opieces) & bb.blackqueens
+		attackers |= whitePawnAttacks(piece, fpieces) & bb.blackpawns
+	} else {
+		attackers |= KNIGHT_ATTACKS[sq] & bb.whiteknights
+		attackers |= bishopAttacks(sq, empty, fpieces, opieces) & bb.whitebishops
+		attackers |= rookAttacks(sq, empty, fpieces, opieces) & bb.whiterooks
+		attackers |= queenAttacks(sq, empty, fpieces, opieces) & bb.whitequeens
+		attackers |= blackPawnAttacks(piece, fpieces) & bb.whitepawns
+	}
+	return attackers
+}
+
 func (b Board) GenerateBitboardMoves() []Move {
 	bb := b.newBitboard()
 	moves := make([]Move, 0)
 	// TODO:
-	// attackedSquares bitboard [ ]
-	// - individual {piece}Attacks(pieces, empty, fpieces, opieces) functions [ ]
-	// - attackedSquares should include friendly pieces protected
-	// tabooSquares bitboard [ ]
-	// - remove king to prevent king from blocking
-	// in check [ ]
-	// attackers(sq, side) function [ ]
-	// absolute pins / legal moves / double check
+	// absolute pins / blocking check / capturing
 	// ep capture & promotions
 	// castling
+	if b.inCheck(*bb) {
+		if b.doubleCheck(*bb) {
+			return b.generateBitboardKingMoves(*bb)
+		}
+		// TODO: blocks, captures, etc.
+		return b.generateBitboardKingMoves(*bb)
+	}
 	moves = append(moves, b.generateBitboardPawnMoves(*bb)...)
 	moves = append(moves, b.generateBitboardKnightMoves(*bb)...)
 	moves = append(moves, b.generateBitboardKingMoves(*bb)...)
@@ -510,19 +553,21 @@ func (bb bitboard) tabooSquares(side int) BB {
 	bp := bb.blackPieces()
 	em := bb.emptySquares()
 	if side == WHITE {
+		wp ^= bb.whiteking // remove king to allow for xray squares to be marked taboo
 		return blackPawnAttacks(bb.blackpawns, bp) |
-			allQueenAttacks(bb.blackqueens, em, bp, wp) |
-			allRookAttacks(bb.blackrooks, em, bp, wp) |
-			allBishopAttacks(bb.blackbishops, em, bp, wp) |
-			allKnightAttacks(bb.blackknights, bp) |
-			kingAttacks(deBruijnLSB(bb.blackking), bp)
+			rayTabooAttacks(bb.blackqueens, em, bp, wp, queenTabooAttacks) |
+			rayTabooAttacks(bb.blackrooks, em, bp, wp, rookTabooAttacks) |
+			rayTabooAttacks(bb.blackbishops, em, bp, wp, bishopTabooAttacks) |
+			allKnightTabooAttacks(bb.blackknights) |
+			KING_ATTACKS[deBruijnLSB(bb.blackking)]
 	}
+	bp ^= bb.blackking
 	return whitePawnAttacks(bb.whitepawns, wp) |
-		allQueenAttacks(bb.whitequeens, em, wp, bp) |
-		allRookAttacks(bb.whiterooks, em, wp, bp) |
-		allBishopAttacks(bb.whitebishops, em, wp, bp) |
-		allKnightAttacks(bb.whiteknights, wp) |
-		kingAttacks(deBruijnLSB(bb.whiteking), wp)
+		rayTabooAttacks(bb.whitequeens, em, wp, bp, queenTabooAttacks) |
+		rayTabooAttacks(bb.whiterooks, em, wp, bp, rookTabooAttacks) |
+		rayTabooAttacks(bb.whitebishops, em, wp, bp, bishopTabooAttacks) |
+		allKnightTabooAttacks(bb.whiteknights) |
+		KING_ATTACKS[deBruijnLSB(bb.whiteking)]
 }
 
 func (b Board) generateBitboardQueenMoves(bb bitboard) []Move {
@@ -536,12 +581,26 @@ func queenAttacks(sq int, empty, fpieces, opieces BB) BB {
 	return bishopAttacks(sq, empty, fpieces, opieces) | rookAttacks(sq, empty, fpieces, opieces)
 }
 
+func queenTabooAttacks(sq int, empty, fpieces, opieces BB) BB {
+	return bishopTabooAttacks(sq, empty, fpieces, opieces) | rookTabooAttacks(sq, empty, fpieces, opieces)
+}
+
 func allQueenAttacks(queens, empty, fpieces, opieces BB) BB {
 	var attacks BB
 	for queens > 0 {
 		lsb := deBruijnLSB(queens)
 		attacks |= queenAttacks(lsb, empty, fpieces, opieces)
 		queens ^= BB(1 << lsb)
+	}
+	return attacks
+}
+
+func rayTabooAttacks(pieces, empty, fpieces, opieces BB, f func(s int, e, f, o BB) BB) BB {
+	var attacks BB
+	for pieces > 0 {
+		lsb := deBruijnLSB(pieces)
+		attacks |= f(lsb, empty, fpieces, opieces)
+		pieces ^= BB(1 << lsb)
 	}
 	return attacks
 }
@@ -590,6 +649,13 @@ func rookAttacks(sq int, empty, fpieces, opieces BB) BB {
 		generateRayAttacks(sq, EAST_IDX, EAST, empty, fpieces, opieces, fillEast)
 }
 
+func rookTabooAttacks(sq int, empty, fpieces, opieces BB) BB {
+	return generateRayTabooAttacks(sq, NORTH_IDX, NORTH, empty, fpieces, opieces, fillNorth) |
+		generateRayTabooAttacks(sq, SOUTH_IDX, SOUTH, empty, fpieces, opieces, fillSouth) |
+		generateRayTabooAttacks(sq, WEST_IDX, WEST, empty, fpieces, opieces, fillWest) |
+		generateRayTabooAttacks(sq, EAST_IDX, EAST, empty, fpieces, opieces, fillEast)
+}
+
 func allRookAttacks(rooks, empty, fpieces, opieces BB) BB {
 	var attacks BB
 	for rooks > 0 {
@@ -623,6 +689,13 @@ func bishopAttacks(sq int, empty, fpieces, opieces BB) BB {
 		generateRayAttacks(sq, SOUTHWEST_IDX, SOUTHWEST, empty, fpieces, opieces, fillSouthWest) |
 		generateRayAttacks(sq, NORTHEAST_IDX, NORTHEAST, empty, fpieces, opieces, fillNorthEast) |
 		generateRayAttacks(sq, SOUTHEAST_IDX, SOUTHEAST, empty, fpieces, opieces, fillSouthEast)
+}
+
+func bishopTabooAttacks(sq int, empty, fpieces, opieces BB) BB {
+	return generateRayTabooAttacks(sq, NORTHWEST_IDX, NORTHWEST, empty, fpieces, opieces, fillNorthWest) |
+		generateRayTabooAttacks(sq, SOUTHWEST_IDX, SOUTHWEST, empty, fpieces, opieces, fillSouthWest) |
+		generateRayTabooAttacks(sq, NORTHEAST_IDX, NORTHEAST, empty, fpieces, opieces, fillNorthEast) |
+		generateRayTabooAttacks(sq, SOUTHEAST_IDX, SOUTHEAST, empty, fpieces, opieces, fillSouthEast)
 }
 
 func allBishopAttacks(bishops, empty, fpieces, opieces BB) BB {
@@ -667,6 +740,8 @@ func generateRayAttackMoves(lsb int, empty, fpieces, opieces BB, pieceType, rayI
 	return moves
 }
 
+// fill need to take same shift approach for taboo squares to take protected
+// pieces into account
 func generateRayAttacks(lsb, rayIdx, shiftDelta int, empty, fpieces, opieces BB, fill func(e, p BB) BB) BB {
 	moveRay := RAY_ATTACKS[rayIdx][lsb]
 	friendlyUnion := moveRay & fpieces
@@ -675,6 +750,15 @@ func generateRayAttacks(lsb, rayIdx, shiftDelta int, empty, fpieces, opieces BB,
 		return moveRay
 	}
 
+	oppUnionLsb := cutoffBitboard(moveRay&opieces, shiftDelta > 0)
+	return moveRay & ^fill(BOARDMASK, shiftBB(oppUnionLsb, shiftDelta))
+}
+
+func generateRayTabooAttacks(lsb, rayIdx, shiftDelta int, empty, fpieces, opieces BB, fill func(e, p BB) BB) BB {
+	moveRay := RAY_ATTACKS[rayIdx][lsb]
+	friendlyUnionLsb := cutoffBitboard(moveRay&fpieces, shiftDelta > 0)
+	moveRay &= ^fill(BOARDMASK, shiftBB(friendlyUnionLsb, shiftDelta))
+	// rm duplication
 	oppUnionLsb := cutoffBitboard(moveRay&opieces, shiftDelta > 0)
 	return moveRay & ^fill(BOARDMASK, shiftBB(oppUnionLsb, shiftDelta))
 }
@@ -750,6 +834,16 @@ func (b Board) generateBitboardKnightMoves(bb bitboard) []Move {
 
 func knightAttacks(lsb int, fpieces BB) BB {
 	return KNIGHT_ATTACKS[lsb] & ^fpieces
+}
+
+func allKnightTabooAttacks(knights BB) BB {
+	var attacks BB
+	for knights > 0 {
+		lsb := deBruijnLSB(knights)
+		attacks |= KNIGHT_ATTACKS[lsb]
+		knights ^= BB(1 << lsb)
+	}
+	return attacks
 }
 
 func allKnightAttacks(knights, fpieces BB) BB {

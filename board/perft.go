@@ -22,7 +22,7 @@ func bbperft(b *Board, depth int) uint64 {
 		return 1
 	}
 
-	// bbm := b.GenerateBitboardMoves()
+	bbm := b.GenerateBitboardMoves()
 	// lm := b.LegalMoves()
 	// if len(bbm) != len(lm) {
 	//   fmt.Println("ERR!")
@@ -38,7 +38,7 @@ func bbperft(b *Board, depth int) uint64 {
 	//   }
 	// }
 
-	for _, m := range b.GenerateBitboardMoves() {
+	for _, m := range bbm {
 		v := b.MakeMove(m)
 		nodes += bbperft(b, depth-1)
 		if v {
