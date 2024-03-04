@@ -152,6 +152,16 @@ func TestBBPerft(t *testing.T) {
 			NewBoard(),
 			197281,
 		},
+		//{
+		//	5,
+		//	NewBoard(),
+		//	4865609,
+		//},
+		//{
+		//	6,
+		//	NewBoard(),
+		//	119060324,
+		//},
 	}
 	for _, tt := range tests {
 		result := bbperft(&tt.board, tt.depth)

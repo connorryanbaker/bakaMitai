@@ -74,44 +74,77 @@ func (bb bitboard) allPieces() BB {
 	return bb.whitePieces() | bb.blackPieces()
 }
 
-func (bb bitboard) pushOneWhitePawns() BB {
-	return shiftBB(bb.emptySquares(), SOUTH) & bb.whitepawns
+func (bb bitboard) pushOneWhitePawns(pushMask, pinnedPieces, movesForPinned BB) BB {
+	unpinnedPawnsCanPush := shiftBB(bb.emptySquares()&pushMask, SOUTH) & (bb.whitepawns & ^pinnedPieces)
+	if pinnedPieces == 0 {
+		return unpinnedPawnsCanPush
+	}
+	pinnedPawns := bb.whitepawns & pinnedPieces
+	return unpinnedPawnsCanPush | (shiftBB(bb.emptySquares()&pushMask&movesForPinned, SOUTH) & pinnedPawns)
+
 }
 
-func (bb bitboard) pushOneBlackPawns() BB {
-	return shiftBB(bb.emptySquares(), NORTH) & bb.blackpawns
+func (bb bitboard) pushOneBlackPawns(pushMask, pinnedPieces, movesForPinned BB) BB {
+	unpinnedPawnsCanPush := shiftBB(bb.emptySquares()&pushMask, NORTH) & (bb.blackpawns & ^pinnedPieces)
+	if pinnedPieces == 0 {
+		return unpinnedPawnsCanPush
+	}
+	pinnedPawns := bb.blackpawns & pinnedPieces
+	return unpinnedPawnsCanPush | (shiftBB(bb.emptySquares()&pushMask&movesForPinned, NORTH) & pinnedPawns)
 }
 
-func (bb bitboard) pushTwoWhitePawns() BB {
-	var fourthRank BB = 0x00000000FF000000
+func (bb bitboard) pushTwoWhitePawns(pushMask, pinnedPieces, movesForPinned BB) BB {
+	var fourthRank BB = 0x00000000FF000000 & pushMask
 	emptyThirdRank := shiftBB(fourthRank&bb.emptySquares(), SOUTH) & bb.emptySquares()
-	return shiftBB(emptyThirdRank, SOUTH) & bb.whitepawns
+	unpinnedPawnsCanPush := shiftBB(emptyThirdRank, SOUTH) & (bb.whitepawns & ^pinnedPieces)
+	if pinnedPieces == 0 {
+		return unpinnedPawnsCanPush
+	}
+	fourthRank = 0x00000000FF000000 & pushMask & movesForPinned
+	emptyThirdRank = shiftBB(fourthRank&bb.emptySquares()&movesForPinned, SOUTH) & (bb.emptySquares() & movesForPinned)
+	pinnedPawns := bb.whitepawns & pinnedPieces
+	return unpinnedPawnsCanPush | (shiftBB(emptyThirdRank, SOUTH) & pinnedPawns)
 }
 
-func (bb bitboard) pushTwoBlackPawns() BB {
-	var fifthRank BB = 0x000000FF00000000
+func (bb bitboard) pushTwoBlackPawns(pushMask, pinnedPieces, movesForPinned BB) BB {
+	var fifthRank BB = 0x000000FF00000000 & pushMask
 	emptySixthRank := shiftBB(fifthRank&bb.emptySquares(), NORTH) & bb.emptySquares()
-	return shiftBB(emptySixthRank, NORTH) & bb.blackpawns
+	unpinnedPawnsCanPush := shiftBB(emptySixthRank, NORTH) & (bb.blackpawns & ^pinnedPieces)
+	if pinnedPieces == 0 {
+		return unpinnedPawnsCanPush
+	}
+	fifthRank = 0x000000FF00000000 & pushMask & movesForPinned
+	emptySixthRank = shiftBB(fifthRank&bb.emptySquares()&movesForPinned, NORTH) & (bb.emptySquares() & movesForPinned)
+	pinnedPawns := bb.blackpawns & pinnedPieces
+	return unpinnedPawnsCanPush | (shiftBB(emptySixthRank, NORTH) & pinnedPawns)
 }
 
-func (bb bitboard) whitePawnsCaptureWest() BB {
-	targets := shiftBB(bb.whitepawns, NORTHWEST) & (^HFILE & bb.blackPieces())
-	return shiftBB(targets, SOUTHEAST) & bb.whitepawns
+func (bb bitboard) whitePawnsCaptureWest(captureMask, pinnedPieces, movesForPinned BB) BB {
+	targets := shiftBB(bb.whitepawns, NORTHWEST) & (^HFILE & bb.blackPieces() & captureMask)
+	unpinnedCaptures := shiftBB(targets, SOUTHEAST) & (bb.whitepawns & ^pinnedPieces)
+	pinnedCaptures := shiftBB(targets&movesForPinned, SOUTHEAST) & (bb.whitepawns & pinnedPieces)
+	return unpinnedCaptures | pinnedCaptures
 }
 
-func (bb bitboard) whitePawnsCaptureEast() BB {
-	targets := shiftBB(bb.whitepawns, NORTHEAST) & (^AFILE & bb.blackPieces())
-	return shiftBB(targets, SOUTHWEST) & bb.whitepawns
+func (bb bitboard) whitePawnsCaptureEast(captureMask, pinnedPieces, movesForPinned BB) BB {
+	targets := shiftBB(bb.whitepawns, NORTHEAST) & (^AFILE & bb.blackPieces() & captureMask)
+	unpinnedCaptures := shiftBB(targets, SOUTHWEST) & (bb.whitepawns & ^pinnedPieces)
+	pinnedCaptures := shiftBB(targets&movesForPinned, SOUTHWEST) & (bb.whitepawns & pinnedPieces)
+	return unpinnedCaptures | pinnedCaptures
 }
 
-func (bb bitboard) blackPawnsCaptureWest() BB {
-	targets := shiftBB(bb.blackpawns, SOUTHWEST) & (^HFILE & bb.whitePieces())
-	return shiftBB(targets, NORTHEAST) & bb.blackpawns
+func (bb bitboard) blackPawnsCaptureWest(captureMask, pinnedPieces, movesForPinned BB) BB {
+	targets := shiftBB(bb.blackpawns, SOUTHWEST) & (^HFILE & bb.whitePieces() & captureMask)
+	unpinnedCaptures := shiftBB(targets, NORTHEAST) & (bb.blackpawns & ^pinnedPieces)
+	pinnedCaptures := shiftBB(targets&movesForPinned, NORTHEAST) & (bb.blackpawns & pinnedPieces)
+	return unpinnedCaptures | pinnedCaptures
 }
 
-func (bb bitboard) blackPawnsCaptureEast() BB {
-	targets := shiftBB(bb.blackpawns, SOUTHEAST) & (^AFILE & bb.whitePieces())
-	return shiftBB(targets, NORTHWEST) & bb.blackpawns
+func (bb bitboard) blackPawnsCaptureEast(captureMask, pinnedPieces, movesForPinned BB) BB {
+	targets := shiftBB(bb.blackpawns, SOUTHEAST) & (^AFILE & bb.whitePieces() & captureMask)
+	unpinnedCaptures := shiftBB(targets, NORTHWEST) & (bb.blackpawns & ^pinnedPieces)
+	pinnedCaptures := shiftBB(targets&movesForPinned, NORTHWEST) & (bb.blackpawns & pinnedPieces)
+	return unpinnedCaptures | pinnedCaptures
 }
 
 func whitePawnAttacks(pawns BB, fpieces BB) BB {
@@ -172,6 +205,8 @@ const (
 	WEST_IDX      = iota
 	NORTHWEST_IDX = iota
 )
+
+var DELTA_IDXS = [8]int{NORTH_IDX, NORTHEAST_IDX, EAST_IDX, SOUTHEAST_IDX, SOUTH_IDX, SOUTHWEST_IDX, WEST_IDX, NORTHWEST_IDX}
 
 var RAY_ATTACKS [8][64]BB
 
@@ -518,26 +553,166 @@ func attackers(bb bitboard, side int, piece, empty, fpieces, opieces BB) BB {
 	return attackers
 }
 
+func (b Board) checkingPiecesMask(bb bitboard) BB {
+	if b.Side == WHITE {
+		return attackers(bb, WHITE, bb.whiteking, bb.emptySquares(), bb.whitePieces(), bb.blackPieces())
+	}
+	return attackers(bb, BLACK, bb.blackking, bb.emptySquares(), bb.blackPieces(), bb.whitePieces())
+}
+
+func blockingSquares(attackedSquare, attackingSquare BB) BB {
+	attackedSq64 := deBruijnLSB(attackedSquare)
+	for i := NORTH_IDX; i <= NORTHWEST_IDX; i++ {
+		moveRay := RAY_ATTACKS[i][attackedSq64]
+		if moveRay&attackingSquare > 0 {
+			return generateBlockingMask(moveRay, attackingSquare, i)
+		}
+	}
+	return BB(0)
+}
+
+func generateBlockingMask(moveRay, attackingSquare BB, dir int) BB {
+	switch dir {
+	case NORTH_IDX:
+		oppUnionLsb := cutoffBitboard(moveRay&attackingSquare, true)
+		return moveRay & ^fillNorth(BOARDMASK, shiftBB(oppUnionLsb, NORTH))
+	case NORTHEAST_IDX:
+		oppUnionLsb := cutoffBitboard(moveRay&attackingSquare, true)
+		return moveRay & ^fillNorthEast(BOARDMASK, shiftBB(oppUnionLsb, NORTHEAST))
+	case NORTHWEST_IDX:
+		oppUnionLsb := cutoffBitboard(moveRay&attackingSquare, true)
+		return moveRay & ^fillNorthWest(BOARDMASK, shiftBB(oppUnionLsb, NORTHWEST))
+	case EAST_IDX:
+		oppUnionLsb := cutoffBitboard(moveRay&attackingSquare, true)
+		return moveRay & ^fillEast(BOARDMASK, shiftBB(oppUnionLsb, EAST))
+	case SOUTH_IDX:
+		oppUnionLsb := cutoffBitboard(moveRay&attackingSquare, false)
+		return moveRay & ^fillSouth(BOARDMASK, shiftBB(oppUnionLsb, SOUTH))
+	case SOUTHEAST_IDX:
+		oppUnionLsb := cutoffBitboard(moveRay&attackingSquare, false)
+		return moveRay & ^fillSouthEast(BOARDMASK, shiftBB(oppUnionLsb, SOUTHEAST))
+	case SOUTHWEST_IDX:
+		oppUnionLsb := cutoffBitboard(moveRay&attackingSquare, false)
+		return moveRay & ^fillSouthWest(BOARDMASK, shiftBB(oppUnionLsb, SOUTHWEST))
+	case WEST_IDX:
+		oppUnionLsb := cutoffBitboard(moveRay&attackingSquare, false)
+		return moveRay & ^fillWest(BOARDMASK, shiftBB(oppUnionLsb, WEST))
+	}
+	// TODO: raise error here?
+	return BB(0)
+}
+
+func (b Board) absolutePinnedPiecesSideToMove(bb bitboard) BB {
+	em := bb.emptySquares()
+	wp := bb.whitePieces()
+	bp := bb.blackPieces()
+
+	// TODO: overlap of rays is incorrect
+	// need to find overlap between corresponding rays NORTH - SOUTH, EAST - WEST etc
+	// from kingsq, get queenTabooAttacks in each direction
+	// get corresponding opposite rook / bishop attack
+	// func generateRayTabooAttacks(lsb, rayIdx, shiftDelta int, empty, fpieces, opieces BB, fill func(e, p BB) BB) BB {
+	if b.Side == WHITE {
+		raysFromKing := slidingRayAttacksFromSquare(deBruijnLSB(bb.whiteking))
+		pinningRays := allQueenAttacks(bb.blackqueens&raysFromKing, em, bp, wp) |
+			allBishopAttacks(bb.blackbishops&raysFromKing, em, bp, wp) |
+			allRookAttacks(bb.blackrooks&raysFromKing, em, bp, wp)
+		return pinningRays & wp & raysFromKing
+	}
+
+	raysFromKing := slidingRayAttacksFromSquare(deBruijnLSB(bb.blackking))
+	pinningRays := allQueenAttacks(bb.whitequeens&raysFromKing, em, wp, bp) |
+		allBishopAttacks(bb.whitebishops&raysFromKing, em, wp, bp) |
+		allRookAttacks(bb.whiterooks&raysFromKing, em, wp, bp)
+	return pinningRays & bp & raysFromKing
+}
+
+// Moves for pinned pieces:
+// remove pinned pieces from board
+// how to differentiate pinning pieces from sliding pieces giving check?
+// (replace king with queen?) and calculate moves
+// from king square to pinning piece(s)
+
+func (b Board) movesForPinnedPieces(bb bitboard, pinnedPieces BB) BB {
+	em := bb.emptySquares()
+	wp := bb.whitePieces()
+	bp := bb.blackPieces()
+	var moveRay BB
+	if b.Side == WHITE {
+		potentialPinningPieces := bb.blackqueens & bb.blackrooks & bb.blackbishops
+		kingSq := deBruijnLSB(bb.whiteking)
+		for i := NORTH_IDX; i < 8; i++ {
+			if RAY_ATTACKS[i][kingSq]&pinnedPieces > 0 {
+				rayAttack := queenAttacks(kingSq, em, wp & ^pinnedPieces, bp)
+				if rayAttack&potentialPinningPieces > 0 {
+					moveRay |= rayAttack
+				}
+			}
+		}
+	} else {
+		potentialPinningPieces := bb.whitequeens & bb.whiterooks & bb.whitebishops
+		kingSq := deBruijnLSB(bb.blackking)
+		for i := NORTH_IDX; i < 8; i++ {
+			if RAY_ATTACKS[i][kingSq]&pinnedPieces > 0 {
+				rayAttack := queenAttacks(kingSq, em, bp & ^pinnedPieces, wp)
+				if rayAttack&potentialPinningPieces > 0 {
+					moveRay |= rayAttack
+				}
+			}
+		}
+	}
+	return moveRay
+}
+
+func slidingRayAttacksFromSquare(sq int) BB {
+	var ray BB
+	for i := 0; i < 8; i++ {
+		ray |= RAY_ATTACKS[i][sq]
+	}
+	return ray
+}
+
 func (b Board) GenerateBitboardMoves() []Move {
 	bb := b.newBitboard()
 	moves := make([]Move, 0)
 	// TODO:
-	// absolute pins / blocking check / capturing
+	// absolute pins
 	// ep capture & promotions
 	// castling
+	captureMask := BB(0xFFFFFFFFFFFFFFFF)
+	pushMask := BB(0xFFFFFFFFFFFFFFFF)
+	movesForPinned := BB(0xFFFFFFFFFFFFFFFF)
+	pinnedPieces := b.absolutePinnedPiecesSideToMove(*bb)
+	if pinnedPieces > 0 {
+		printBB(pinnedPieces)
+		b.Print()
+		movesForPinned = b.movesForPinnedPieces(*bb, pinnedPieces)
+	}
 	if b.inCheck(*bb) {
 		if b.doubleCheck(*bb) {
 			return b.generateBitboardKingMoves(*bb)
 		}
-		// TODO: blocks, captures, etc.
-		return b.generateBitboardKingMoves(*bb)
+		captureMask = b.checkingPiecesMask(*bb)
+		if b.Side == WHITE {
+			if captureMask&(bb.blackbishops|bb.blackqueens|bb.blackrooks) > 0 {
+				pushMask = blockingSquares(bb.whiteking, captureMask)
+			} else {
+				pushMask = BB(0)
+			}
+		} else {
+			if captureMask&(bb.whitebishops|bb.whitequeens|bb.whiterooks) > 0 {
+				pushMask = blockingSquares(bb.blackking, captureMask)
+			} else {
+				pushMask = BB(0)
+			}
+		}
 	}
-	moves = append(moves, b.generateBitboardPawnMoves(*bb)...)
-	moves = append(moves, b.generateBitboardKnightMoves(*bb)...)
+	moves = append(moves, b.generateBitboardPawnMoves(*bb, captureMask&movesForPinned, pushMask, pinnedPieces, movesForPinned)...)
+	moves = append(moves, b.generateBitboardKnightMoves(*bb, captureMask, pushMask, pinnedPieces)...)
+	moves = append(moves, b.generateBitboardBishopMoves(*bb, captureMask, pushMask, pinnedPieces, movesForPinned)...)
+	moves = append(moves, b.generateBitboardRookMoves(*bb, captureMask, pushMask, pinnedPieces, movesForPinned)...)
+	moves = append(moves, b.generateBitboardQueenMoves(*bb, captureMask, pushMask, pinnedPieces, movesForPinned)...)
 	moves = append(moves, b.generateBitboardKingMoves(*bb)...)
-	moves = append(moves, b.generateBitboardBishopMoves(*bb)...)
-	moves = append(moves, b.generateBitboardRookMoves(*bb)...)
-	moves = append(moves, b.generateBitboardQueenMoves(*bb)...)
 
 	sort.Slice(moves, func(i, j int) bool {
 		return moves[i].Score(b) > moves[j].Score(b)
@@ -570,11 +745,11 @@ func (bb bitboard) tabooSquares(side int) BB {
 		KING_ATTACKS[deBruijnLSB(bb.whiteking)]
 }
 
-func (b Board) generateBitboardQueenMoves(bb bitboard) []Move {
+func (b Board) generateBitboardQueenMoves(bb bitboard, captureMask, pushMask, pinnedPieces, movesForPinned BB) []Move {
 	if b.Side == WHITE {
-		return generateBitboardQueenMovesForSide(bb.whitequeens, bb.emptySquares(), bb.whitePieces(), bb.blackPieces(), WHITE_QUEEN)
+		return generateBitboardQueenMovesForSide(bb.whitequeens, bb.emptySquares(), bb.whitePieces(), bb.blackPieces(), captureMask, pushMask, pinnedPieces, movesForPinned, WHITE_QUEEN)
 	}
-	return generateBitboardQueenMovesForSide(bb.blackqueens, bb.emptySquares(), bb.blackPieces(), bb.whitePieces(), BLACK_QUEEN)
+	return generateBitboardQueenMovesForSide(bb.blackqueens, bb.emptySquares(), bb.blackPieces(), bb.whitePieces(), captureMask, pushMask, pinnedPieces, movesForPinned, BLACK_QUEEN)
 }
 
 func queenAttacks(sq int, empty, fpieces, opieces BB) BB {
@@ -624,22 +799,25 @@ func movesFromAttacks(sq, piece int, attacks, enemies BB) []Move {
 	return moves
 }
 
-func generateBitboardQueenMovesForSide(queens, empty, fpieces, opieces BB, piece int) []Move {
+func generateBitboardQueenMovesForSide(queens, empty, fpieces, opieces, captureMask, pushMask, pinnedPieces, movesForPinned BB, piece int) []Move {
 	moves := make([]Move, 0)
 	for queens > 0 {
 		lsb := deBruijnLSB(queens)
-		attacks := queenAttacks(lsb, empty, fpieces, opieces)
+		attacks := queenAttacks(lsb, empty, fpieces, opieces) & (captureMask | pushMask)
+		if BB(1<<lsb)&pinnedPieces > 0 {
+			attacks &= movesForPinned
+		}
 		moves = append(moves, movesFromAttacks(BB_TO_BOARDSQUARE[lsb], piece, attacks, opieces)...)
 		queens ^= BB(1 << lsb)
 	}
 	return moves
 }
 
-func (b Board) generateBitboardRookMoves(bb bitboard) []Move {
+func (b Board) generateBitboardRookMoves(bb bitboard, captureMask, pushMask, pinnedPieces, movesForPinned BB) []Move {
 	if b.Side == WHITE {
-		return generateBitboardRookMovesForSide(bb.whiterooks, bb.emptySquares(), bb.whitePieces(), bb.blackPieces(), WHITE_ROOK)
+		return generateBitboardRookMovesForSide(bb.whiterooks, bb.emptySquares(), bb.whitePieces(), bb.blackPieces(), captureMask, pushMask, pinnedPieces, movesForPinned, WHITE_ROOK)
 	}
-	return generateBitboardRookMovesForSide(bb.blackrooks, bb.emptySquares(), bb.blackPieces(), bb.whitePieces(), BLACK_ROOK)
+	return generateBitboardRookMovesForSide(bb.blackrooks, bb.emptySquares(), bb.blackPieces(), bb.whitePieces(), captureMask, pushMask, pinnedPieces, movesForPinned, BLACK_ROOK)
 }
 
 func rookAttacks(sq int, empty, fpieces, opieces BB) BB {
@@ -666,22 +844,25 @@ func allRookAttacks(rooks, empty, fpieces, opieces BB) BB {
 	return attacks
 }
 
-func generateBitboardRookMovesForSide(rooks, empty, fpieces, opieces BB, piece int) []Move {
+func generateBitboardRookMovesForSide(rooks, empty, fpieces, opieces, captureMask, pushMask, pinnedPieces, movesForPinned BB, piece int) []Move {
 	moves := make([]Move, 0)
 	for rooks > 0 {
 		lsb := deBruijnLSB(rooks)
-		attacks := rookAttacks(lsb, empty, fpieces, opieces)
+		attacks := rookAttacks(lsb, empty, fpieces, opieces) & (captureMask | pushMask)
+		if BB(1<<lsb)&pinnedPieces > 0 {
+			attacks &= movesForPinned
+		}
 		moves = append(moves, movesFromAttacks(BB_TO_BOARDSQUARE[lsb], piece, attacks, opieces)...)
 		rooks ^= BB(1 << lsb)
 	}
 	return moves
 }
 
-func (b Board) generateBitboardBishopMoves(bb bitboard) []Move {
+func (b Board) generateBitboardBishopMoves(bb bitboard, captureMask, pushMask, pinnedPieces, movesForPinned BB) []Move {
 	if b.Side == WHITE {
-		return generateBitboardBishopMovesForSide(bb.whitebishops, bb.emptySquares(), bb.whitePieces(), bb.blackPieces(), WHITE_BISHOP)
+		return generateBitboardBishopMovesForSide(bb.whitebishops, bb.emptySquares(), bb.whitePieces(), bb.blackPieces(), captureMask, pushMask, pinnedPieces, movesForPinned, WHITE_BISHOP)
 	}
-	return generateBitboardBishopMovesForSide(bb.blackbishops, bb.emptySquares(), bb.blackPieces(), bb.whitePieces(), BLACK_BISHOP)
+	return generateBitboardBishopMovesForSide(bb.blackbishops, bb.emptySquares(), bb.blackPieces(), bb.whitePieces(), captureMask, pushMask, pinnedPieces, movesForPinned, BLACK_BISHOP)
 }
 
 func bishopAttacks(sq int, empty, fpieces, opieces BB) BB {
@@ -708,11 +889,14 @@ func allBishopAttacks(bishops, empty, fpieces, opieces BB) BB {
 	return attacks
 }
 
-func generateBitboardBishopMovesForSide(bishops, empty, fpieces, opieces BB, piece int) []Move {
+func generateBitboardBishopMovesForSide(bishops, empty, fpieces, opieces, captureMask, pushMask, pinnedPieces, movesForPinned BB, piece int) []Move {
 	moves := make([]Move, 0)
 	for bishops > 0 {
 		lsb := deBruijnLSB(bishops)
-		attacks := bishopAttacks(lsb, empty, fpieces, opieces)
+		attacks := bishopAttacks(lsb, empty, fpieces, opieces) & (captureMask | pushMask)
+		if BB(1<<lsb)&pinnedPieces > 0 {
+			attacks &= movesForPinned
+		}
 		moves = append(moves, movesFromAttacks(BB_TO_BOARDSQUARE[lsb], piece, attacks, opieces)...)
 		bishops ^= BB(1 << lsb)
 	}
@@ -821,14 +1005,14 @@ func generateKingMovesForSide(king, oppPieces, emptySqs, taboo BB, piece int) []
 	return moves
 }
 
-func (b Board) generateBitboardKnightMoves(bb bitboard) []Move {
+func (b Board) generateBitboardKnightMoves(bb bitboard, captureMask, pushMask, pinnedPieces BB) []Move {
 	if b.Side == WHITE {
 		return generateKnightMovesForSide(
-			bb.whiteknights, bb.blackPieces(), bb.emptySquares(), WHITE_KNIGHT,
+			bb.whiteknights, bb.blackPieces(), bb.emptySquares(), captureMask, pushMask, pinnedPieces, WHITE_KNIGHT,
 		)
 	}
 	return generateKnightMovesForSide(
-		bb.blackknights, bb.whitePieces(), bb.emptySquares(), BLACK_KNIGHT,
+		bb.blackknights, bb.whitePieces(), bb.emptySquares(), captureMask, pushMask, pinnedPieces, BLACK_KNIGHT,
 	)
 }
 
@@ -856,13 +1040,14 @@ func allKnightAttacks(knights, fpieces BB) BB {
 	return attacks
 }
 
-func generateKnightMovesForSide(knights, oppPieces, emptySqs BB, piece int) []Move {
+func generateKnightMovesForSide(knights, oppPieces, emptySqs, captureMask, pushMask, pinnedPieces BB, piece int) []Move {
 	moves := make([]Move, 0)
+	knights &= ^pinnedPieces
 	for knights > 0 {
-		lsb := deBruijnLSB(knights)
+		lsb := deBruijnLSB(knights & ^pinnedPieces)
 		sq := BB_TO_BOARDSQUARE[lsb]
-		captures := KNIGHT_ATTACKS[lsb] & oppPieces
-		quietmoves := KNIGHT_ATTACKS[lsb] & emptySqs
+		captures := KNIGHT_ATTACKS[lsb] & oppPieces & captureMask
+		quietmoves := KNIGHT_ATTACKS[lsb] & emptySqs & pushMask
 		for captures > 0 {
 			clsb := deBruijnLSB(captures)
 			csq := BB_TO_BOARDSQUARE[clsb]
@@ -886,41 +1071,41 @@ func generateKnightMovesForSide(knights, oppPieces, emptySqs BB, piece int) []Mo
 	return moves
 }
 
-func (b Board) generateBitboardPawnMoves(bb bitboard) []Move {
+func (b Board) generateBitboardPawnMoves(bb bitboard, captureMask, pushMask, pinnedPieces, movesForPinned BB) []Move {
 	moves := make([]Move, 0)
 	if b.Side == WHITE {
 		moves = append(
 			moves,
-			pawnMovesFromBB(bb.pushOneWhitePawns(), -10, WHITE_PAWN, false, false)...,
+			pawnMovesFromBB(bb.pushOneWhitePawns(pushMask, pinnedPieces, movesForPinned), -10, WHITE_PAWN, false, false)...,
 		)
 		moves = append(
 			moves,
-			pawnMovesFromBB(bb.pushTwoWhitePawns(), -20, WHITE_PAWN, false, true)...,
+			pawnMovesFromBB(bb.pushTwoWhitePawns(pushMask, pinnedPieces, movesForPinned), -20, WHITE_PAWN, false, true)...,
 		)
 		moves = append(
 			moves,
-			pawnMovesFromBB(bb.whitePawnsCaptureWest(), -11, WHITE_PAWN, true, false)...,
+			pawnMovesFromBB(bb.whitePawnsCaptureWest(captureMask, pinnedPieces, movesForPinned), -11, WHITE_PAWN, true, false)...,
 		)
 		moves = append(
 			moves,
-			pawnMovesFromBB(bb.whitePawnsCaptureEast(), -9, WHITE_PAWN, true, false)...,
+			pawnMovesFromBB(bb.whitePawnsCaptureEast(captureMask, pinnedPieces, movesForPinned), -9, WHITE_PAWN, true, false)...,
 		)
 	} else {
 		moves = append(
 			moves,
-			pawnMovesFromBB(bb.pushOneBlackPawns(), 10, BLACK_PAWN, false, false)...,
+			pawnMovesFromBB(bb.pushOneBlackPawns(pushMask, pinnedPieces, movesForPinned), 10, BLACK_PAWN, false, false)...,
 		)
 		moves = append(
 			moves,
-			pawnMovesFromBB(bb.pushTwoBlackPawns(), 20, BLACK_PAWN, false, true)...,
+			pawnMovesFromBB(bb.pushTwoBlackPawns(pushMask, pinnedPieces, movesForPinned), 20, BLACK_PAWN, false, true)...,
 		)
 		moves = append(
 			moves,
-			pawnMovesFromBB(bb.blackPawnsCaptureWest(), 9, BLACK_PAWN, true, false)...,
+			pawnMovesFromBB(bb.blackPawnsCaptureWest(captureMask, pinnedPieces, movesForPinned), 9, BLACK_PAWN, true, false)...,
 		)
 		moves = append(
 			moves,
-			pawnMovesFromBB(bb.blackPawnsCaptureEast(), 11, BLACK_PAWN, true, false)...,
+			pawnMovesFromBB(bb.blackPawnsCaptureEast(captureMask, pinnedPieces, movesForPinned), 11, BLACK_PAWN, true, false)...,
 		)
 	}
 
