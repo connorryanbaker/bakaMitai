@@ -13,14 +13,16 @@ import (
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
-var depth = flag.Int("depth", 3, "engine halfply search depth")
+
+// var depth = flag.Int("depth", 3, "engine halfply search depth")
+var depth = flag.Int("depth", 3, "perft movegeneration depth")
 
 func main() {
 	flag.Parse()
 
 	b := board.NewBoard()
 	if *cpuprofile != "" {
-		profileSearch(b)
+		profileBBPerft(b)
 		return
 	}
 	play(b)
@@ -67,6 +69,19 @@ func play(b board.Board) {
 			return
 		}
 	}
+}
+
+func profileBBPerft(b board.Board) {
+	f, err := os.Create(*cpuprofile)
+	if err != nil {
+		log.Fatal("couldn't create CPU profile file: ", err)
+	}
+	defer f.Close()
+	if err := pprof.StartCPUProfile(f); err != nil {
+		log.Fatal("couldn't start CPU profile: ", err)
+	}
+	defer pprof.StopCPUProfile()
+	board.BBperft(&b, *depth)
 }
 
 func profileSearch(b board.Board) {

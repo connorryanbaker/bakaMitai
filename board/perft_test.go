@@ -152,11 +152,11 @@ func TestBBPerft(t *testing.T) {
 			NewBoard(),
 			197281,
 		},
-		//{
-		//	5,
-		//	NewBoard(),
-		//	4865609,
-		//},
+		{
+			5,
+			NewBoard(),
+			4865609,
+		},
 		//{
 		//	6,
 		//	NewBoard(),
@@ -164,7 +164,7 @@ func TestBBPerft(t *testing.T) {
 		//},
 	}
 	for _, tt := range tests {
-		result := bbperft(&tt.board, tt.depth)
+		result := BBperft(&tt.board, tt.depth)
 		if result != tt.expected {
 			t.Errorf("BBPerft Err! Depth: %d, Expected: %d, Received: %d", tt.depth, tt.expected, result)
 		} else {

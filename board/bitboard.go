@@ -602,29 +602,89 @@ func generateBlockingMask(moveRay, attackingSquare BB, dir int) BB {
 	return BB(0)
 }
 
+func allDirectionRayAttacks(dirIdx, delta int, pieces, empty, fpieces, opieces BB, fill func(em, piece BB) BB) BB {
+	var allRayAttacks BB
+	for pieces > 0 {
+		lsb := deBruijnLSB(pieces)
+		allRayAttacks |= generateRayAttacks(lsb, dirIdx, delta, empty, fpieces, opieces, fill)
+		pieces ^= BB(1 << lsb)
+	}
+	return allRayAttacks
+}
+
 func (b Board) absolutePinnedPiecesSideToMove(bb bitboard) BB {
 	em := bb.emptySquares()
 	wp := bb.whitePieces()
 	bp := bb.blackPieces()
 
-	// TODO: overlap of rays is incorrect
-	// need to find overlap between corresponding rays NORTH - SOUTH, EAST - WEST etc
-	// from kingsq, get queenTabooAttacks in each direction
-	// get corresponding opposite rook / bishop attack
-	// func generateRayTabooAttacks(lsb, rayIdx, shiftDelta int, empty, fpieces, opieces BB, fill func(e, p BB) BB) BB {
+	// TODO: sucks
+	var pinnedPieces BB
 	if b.Side == WHITE {
-		raysFromKing := slidingRayAttacksFromSquare(deBruijnLSB(bb.whiteking))
-		pinningRays := allQueenAttacks(bb.blackqueens&raysFromKing, em, bp, wp) |
-			allBishopAttacks(bb.blackbishops&raysFromKing, em, bp, wp) |
-			allRookAttacks(bb.blackrooks&raysFromKing, em, bp, wp)
-		return pinningRays & wp & raysFromKing
-	}
+		ksq := deBruijnLSB(bb.whiteking)
 
-	raysFromKing := slidingRayAttacksFromSquare(deBruijnLSB(bb.blackking))
-	pinningRays := allQueenAttacks(bb.whitequeens&raysFromKing, em, wp, bp) |
-		allBishopAttacks(bb.whitebishops&raysFromKing, em, wp, bp) |
-		allRookAttacks(bb.whiterooks&raysFromKing, em, wp, bp)
-	return pinningRays & bp & raysFromKing
+		// rook / queen overlap
+		horizontalPinners := bb.blackqueens | bb.blackrooks
+		northRay := generateRayTabooAttacks(ksq, NORTH_IDX, NORTH, em, wp, bp, fillNorth)
+		northOverlap := allDirectionRayAttacks(SOUTH_IDX, SOUTH, horizontalPinners, em, bp, wp, fillSouth) & northRay
+		pinnedPieces |= (wp & northOverlap)
+		southRay := generateRayTabooAttacks(ksq, SOUTH_IDX, SOUTH, em, wp, bp, fillSouth)
+		southOverlap := allDirectionRayAttacks(NORTH_IDX, NORTH, horizontalPinners, em, bp, wp, fillNorth) & southRay
+		pinnedPieces |= (wp & southOverlap)
+		eastRay := generateRayTabooAttacks(ksq, EAST_IDX, EAST, em, wp, bp, fillEast)
+		eastOverlap := allDirectionRayAttacks(WEST_IDX, WEST, horizontalPinners, em, bp, wp, fillWest) & eastRay
+		pinnedPieces |= (wp & eastOverlap)
+		westRay := generateRayTabooAttacks(ksq, WEST_IDX, WEST, em, wp, bp, fillWest)
+		westOverlap := allDirectionRayAttacks(EAST_IDX, EAST, horizontalPinners, em, bp, wp, fillEast) & westRay
+		pinnedPieces |= (wp & westOverlap)
+
+		// bishop / queen overlap
+		diagonalPinners := bb.blackqueens | bb.blackbishops
+		northWestRay := generateRayTabooAttacks(ksq, NORTHWEST_IDX, NORTHWEST, em, wp, bp, fillNorthWest)
+		northWestOverlap := allDirectionRayAttacks(SOUTHEAST_IDX, SOUTHEAST, diagonalPinners, em, bp, wp, fillSouthEast) & northWestRay
+		pinnedPieces |= (wp & northWestOverlap)
+		northEastRay := generateRayTabooAttacks(ksq, NORTHEAST_IDX, NORTHEAST, em, wp, bp, fillNorthEast)
+		northEastOverlap := allDirectionRayAttacks(SOUTHWEST_IDX, SOUTHWEST, diagonalPinners, em, bp, wp, fillSouthWest) & northEastRay
+		pinnedPieces |= (wp & northEastOverlap)
+		southWestRay := generateRayTabooAttacks(ksq, SOUTHWEST_IDX, SOUTHWEST, em, wp, bp, fillSouthWest)
+		southWestOverlap := allDirectionRayAttacks(NORTHEAST_IDX, NORTHEAST, diagonalPinners, em, bp, wp, fillNorthEast) & southWestRay
+		pinnedPieces |= (wp & southWestOverlap)
+		southEastRay := generateRayTabooAttacks(ksq, SOUTHEAST_IDX, SOUTHEAST, em, wp, bp, fillSouthEast)
+		southEastOverlap := allDirectionRayAttacks(NORTHWEST_IDX, NORTHWEST, diagonalPinners, em, bp, wp, fillNorthWest) & southEastRay
+		pinnedPieces |= (wp & southEastOverlap)
+	} else {
+		ksq := deBruijnLSB(bb.blackking)
+
+		// rook / queen overlap
+		horizontalPinners := bb.whitequeens | bb.whiterooks
+		northRay := generateRayTabooAttacks(ksq, NORTH_IDX, NORTH, em, bp, wp, fillNorth)
+		northOverlap := allDirectionRayAttacks(SOUTH_IDX, SOUTH, horizontalPinners, em, wp, bp, fillSouth) & northRay
+		pinnedPieces |= (bp & northOverlap)
+		southRay := generateRayTabooAttacks(ksq, SOUTH_IDX, SOUTH, em, bp, wp, fillSouth)
+		southOverlap := allDirectionRayAttacks(NORTH_IDX, NORTH, horizontalPinners, em, wp, bp, fillNorth) & southRay
+		pinnedPieces |= (bp & southOverlap)
+		eastRay := generateRayTabooAttacks(ksq, EAST_IDX, EAST, em, bp, wp, fillEast)
+		eastOverlap := allDirectionRayAttacks(WEST_IDX, WEST, horizontalPinners, em, wp, bp, fillWest) & eastRay
+		pinnedPieces |= (bp & eastOverlap)
+		westRay := generateRayTabooAttacks(ksq, WEST_IDX, WEST, em, bp, wp, fillWest)
+		westOverlap := allDirectionRayAttacks(EAST_IDX, EAST, horizontalPinners, em, wp, bp, fillEast) & westRay
+		pinnedPieces |= (bp & westOverlap)
+
+		// bishop / queen overlap
+		diagonalPinners := bb.whitequeens | bb.whitebishops
+		northWestRay := generateRayTabooAttacks(ksq, NORTHWEST_IDX, NORTHWEST, em, bp, wp, fillNorthWest)
+		northWestOverlap := allDirectionRayAttacks(SOUTHEAST_IDX, SOUTHEAST, diagonalPinners, em, wp, bp, fillSouthEast) & northWestRay
+		pinnedPieces |= (bp & northWestOverlap)
+		northEastRay := generateRayTabooAttacks(ksq, NORTHEAST_IDX, NORTHEAST, em, bp, wp, fillNorthEast)
+		northEastOverlap := allDirectionRayAttacks(SOUTHWEST_IDX, SOUTHWEST, diagonalPinners, em, wp, bp, fillSouthWest) & northEastRay
+		pinnedPieces |= (bp & northEastOverlap)
+		southWestRay := generateRayTabooAttacks(ksq, SOUTHWEST_IDX, SOUTHWEST, em, bp, wp, fillSouthWest)
+		southWestOverlap := allDirectionRayAttacks(NORTHEAST_IDX, NORTHEAST, diagonalPinners, em, wp, bp, fillNorthEast) & southWestRay
+		pinnedPieces |= (bp & southWestOverlap)
+		southEastRay := generateRayTabooAttacks(ksq, SOUTHEAST_IDX, SOUTHEAST, em, bp, wp, fillSouthEast)
+		southEastOverlap := allDirectionRayAttacks(NORTHWEST_IDX, NORTHWEST, diagonalPinners, em, wp, bp, fillNorthWest) & southEastRay
+		pinnedPieces |= (bp & southEastOverlap)
+	}
+	return pinnedPieces
 }
 
 // Moves for pinned pieces:
@@ -684,8 +744,6 @@ func (b Board) GenerateBitboardMoves() []Move {
 	movesForPinned := BB(0xFFFFFFFFFFFFFFFF)
 	pinnedPieces := b.absolutePinnedPiecesSideToMove(*bb)
 	if pinnedPieces > 0 {
-		printBB(pinnedPieces)
-		b.Print()
 		movesForPinned = b.movesForPinnedPieces(*bb, pinnedPieces)
 	}
 	if b.inCheck(*bb) {
@@ -707,7 +765,7 @@ func (b Board) GenerateBitboardMoves() []Move {
 			}
 		}
 	}
-	moves = append(moves, b.generateBitboardPawnMoves(*bb, captureMask&movesForPinned, pushMask, pinnedPieces, movesForPinned)...)
+	moves = append(moves, b.generateBitboardPawnMoves(*bb, captureMask, pushMask, pinnedPieces, movesForPinned)...)
 	moves = append(moves, b.generateBitboardKnightMoves(*bb, captureMask, pushMask, pinnedPieces)...)
 	moves = append(moves, b.generateBitboardBishopMoves(*bb, captureMask, pushMask, pinnedPieces, movesForPinned)...)
 	moves = append(moves, b.generateBitboardRookMoves(*bb, captureMask, pushMask, pinnedPieces, movesForPinned)...)
