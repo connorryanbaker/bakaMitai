@@ -1,6 +1,6 @@
 package board
 
-// import "fmt"
+import "fmt"
 
 func perft(b *Board, depth int) uint64 {
 	var nodes uint64
@@ -23,19 +23,22 @@ func BBperft(b *Board, depth int) uint64 {
 	}
 
 	bbm := b.GenerateBitboardMoves()
-	// lm := b.LegalMoves()
-	// if len(bbm) != len(lm) {
-	// 	fmt.Println("ERR!")
-	// 	fmt.Println(b.History)
-	// 	b.Print()
-	// 	for _, m := range lm {
-	// 		m.Print()
-	// 	}
-	// 	fmt.Println("BITBOARDMOVES", len(bbm))
-	// 	for _, m := range bbm {
-	// 		m.Print()
-	// 	}
-	// }
+	if depth == 1 {
+		lm := b.LegalMoves()
+		if len(bbm) != len(lm) {
+			fmt.Println("ERR!")
+			fmt.Println(b.History)
+			b.Print()
+			fmt.Println("LEGAL MOVES", len(lm))
+			for _, m := range lm {
+				m.Print()
+			}
+			fmt.Println("BITBOARDMOVES", len(bbm))
+			for _, m := range bbm {
+				m.Print()
+			}
+		}
+	}
 
 	for _, m := range bbm {
 		v := b.MakeMove(m)

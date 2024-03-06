@@ -45,13 +45,13 @@ type bitboard struct {
 	blackrooks   BB
 	blackbishops BB
 	blackqueens  BB
+	ep           BB
 }
 
 func (bb bitboard) emptySquares() BB {
 	return BOARDMASK ^ bb.allPieces()
 }
 
-// update below as more pieces added
 func (bb bitboard) whitePieces() BB {
 	return bb.whitepawns |
 		bb.whiteknights |
@@ -133,6 +133,28 @@ func (bb bitboard) whitePawnsCaptureEast(captureMask, pinnedPieces, movesForPinn
 	return unpinnedCaptures | pinnedCaptures
 }
 
+// TODO: horizontal pinned ep captures
+
+func (bb bitboard) whitePawnsEPCaptureWest(captureMask, pinnedPieces, movesForPinned BB) BB {
+	if bb.ep == 0 {
+		return BB(0)
+	}
+	targets := shiftBB(bb.whitepawns, NORTHWEST) & (^HFILE & bb.ep & captureMask)
+	unpinnedCaptures := shiftBB(targets, SOUTHEAST) & (bb.whitepawns & ^pinnedPieces)
+	pinnedCaptures := shiftBB(targets&movesForPinned, SOUTHEAST) & (bb.whitepawns & pinnedPieces)
+	return unpinnedCaptures | pinnedCaptures
+}
+
+func (bb bitboard) whitePawnsEPCaptureEast(captureMask, pinnedPieces, movesForPinned BB) BB {
+	if bb.ep == 0 {
+		return BB(0)
+	}
+	targets := shiftBB(bb.whitepawns, NORTHEAST) & (^AFILE & bb.ep & captureMask)
+	unpinnedCaptures := shiftBB(targets, SOUTHWEST) & (bb.whitepawns & ^pinnedPieces)
+	pinnedCaptures := shiftBB(targets&movesForPinned, SOUTHWEST) & (bb.whitepawns & pinnedPieces)
+	return unpinnedCaptures | pinnedCaptures
+}
+
 func (bb bitboard) blackPawnsCaptureWest(captureMask, pinnedPieces, movesForPinned BB) BB {
 	targets := shiftBB(bb.blackpawns, SOUTHWEST) & (^HFILE & bb.whitePieces() & captureMask)
 	unpinnedCaptures := shiftBB(targets, NORTHEAST) & (bb.blackpawns & ^pinnedPieces)
@@ -142,6 +164,26 @@ func (bb bitboard) blackPawnsCaptureWest(captureMask, pinnedPieces, movesForPinn
 
 func (bb bitboard) blackPawnsCaptureEast(captureMask, pinnedPieces, movesForPinned BB) BB {
 	targets := shiftBB(bb.blackpawns, SOUTHEAST) & (^AFILE & bb.whitePieces() & captureMask)
+	unpinnedCaptures := shiftBB(targets, NORTHWEST) & (bb.blackpawns & ^pinnedPieces)
+	pinnedCaptures := shiftBB(targets&movesForPinned, NORTHWEST) & (bb.blackpawns & pinnedPieces)
+	return unpinnedCaptures | pinnedCaptures
+}
+
+func (bb bitboard) blackPawnsEPCaptureWest(captureMask, pinnedPieces, movesForPinned BB) BB {
+	if bb.ep == 0 {
+		return BB(0)
+	}
+	targets := shiftBB(bb.blackpawns, SOUTHWEST) & (^HFILE & bb.ep & captureMask)
+	unpinnedCaptures := shiftBB(targets, NORTHEAST) & (bb.blackpawns & ^pinnedPieces)
+	pinnedCaptures := shiftBB(targets&movesForPinned, NORTHEAST) & (bb.blackpawns & pinnedPieces)
+	return unpinnedCaptures | pinnedCaptures
+}
+
+func (bb bitboard) blackPawnsEPCaptureEast(captureMask, pinnedPieces, movesForPinned BB) BB {
+	if bb.ep == 0 {
+		return BB(0)
+	}
+	targets := shiftBB(bb.blackpawns, SOUTHEAST) & (^AFILE & bb.ep & captureMask)
 	unpinnedCaptures := shiftBB(targets, NORTHWEST) & (bb.blackpawns & ^pinnedPieces)
 	pinnedCaptures := shiftBB(targets&movesForPinned, NORTHWEST) & (bb.blackpawns & pinnedPieces)
 	return unpinnedCaptures | pinnedCaptures
@@ -207,6 +249,8 @@ const (
 )
 
 var DELTA_IDXS = [8]int{NORTH_IDX, NORTHEAST_IDX, EAST_IDX, SOUTHEAST_IDX, SOUTH_IDX, SOUTHWEST_IDX, WEST_IDX, NORTHWEST_IDX}
+var DIR_DELTAS = [8]int{NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST}
+var DIR_FILL_FUNCTIONS = [8]func(a, b BB) BB{fillNorth, fillNorthEast, fillEast, fillSouthEast, fillSouth, fillSouthWest, fillWest, fillNorthWest}
 
 var RAY_ATTACKS [8][64]BB
 
@@ -473,6 +517,11 @@ var BB_TO_BOARDSQUARE = [64]int{
 
 // tranform piecelist to bitboards
 func (b Board) newBitboard() *bitboard {
+	ep := BB(0)
+	if b.Ep != nil {
+		// convert ep square to 64, convert 64 to bit
+		ep = BB(1 << MAILBOX_TO_BB[*b.Ep])
+	}
 	return &bitboard{
 		whitepawns:   pieceSquareToBB(b, WHITE_PAWN),
 		whiteknights: pieceSquareToBB(b, WHITE_KNIGHT),
@@ -486,6 +535,7 @@ func (b Board) newBitboard() *bitboard {
 		blackrooks:   pieceSquareToBB(b, BLACK_ROOK),
 		blackqueens:  pieceSquareToBB(b, BLACK_QUEEN),
 		blackking:    pieceSquareToBB(b, BLACK_KING),
+		ep:           ep,
 	}
 }
 
@@ -699,18 +749,18 @@ func (b Board) movesForPinnedPieces(bb bitboard, pinnedPieces BB) BB {
 	bp := bb.blackPieces()
 	var moveRay BB
 	if b.Side == WHITE {
-		potentialPinningPieces := bb.blackqueens & bb.blackrooks & bb.blackbishops
+		potentialPinningPieces := bb.blackqueens | bb.blackrooks | bb.blackbishops
 		kingSq := deBruijnLSB(bb.whiteking)
 		for i := NORTH_IDX; i < 8; i++ {
 			if RAY_ATTACKS[i][kingSq]&pinnedPieces > 0 {
-				rayAttack := queenAttacks(kingSq, em, wp & ^pinnedPieces, bp)
+				rayAttack := generateRayAttacks(kingSq, i, DIR_DELTAS[i], em, wp & ^pinnedPieces, bp, DIR_FILL_FUNCTIONS[i])
 				if rayAttack&potentialPinningPieces > 0 {
 					moveRay |= rayAttack
 				}
 			}
 		}
 	} else {
-		potentialPinningPieces := bb.whitequeens & bb.whiterooks & bb.whitebishops
+		potentialPinningPieces := bb.whitequeens | bb.whiterooks | bb.whitebishops
 		kingSq := deBruijnLSB(bb.blackking)
 		for i := NORTH_IDX; i < 8; i++ {
 			if RAY_ATTACKS[i][kingSq]&pinnedPieces > 0 {
@@ -750,6 +800,7 @@ func (b Board) GenerateBitboardMoves() []Move {
 		if b.doubleCheck(*bb) {
 			return b.generateBitboardKingMoves(*bb)
 		}
+		// TODO: check special case of being able to capture checking pawn EP
 		captureMask = b.checkingPiecesMask(*bb)
 		if b.Side == WHITE {
 			if captureMask&(bb.blackbishops|bb.blackqueens|bb.blackrooks) > 0 {
@@ -1146,7 +1197,15 @@ func (b Board) generateBitboardPawnMoves(bb bitboard, captureMask, pushMask, pin
 		)
 		moves = append(
 			moves,
+			pawnMovesFromBB(bb.whitePawnsEPCaptureWest(captureMask, pinnedPieces, movesForPinned), -11, WHITE_PAWN, true, false)...,
+		)
+		moves = append(
+			moves,
 			pawnMovesFromBB(bb.whitePawnsCaptureEast(captureMask, pinnedPieces, movesForPinned), -9, WHITE_PAWN, true, false)...,
+		)
+		moves = append(
+			moves,
+			pawnMovesFromBB(bb.whitePawnsEPCaptureEast(captureMask, pinnedPieces, movesForPinned), -9, WHITE_PAWN, true, false)...,
 		)
 	} else {
 		moves = append(
@@ -1163,7 +1222,15 @@ func (b Board) generateBitboardPawnMoves(bb bitboard, captureMask, pushMask, pin
 		)
 		moves = append(
 			moves,
+			pawnMovesFromBB(bb.blackPawnsEPCaptureWest(captureMask, pinnedPieces, movesForPinned), 9, BLACK_PAWN, true, false)...,
+		)
+		moves = append(
+			moves,
 			pawnMovesFromBB(bb.blackPawnsCaptureEast(captureMask, pinnedPieces, movesForPinned), 11, BLACK_PAWN, true, false)...,
+		)
+		moves = append(
+			moves,
+			pawnMovesFromBB(bb.blackPawnsEPCaptureEast(captureMask, pinnedPieces, movesForPinned), 11, BLACK_PAWN, true, false)...,
 		)
 	}
 

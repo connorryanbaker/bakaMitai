@@ -94,7 +94,7 @@ func (b *Board) UnmakeMove() {
 
 func (b *Board) MakeMove(m Move) bool {
 	movingPiece := b.PieceAt(m.From)
-	// pieceAtDestSq := b.PieceAt(m.To)
+	pieceAtDestSq := b.PieceAt(m.To)
 	if b.PieceColor(movingPiece) != b.Side {
 		return false
 	}
@@ -129,13 +129,13 @@ func (b *Board) MakeMove(m Move) bool {
 	b.pieces[m.To] = movingPiece
 	b.pieces[m.From] = EMPTY_SQUARE
 	b.updatePieceSquares()
-	// if b.InCheck(b.Side) {
-	// 	b.popHistory()
-	// 	b.pieces[m.From] = movingPiece
-	// 	b.pieces[m.To] = pieceAtDestSq
-	// 	b.updatePieceSquares()
-	// 	return false
-	// }
+	if b.InCheck(b.Side) {
+		b.popHistory()
+		b.pieces[m.From] = movingPiece
+		b.pieces[m.To] = pieceAtDestSq
+		b.updatePieceSquares()
+		return false
+	}
 
 	if m.DoublePawnPush {
 		if b.Side == WHITE {
@@ -165,18 +165,18 @@ func (b *Board) MakeMove(m Move) bool {
 
 func (b *Board) handleCapture(m Move) bool {
 	movingPiece := b.PieceAt(m.From)
-	// capturedPiece := b.PieceAt(m.To)
+	capturedPiece := b.PieceAt(m.To)
 	b.pushHistory(m)
 	b.pieces[m.To] = movingPiece
 	b.pieces[m.From] = EMPTY_SQUARE
 	b.updatePieceSquares()
-	// if b.InCheck(b.Side) {
-	// 	b.popHistory()
-	// 	b.pieces[m.To] = capturedPiece
-	// 	b.pieces[m.From] = movingPiece
-	// 	b.updatePieceSquares()
-	// 	return false
-	// }
+	if b.InCheck(b.Side) {
+		b.popHistory()
+		b.pieces[m.To] = capturedPiece
+		b.pieces[m.From] = movingPiece
+		b.updatePieceSquares()
+		return false
+	}
 	b.updateCastlePermissions(m, movingPiece)
 	b.Ep = nil
 	b.Hply = 0
@@ -189,19 +189,19 @@ func (b *Board) handleCapture(m Move) bool {
 }
 
 func (b *Board) handlePromotion(m Move) bool {
-	// prevSq := b.PieceAt(m.To)
-	// movingPiece := b.PieceAt(m.From)
+	prevSq := b.PieceAt(m.To)
+	movingPiece := b.PieceAt(m.From)
 	b.pushHistory(m)
 	b.pieces[m.To] = m.PromotionPiece
 	b.pieces[m.From] = EMPTY_SQUARE
 	b.updatePieceSquares()
-	// if b.InCheck(b.Side) {
-	// 	b.popHistory()
-	// 	b.pieces[m.To] = prevSq
-	// 	b.pieces[m.From] = movingPiece
-	// 	b.updatePieceSquares()
-	// 	return false
-	// }
+	if b.InCheck(b.Side) {
+		b.popHistory()
+		b.pieces[m.To] = prevSq
+		b.pieces[m.From] = movingPiece
+		b.updatePieceSquares()
+		return false
+	}
 	b.Ep = nil
 	b.Hply = 0
 	if b.Side == BLACK {
@@ -278,27 +278,27 @@ func (b *Board) handleEPCapture(m Move) bool {
 		b.pieces[m.From] = EMPTY_SQUARE
 		b.pieces[m.To+10] = EMPTY_SQUARE
 		b.updatePieceSquares()
-		// if b.InCheck(b.Side) {
-		// 	b.popHistory()
-		// 	b.pieces[m.To+10] = BLACK_PAWN
-		// 	b.pieces[m.To] = EMPTY_SQUARE
-		// 	b.pieces[m.From] = WHITE_PAWN
-		// 	b.updatePieceSquares()
-		// 	return false
-		// }
+		if b.InCheck(b.Side) {
+			b.popHistory()
+			b.pieces[m.To+10] = BLACK_PAWN
+			b.pieces[m.To] = EMPTY_SQUARE
+			b.pieces[m.From] = WHITE_PAWN
+			b.updatePieceSquares()
+			return false
+		}
 	} else {
 		b.pieces[m.To] = BLACK_PAWN
 		b.pieces[m.From] = EMPTY_SQUARE
 		b.pieces[m.To-10] = EMPTY_SQUARE
 		b.updatePieceSquares()
-		// if b.InCheck(b.Side) {
-		// 	b.popHistory()
-		// 	b.pieces[m.To-10] = WHITE_PAWN
-		// 	b.pieces[m.To] = EMPTY_SQUARE
-		// 	b.pieces[m.From] = BLACK_PAWN
-		// 	b.updatePieceSquares()
-		// 	return false
-		// }
+		if b.InCheck(b.Side) {
+			b.popHistory()
+			b.pieces[m.To-10] = WHITE_PAWN
+			b.pieces[m.To] = EMPTY_SQUARE
+			b.pieces[m.From] = BLACK_PAWN
+			b.updatePieceSquares()
+			return false
+		}
 	}
 	b.Hply = 0
 	b.Ep = nil
