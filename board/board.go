@@ -92,6 +92,69 @@ func (b *Board) UnmakeMove() {
 	b.updatePieceSquares()
 }
 
+func (b *Board) MakeBBMove(m Move) bool {
+	movingPiece := b.PieceAt(m.From)
+	if b.PieceColor(movingPiece) != b.Side {
+		return false
+	}
+
+	if m.CastleKingside {
+		b.castleKingside(m)
+		b.legalMoves = nil
+		return true
+	}
+
+	if m.CastleQueenside {
+		b.castleQueenside(m)
+		b.legalMoves = nil
+		return true
+	}
+
+	if m.Promote {
+		return b.handleBBPromotion(m)
+	}
+
+	if b.isEPCapture(m) {
+		return b.handleBBEPCapture(m)
+	}
+
+	if m.Capture {
+		return b.handleBBCapture(m)
+	}
+
+	// "quiet move"
+
+	b.pushHistory(m)
+	b.pieces[m.To] = movingPiece
+	b.pieces[m.From] = EMPTY_SQUARE
+	b.updatePieceSquares()
+
+	if m.DoublePawnPush {
+		if b.Side == WHITE {
+			s := m.To + 10
+			b.Ep = &s
+		} else {
+			s := m.To - 10
+			b.Ep = &s
+		}
+	} else {
+		b.Ep = nil
+	}
+
+	b.updateCastlePermissions(m, movingPiece)
+	if movingPiece == WHITE_PAWN || movingPiece == BLACK_PAWN {
+		b.Hply = 0
+	} else {
+		b.Hply += 1
+	}
+	if b.Side == BLACK {
+		b.Ply += 1
+	}
+	b.Side ^= 1
+	b.legalMoves = nil
+	return true
+}
+
 func (b *Board) MakeMove(m Move) bool {
 	movingPiece := b.PieceAt(m.From)
 	pieceAtDestSq := b.PieceAt(m.To)
@@ -163,6 +226,23 @@ func (b *Board) MakeMove(m Move) bool {
 	return true
 }
 
+func (b *Board) handleBBCapture(m Move) bool {
+	movingPiece := b.PieceAt(m.From)
+	b.pushHistory(m)
+	b.pieces[m.To] = movingPiece
+	b.pieces[m.From] = EMPTY_SQUARE
+	b.updatePieceSquares()
+	b.updateCastlePermissions(m, movingPiece)
+	b.Ep = nil
+	b.Hply = 0
+	if b.Side == BLACK {
+		b.Ply += 1
+	}
+	b.Side ^= 1
+	b.legalMoves = nil
+	return true
+}
+
 func (b *Board) handleCapture(m Move) bool {
 	movingPiece := b.PieceAt(m.From)
 	capturedPiece := b.PieceAt(m.To)
@@ -178,6 +258,21 @@ func (b *Board) handleCapture(m Move) bool {
 		return false
 	}
 	b.updateCastlePermissions(m, movingPiece)
+	b.Ep = nil
+	b.Hply = 0
+	if b.Side == BLACK {
+		b.Ply += 1
+	}
+	b.Side ^= 1
+	b.legalMoves = nil
+	return true
+}
+
+func (b *Board) handleBBPromotion(m Move) bool {
+	b.pushHistory(m)
+	b.pieces[m.To] = m.PromotionPiece
+	b.pieces[m.From] = EMPTY_SQUARE
+	b.updatePieceSquares()
 	b.Ep = nil
 	b.Hply = 0
 	if b.Side == BLACK {
@@ -269,6 +364,29 @@ func (b *Board) updateCastlePermissions(m Move, p int) {
 			b.Castle[2] = false
 		}
 	}
+}
+
+func (b *Board) handleBBEPCapture(m Move) bool {
+	b.pushHistory(m)
+	if b.Side == WHITE {
+		b.pieces[m.To] = WHITE_PAWN
+		b.pieces[m.From] = EMPTY_SQUARE
+		b.pieces[m.To+10] = EMPTY_SQUARE
+		b.updatePieceSquares()
+	} else {
+		b.pieces[m.To] = BLACK_PAWN
+		b.pieces[m.From] = EMPTY_SQUARE
+		b.pieces[m.To-10] = EMPTY_SQUARE
+		b.updatePieceSquares()
+	}
+	b.Hply = 0
+	b.Ep = nil
+	if b.Side == BLACK {
+		b.Ply += 1
+	}
+	b.Side ^= 1
+	b.legalMoves = nil
+	return true
 }
 
 func (b *Board) handleEPCapture(m Move) bool {

@@ -12,7 +12,11 @@ const INIT_WHITE_PAWN_BB BB = 0b000000000000000000000000000000000000000000000000
 const INIT_BLACK_KNIGHT_BB BB = 0b0100001000000000000000000000000000000000000000000000000000000000
 const INIT_WHITE_KNIGHT_BB BB = 0b0000000000000000000000000000000000000000000000000000000001000010
 const INIT_BLACK_KING_BB BB = 0b0001000000000000000000000000000000000000000000000000000000000000
+const BCKMASK BB = 0b0111000000000000000000000000000000000000000000000000000000000000
+const BCQMASK BB = 0b0001110000000000000000000000000000000000000000000000000000000000
 const INIT_WHITE_KING_BB BB = 0b0000000000000000000000000000000000000000000000000000000000001000
+const WCQMASK BB = 0b0000000000000000000000000000000000000000000000000000000000011100
+const WCKMASK BB = 0b0000000000000000000000000000000000000000000000000000000001110000
 const BOARDMASK BB = 0xFFFFFFFFFFFFFFFF
 
 const AFILE BB = 0b0000000100000001000000010000000100000001000000010000000100000001
@@ -133,11 +137,14 @@ func (bb bitboard) whitePawnsCaptureEast(captureMask, pinnedPieces, movesForPinn
 	return unpinnedCaptures | pinnedCaptures
 }
 
-// TODO: horizontal pinned ep captures
+// TODO: horizontal pinned ep captures, ep capture to block check
 
 func (bb bitboard) whitePawnsEPCaptureWest(captureMask, pinnedPieces, movesForPinned BB) BB {
 	if bb.ep == 0 {
 		return BB(0)
+	}
+	if captureMask < BOARDMASK {
+		captureMask = shiftBB(captureMask&bb.blackpawns, NORTH)
 	}
 	targets := shiftBB(bb.whitepawns, NORTHWEST) & (^HFILE & bb.ep & captureMask)
 	unpinnedCaptures := shiftBB(targets, SOUTHEAST) & (bb.whitepawns & ^pinnedPieces)
@@ -148,6 +155,9 @@ func (bb bitboard) whitePawnsEPCaptureWest(captureMask, pinnedPieces, movesForPi
 func (bb bitboard) whitePawnsEPCaptureEast(captureMask, pinnedPieces, movesForPinned BB) BB {
 	if bb.ep == 0 {
 		return BB(0)
+	}
+	if captureMask < BOARDMASK {
+		captureMask = shiftBB(captureMask&bb.blackpawns, NORTH)
 	}
 	targets := shiftBB(bb.whitepawns, NORTHEAST) & (^AFILE & bb.ep & captureMask)
 	unpinnedCaptures := shiftBB(targets, SOUTHWEST) & (bb.whitepawns & ^pinnedPieces)
@@ -173,6 +183,9 @@ func (bb bitboard) blackPawnsEPCaptureWest(captureMask, pinnedPieces, movesForPi
 	if bb.ep == 0 {
 		return BB(0)
 	}
+	if captureMask < BOARDMASK {
+		captureMask = shiftBB(captureMask&bb.whitepawns, SOUTH)
+	}
 	targets := shiftBB(bb.blackpawns, SOUTHWEST) & (^HFILE & bb.ep & captureMask)
 	unpinnedCaptures := shiftBB(targets, NORTHEAST) & (bb.blackpawns & ^pinnedPieces)
 	pinnedCaptures := shiftBB(targets&movesForPinned, NORTHEAST) & (bb.blackpawns & pinnedPieces)
@@ -182,6 +195,9 @@ func (bb bitboard) blackPawnsEPCaptureWest(captureMask, pinnedPieces, movesForPi
 func (bb bitboard) blackPawnsEPCaptureEast(captureMask, pinnedPieces, movesForPinned BB) BB {
 	if bb.ep == 0 {
 		return BB(0)
+	}
+	if captureMask < BOARDMASK {
+		captureMask = shiftBB(captureMask&bb.whitepawns, SOUTH)
 	}
 	targets := shiftBB(bb.blackpawns, SOUTHEAST) & (^AFILE & bb.ep & captureMask)
 	unpinnedCaptures := shiftBB(targets, NORTHWEST) & (bb.blackpawns & ^pinnedPieces)
@@ -786,8 +802,7 @@ func (b Board) GenerateBitboardMoves() []Move {
 	bb := b.newBitboard()
 	moves := make([]Move, 0)
 	// TODO:
-	// absolute pins
-	// ep capture & promotions
+	// promotions
 	// castling
 	captureMask := BB(0xFFFFFFFFFFFFFFFF)
 	pushMask := BB(0xFFFFFFFFFFFFFFFF)
@@ -1067,16 +1082,46 @@ func cutoffBitboard(bb BB, fromLSB bool) BB {
 }
 
 func (b Board) generateBitboardKingMoves(bb bitboard) []Move {
-	// TODO: castling
+	em := bb.emptySquares()
+	wp := bb.whitePieces()
+	bp := bb.blackPieces()
 	taboo := bb.tabooSquares(b.Side)
 	if b.Side == WHITE {
-		return generateKingMovesForSide(
-			bb.whiteking, bb.blackPieces(), bb.emptySquares(), taboo, WHITE_KING,
-		)
+		nonCastle := generateKingMovesForSide(bb.whiteking, bp, em, taboo, WHITE_KING)
+		return append(nonCastle, b.generateWhiteCastleMoves(bb.whiteking, em, taboo)...)
 	}
-	return generateKingMovesForSide(
-		bb.blackking, bb.whitePieces(), bb.emptySquares(), taboo, BLACK_KING,
-	)
+	nonCastle := generateKingMovesForSide(bb.blackking, wp, em, taboo, BLACK_KING)
+	return append(nonCastle, b.generateBlackCastleMoves(bb.blackking, em, taboo)...)
+}
+
+func (b Board) generateWhiteCastleMoves(k, em, taboo BB) []Move {
+	moves := make([]Move, 0)
+	if !b.Castle[0] && !b.Castle[1] {
+		return moves
+	}
+	if b.Castle[0] && taboo&WCKMASK == 0 && (WCKMASK&^k)&em == (WCKMASK&^k) {
+		moves = append(moves, Move{IE1, IG1, false, true, false, false, WHITE_KING, false})
+	}
+	if b.Castle[1] && taboo&WCQMASK == 0 && (WCQMASK&^k)&em == (WCQMASK&^k) {
+		moves = append(moves, Move{IE1, IC1, false, false, true, false, WHITE_KING, false})
+	}
+
+	return moves
+}
+
+func (b Board) generateBlackCastleMoves(k, em, taboo BB) []Move {
+	moves := make([]Move, 0)
+	if !b.Castle[2] && !b.Castle[3] {
+		return moves
+	}
+	if b.Castle[2] && taboo&BCKMASK == 0 && (BCKMASK&^k)&em == (BCKMASK&^k) {
+		moves = append(moves, Move{IE8, IG8, false, true, false, false, BLACK_KING, false})
+	}
+	if b.Castle[3] && taboo&WCQMASK == 0 && (BCQMASK&^k)&em == (BCQMASK&^k) {
+		moves = append(moves, Move{IE8, IC8, false, false, true, false, BLACK_KING, false})
+	}
+
+	return moves
 }
 
 func kingAttacks(lsb int, fpieces BB) BB {
@@ -1243,8 +1288,19 @@ func pawnMovesFromBB(bb BB, delta, piece int, capture, doublePush bool) []Move {
 	for bb > 0 {
 		lsb := deBruijnLSB(bb)
 		sq := BB_TO_BOARDSQUARE[lsb]
-		// TODO: promotion checking
-		moves = append(moves, Move{sq, sq + delta, capture, false, false, false, piece, doublePush})
+		if piece == WHITE_PAWN && sq+delta <= IH8 {
+			moves = append(moves, Move{sq, sq + delta, capture, false, false, true, WHITE_KNIGHT, doublePush})
+			moves = append(moves, Move{sq, sq + delta, capture, false, false, true, WHITE_BISHOP, doublePush})
+			moves = append(moves, Move{sq, sq + delta, capture, false, false, true, WHITE_ROOK, doublePush})
+			moves = append(moves, Move{sq, sq + delta, capture, false, false, true, WHITE_QUEEN, doublePush})
+		} else if piece == BLACK_PAWN && sq+delta >= IA1 {
+			moves = append(moves, Move{sq, sq + delta, capture, false, false, true, BLACK_KNIGHT, doublePush})
+			moves = append(moves, Move{sq, sq + delta, capture, false, false, true, BLACK_BISHOP, doublePush})
+			moves = append(moves, Move{sq, sq + delta, capture, false, false, true, BLACK_ROOK, doublePush})
+			moves = append(moves, Move{sq, sq + delta, capture, false, false, true, BLACK_QUEEN, doublePush})
+		} else {
+			moves = append(moves, Move{sq, sq + delta, capture, false, false, false, piece, doublePush})
+		}
 		bb ^= BB(1 << lsb)
 	}
 
