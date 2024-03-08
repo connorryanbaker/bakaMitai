@@ -149,6 +149,18 @@ func (bb bitboard) whitePawnsEPCaptureWest(captureMask, pinnedPieces, movesForPi
 	targets := shiftBB(bb.whitepawns, NORTHWEST) & (^HFILE & bb.ep & captureMask)
 	unpinnedCaptures := shiftBB(targets, SOUTHEAST) & (bb.whitepawns & ^pinnedPieces)
 	pinnedCaptures := shiftBB(targets&movesForPinned, SOUTHEAST) & (bb.whitepawns & pinnedPieces)
+	// rm captured pawn and pawn capturing
+	// check west/east attacks from king to black queen/rook
+	bp := bb.blackPieces() & ^(shiftBB(bb.ep, NORTH))
+	wp := bb.whitePieces() & ^(unpinnedCaptures | pinnedCaptures)
+	em := bb.emptySquares() | (unpinnedCaptures | pinnedCaptures) | (shiftBB(bb.ep, NORTH))
+	kingSq := deBruijnLSB(bb.whiteking)
+	westAttacks := generateRayAttacks(kingSq, WEST_IDX, WEST, em, wp, bp, fillWest)
+	eastAttacks := generateRayAttacks(kingSq, EAST_IDX, EAST, em, wp, bp, fillEast)
+	if (westAttacks|eastAttacks)&(bb.blackqueens|bb.blackrooks) > 0 {
+		return BB(0)
+	}
+
 	return unpinnedCaptures | pinnedCaptures
 }
 
@@ -162,6 +174,15 @@ func (bb bitboard) whitePawnsEPCaptureEast(captureMask, pinnedPieces, movesForPi
 	targets := shiftBB(bb.whitepawns, NORTHEAST) & (^AFILE & bb.ep & captureMask)
 	unpinnedCaptures := shiftBB(targets, SOUTHWEST) & (bb.whitepawns & ^pinnedPieces)
 	pinnedCaptures := shiftBB(targets&movesForPinned, SOUTHWEST) & (bb.whitepawns & pinnedPieces)
+	bp := bb.blackPieces() & ^(shiftBB(bb.ep, SOUTH))
+	wp := bb.whitePieces() & ^(unpinnedCaptures | pinnedCaptures)
+	em := bb.emptySquares() | (unpinnedCaptures | pinnedCaptures) | (shiftBB(bb.ep, SOUTH))
+	kingSq := deBruijnLSB(bb.whiteking)
+	westAttacks := generateRayAttacks(kingSq, WEST_IDX, WEST, em, wp, bp, fillWest)
+	eastAttacks := generateRayAttacks(kingSq, EAST_IDX, EAST, em, wp, bp, fillEast)
+	if (westAttacks|eastAttacks)&(bb.blackqueens|bb.blackrooks) > 0 {
+		return BB(0)
+	}
 	return unpinnedCaptures | pinnedCaptures
 }
 
@@ -189,6 +210,15 @@ func (bb bitboard) blackPawnsEPCaptureWest(captureMask, pinnedPieces, movesForPi
 	targets := shiftBB(bb.blackpawns, SOUTHWEST) & (^HFILE & bb.ep & captureMask)
 	unpinnedCaptures := shiftBB(targets, NORTHEAST) & (bb.blackpawns & ^pinnedPieces)
 	pinnedCaptures := shiftBB(targets&movesForPinned, NORTHEAST) & (bb.blackpawns & pinnedPieces)
+	wp := bb.whitePieces() & ^(shiftBB(bb.ep, NORTH))
+	bp := bb.blackPieces() & ^(unpinnedCaptures | pinnedCaptures)
+	em := bb.emptySquares() | (unpinnedCaptures | pinnedCaptures) | (shiftBB(bb.ep, NORTH))
+	kingSq := deBruijnLSB(bb.blackking)
+	westAttacks := generateRayAttacks(kingSq, WEST_IDX, WEST, em, bp, wp, fillWest)
+	eastAttacks := generateRayAttacks(kingSq, EAST_IDX, EAST, em, bp, wp, fillEast)
+	if (westAttacks|eastAttacks)&(bb.whitequeens|bb.whiterooks) > 0 {
+		return BB(0)
+	}
 	return unpinnedCaptures | pinnedCaptures
 }
 
@@ -202,6 +232,15 @@ func (bb bitboard) blackPawnsEPCaptureEast(captureMask, pinnedPieces, movesForPi
 	targets := shiftBB(bb.blackpawns, SOUTHEAST) & (^AFILE & bb.ep & captureMask)
 	unpinnedCaptures := shiftBB(targets, NORTHWEST) & (bb.blackpawns & ^pinnedPieces)
 	pinnedCaptures := shiftBB(targets&movesForPinned, NORTHWEST) & (bb.blackpawns & pinnedPieces)
+	wp := bb.whitePieces() & ^(shiftBB(bb.ep, NORTH))
+	bp := bb.blackPieces() & ^(unpinnedCaptures | pinnedCaptures)
+	em := bb.emptySquares() | (unpinnedCaptures | pinnedCaptures) | (shiftBB(bb.ep, NORTH))
+	kingSq := deBruijnLSB(bb.blackking)
+	westAttacks := generateRayAttacks(kingSq, WEST_IDX, WEST, em, bp, wp, fillWest)
+	eastAttacks := generateRayAttacks(kingSq, EAST_IDX, EAST, em, bp, wp, fillEast)
+	if (westAttacks|eastAttacks)&(bb.whitequeens|bb.whiterooks) > 0 {
+		return BB(0)
+	}
 	return unpinnedCaptures | pinnedCaptures
 }
 
