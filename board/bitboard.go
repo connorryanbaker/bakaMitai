@@ -149,8 +149,7 @@ func (bb bitboard) whitePawnsEPCaptureWest(captureMask, pinnedPieces, movesForPi
 	targets := shiftBB(bb.whitepawns, NORTHWEST) & (^HFILE & bb.ep & captureMask)
 	unpinnedCaptures := shiftBB(targets, SOUTHEAST) & (bb.whitepawns & ^pinnedPieces)
 	pinnedCaptures := shiftBB(targets&movesForPinned, SOUTHEAST) & (bb.whitepawns & pinnedPieces)
-	// rm captured pawn and pawn capturing
-	// check west/east attacks from king to black queen/rook
+
 	bp := bb.blackPieces() & ^(shiftBB(bb.ep, NORTH))
 	wp := bb.whitePieces() & ^(unpinnedCaptures | pinnedCaptures)
 	em := bb.emptySquares() | (unpinnedCaptures | pinnedCaptures) | (shiftBB(bb.ep, NORTH))
@@ -819,7 +818,7 @@ func (b Board) movesForPinnedPieces(bb bitboard, pinnedPieces BB) BB {
 		kingSq := deBruijnLSB(bb.blackking)
 		for i := NORTH_IDX; i < 8; i++ {
 			if RAY_ATTACKS[i][kingSq]&pinnedPieces > 0 {
-				rayAttack := queenAttacks(kingSq, em, bp & ^pinnedPieces, wp)
+				rayAttack := generateRayAttacks(kingSq, i, DIR_DELTAS[i], em, bp & ^pinnedPieces, wp, DIR_FILL_FUNCTIONS[i])
 				if rayAttack&potentialPinningPieces > 0 {
 					moveRay |= rayAttack
 				}

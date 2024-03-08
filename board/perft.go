@@ -2,7 +2,6 @@ package board
 
 // import (
 //    "fmt"
-//   "sort"
 // )
 
 func perft(b *Board, depth int) uint64 {
