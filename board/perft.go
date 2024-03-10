@@ -22,7 +22,7 @@ func BBperft(b *Board, depth int) uint64 {
 
 	bbm := b.GenerateBitboardMoves()
 	for _, m := range bbm {
-		b.MakeMove(m)
+		b.MakeBBMove(m)
 		nodes += BBperft(b, depth-1)
 		b.UnmakeMove()
 	}
