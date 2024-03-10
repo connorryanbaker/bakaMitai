@@ -1,7 +1,6 @@
 TODO:
 
 SEARCH
-Search PV move first [ ] 2/8
 Quiescence https://www.chessprogramming.org/Quiescence_Search [ ]
 Static Exchange Evaluation [ ]
 Iterative Deepening https://www.chessprogramming.org/Iterative_Deepening [ ]
@@ -12,6 +11,14 @@ Late Move Reduction https://www.chessprogramming.org/Late_Move_Reductions [ ]
 
 MOVEGENERATION
 Legal Move Generation with Bitboards to remove need to make / unmake moves to determine legality [ ]
+bitboards
+- generating legal moves https://www.chessprogramming.org/Bitboard_Serialization
+  - https://peterellisjones.com/posts/generating-legal-chess-moves-efficiently/
+- decouple attack bitboard generation from move array generation [ ]
+- taboo squares [ ]
+- double check [ ]
+- updating MakeMove() [ ]
+
 
 UI
 UCI [ ]
@@ -19,3 +26,4 @@ UCI [ ]
 Misc
 PGN export edge cases [ ]
 Look into avoiding repetitions in winning positions [ ]
+Missing checkmates [ ]

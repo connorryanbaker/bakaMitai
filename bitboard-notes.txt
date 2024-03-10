@@ -1,0 +1,108 @@
+typically need one bitboard per piece / color
+how should bits be mapped to squares? 
+to start, imagine bit index 0 is lsb and bit index 63 is msb 
+2 common approaches to calculate sq index from file or rank
+file index is sq index & 7 (or sq index % 8) 
+rank index is sq index / 8 (sq index >> 3)
+
+couple different ways of representing board
+little endian rank-file mapping implies 0 is a1, 7 is h1, 8 is a2, 15 is h2
+all the way to a8-> 56 and h8->63
+the below shifts would yield neighboring squares
+  noWe         nort         noEa
+          +7    +8    +9
+              \  |  /
+  west    -1 <-  0 -> +1    east
+              /  |  \
+          -9    -8    -7
+  soWe         sout         soEa
+
+little endian file rank mapping implies 0 is a1, 1 is a2, 2, is a3 etc
+
+general setwise operations
+empty set = 0
+universal set = 2^64-1
+
+intersection (a & b) can be used to check attacked pieces 
+(queen_attacks & opponent_pieces)
+
+union (a | b) gives superset
+can be used to give all occupied squares (white_pieces | black_pieces)
+
+complement set (not operator) can be used to get empty sqs from occupied sqs
+
+xor has many uses
+flipping bits with a mask
+
+population count / hamming weight
+"in computer chess, population count is used to evalutate the mobility of
+pieces from their attack sets"
+
+Brian Kernighan's way
+popcount (int64 x) { 
+  count := 0
+  while x > 0 {
+    count++
+    x &= x - 1 // reset LS1B
+  }
+  return count
+}
+
+bitscan determines bit index of least significant / most significant 1 bit
+
+fill algorithms - union of a set w/ direction-wise shifts
+likely intersected w/ mask to avoid wrap / consider occupancy
+
+
+pawns
+- calculate all possible one sq pushes by doing a north shift and intersection
+  w/ set of empty squares
+-calculate possible 2sq pushes by checking for pawns that can push one sq, then
+checking intersection of resulting set and empty and color-specific rank
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
