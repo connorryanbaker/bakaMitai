@@ -10,14 +10,8 @@ History Heuristics https://www.chessprogramming.org/History_Heuristic [ ]
 Late Move Reduction https://www.chessprogramming.org/Late_Move_Reductions [ ]
 
 MOVEGENERATION
-Legal Move Generation with Bitboards to remove need to make / unmake moves to determine legality [ ]
-bitboards
-- generating legal moves https://www.chessprogramming.org/Bitboard_Serialization
-  - https://peterellisjones.com/posts/generating-legal-chess-moves-efficiently/
-- decouple attack bitboard generation from move array generation [ ]
-- taboo squares [ ]
-- double check [ ]
-- updating MakeMove() [ ]
+- audit piece list [ ]
+- update bitboard in place [ ]
 
 
 UI
