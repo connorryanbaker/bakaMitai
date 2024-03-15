@@ -42,10 +42,6 @@ func (b Board) isEPCapture(m Move) bool {
 }
 
 func (b *Board) UnmakeMove() {
-	if len(b.History) == 0 {
-		return
-	}
-
 	h := b.History[len(b.History)-1]
 	m := h.Move
 	p := b.PieceAt(m.To)
@@ -95,7 +91,7 @@ func (b *Board) UnmakeMove() {
 func (b *Board) MakeBBMove(m Move) bool {
 	movingPiece := b.PieceAt(m.From)
 	if b.PieceColor(movingPiece) != b.Side {
-		return false
+		panic(1)
 	}
 
 	if m.CastleKingside {
@@ -159,7 +155,7 @@ func (b *Board) MakeMove(m Move) bool {
 	movingPiece := b.PieceAt(m.From)
 	pieceAtDestSq := b.PieceAt(m.To)
 	if b.PieceColor(movingPiece) != b.Side {
-		return false
+		panic(1)
 	}
 
 	if m.CastleKingside {
@@ -511,11 +507,9 @@ func (b Board) PieceAt(idx int) int {
 }
 
 func (b Board) InCheck(side int) bool {
-	if side == WHITE {
-		return b.isAttacked(b.pos(WHITE_KING), b.Side)
-	}
-
-	return b.isAttacked(b.pos(BLACK_KING), b.Side)
+	// TODO: cleanup
+	bb := b.newBitboard()
+	return b.inCheck(*bb)
 }
 
 func (b Board) pos(p int) int {
@@ -531,14 +525,14 @@ func (b Board) Checkmate() bool {
 	if !b.InCheck(b.Side) {
 		return false
 	}
-	return len(b.LegalMoves()) == 0
+	return len(b.GenerateBitboardMoves()) == 0
 }
 
 func (b Board) Stalemate() bool {
 	if b.InCheck(b.Side) {
 		return false
 	}
-	return len(b.LegalMoves()) == 0
+	return len(b.GenerateBitboardMoves()) == 0
 }
 
 func (b Board) FiftyMoveDraw() bool {

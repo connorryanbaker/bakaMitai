@@ -16,6 +16,11 @@ func TestCustomFENPerft(t *testing.T) {
 	}{
 		{
 			1,
+			FromFENString("r5r1/pk2q2p/Q1p2pp1/b7/1P3B1P/P7/5P2/R4KR1 b - - 0 1"),
+			1,
+		},
+		{
+			1,
 			FromFENString("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3 2"),
 			8,
 		},

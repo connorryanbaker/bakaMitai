@@ -1,8 +1,9 @@
 TODO:
 
 SEARCH
-Quiescence https://www.chessprogramming.org/Quiescence_Search [ ]
 Static Exchange Evaluation [ ]
+  + fixup search tests [ ]
+Quiescence https://www.chessprogramming.org/Quiescence_Search [ ]
 Iterative Deepening https://www.chessprogramming.org/Iterative_Deepening [ ]
 Transposition Tables https://www.chessprogramming.org/Transposition_Table [ ]
 Killer Moves https://www.chessprogramming.org/Killer_Heuristic [ ]
