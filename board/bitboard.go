@@ -245,14 +245,12 @@ func (bb bitboard) blackPawnsEPCaptureEast(captureMask, pinnedPieces, movesForPi
 	return unpinnedCaptures | pinnedCaptures
 }
 
-func whitePawnAttacks(pawns BB, fpieces BB) BB {
-	return (shiftBB(pawns, NORTHWEST) & (^HFILE | fpieces)) |
-		(shiftBB(pawns, NORTHEAST) & (^AFILE | fpieces))
+func whitePawnAttacks(pawns BB) BB {
+	return (shiftBB(pawns, NORTHWEST) & ^HFILE) | (shiftBB(pawns, NORTHEAST) & ^AFILE)
 }
 
-func blackPawnAttacks(pawns BB, fpieces BB) BB {
-	return (shiftBB(pawns, SOUTHWEST) & (^HFILE | fpieces)) |
-		(shiftBB(pawns, SOUTHEAST) & (^AFILE | fpieces))
+func blackPawnAttacks(pawns BB) BB {
+	return (shiftBB(pawns, SOUTHWEST) & ^HFILE) | (shiftBB(pawns, SOUTHEAST) & ^AFILE)
 }
 
 func (bb bitboard) whiteKingMoves() BB {
@@ -648,13 +646,13 @@ func attackers(bb bitboard, side int, piece, empty, fpieces, opieces BB) BB {
 		attackers |= bishopAttacks(sq, empty, fpieces, opieces) & bb.blackbishops
 		attackers |= rookAttacks(sq, empty, fpieces, opieces) & bb.blackrooks
 		attackers |= queenAttacks(sq, empty, fpieces, opieces) & bb.blackqueens
-		attackers |= whitePawnAttacks(piece, fpieces) & bb.blackpawns
+		attackers |= whitePawnAttacks(piece) & bb.blackpawns
 	} else {
 		attackers |= KNIGHT_ATTACKS[sq] & bb.whiteknights
 		attackers |= bishopAttacks(sq, empty, fpieces, opieces) & bb.whitebishops
 		attackers |= rookAttacks(sq, empty, fpieces, opieces) & bb.whiterooks
 		attackers |= queenAttacks(sq, empty, fpieces, opieces) & bb.whitequeens
-		attackers |= blackPawnAttacks(piece, fpieces) & bb.whitepawns
+		attackers |= blackPawnAttacks(piece) & bb.whitepawns
 	}
 	return attackers
 }
@@ -893,7 +891,7 @@ func (bb bitboard) tabooSquares(side int) BB {
 	em := bb.emptySquares()
 	if side == WHITE {
 		wp ^= bb.whiteking // remove king to allow for xray squares to be marked taboo
-		return blackPawnAttacks(bb.blackpawns, bp) |
+		return blackPawnAttacks(bb.blackpawns) |
 			rayTabooAttacks(bb.blackqueens, em, bp, wp, queenTabooAttacks) |
 			rayTabooAttacks(bb.blackrooks, em, bp, wp, rookTabooAttacks) |
 			rayTabooAttacks(bb.blackbishops, em, bp, wp, bishopTabooAttacks) |
@@ -901,7 +899,7 @@ func (bb bitboard) tabooSquares(side int) BB {
 			KING_ATTACKS[deBruijnLSB(bb.blackking)]
 	}
 	bp ^= bb.blackking
-	return whitePawnAttacks(bb.whitepawns, wp) |
+	return whitePawnAttacks(bb.whitepawns) |
 		rayTabooAttacks(bb.whitequeens, em, wp, bp, queenTabooAttacks) |
 		rayTabooAttacks(bb.whiterooks, em, wp, bp, rookTabooAttacks) |
 		rayTabooAttacks(bb.whitebishops, em, wp, bp, bishopTabooAttacks) |
@@ -1037,6 +1035,7 @@ func bishopAttacks(sq int, empty, fpieces, opieces BB) BB {
 }
 
 func bishopTabooAttacks(sq int, empty, fpieces, opieces BB) BB {
+
 	return generateRayTabooAttacks(sq, NORTHWEST_IDX, NORTHWEST, empty, fpieces, opieces, fillNorthWest) |
 		generateRayTabooAttacks(sq, SOUTHWEST_IDX, SOUTHWEST, empty, fpieces, opieces, fillSouthWest) |
 		generateRayTabooAttacks(sq, NORTHEAST_IDX, NORTHEAST, empty, fpieces, opieces, fillNorthEast) |

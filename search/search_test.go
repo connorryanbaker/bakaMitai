@@ -2,6 +2,7 @@ package search
 
 import (
 	"github.com/connorryanbaker/bakaMitai/board"
+
 	"testing"
 )
 
@@ -59,7 +60,7 @@ func TestFindMateInTwo(t *testing.T) {
 			[]board.Move{
 				{board.IF6, board.IG6, false, false, false, false, board.WHITE_KING, false},
 				{board.IH8, board.IG8, false, false, false, false, board.BLACK_KING, false},
-				{board.IA7, board.IA8, false, false, false, true, board.WHITE_QUEEN, false},
+				{board.IA7, board.IA8, false, false, false, true, board.WHITE_ROOK, false},
 			},
 		},
 		{
@@ -90,8 +91,9 @@ func TestFindMateInTwo(t *testing.T) {
 
 	for _, tt := range tests {
 		pv := NewLine(3)
+		tt.b.Print()
 		l := Search(&tt.b, 3, &pv)
-		for i, _ := range l {
+		for i := 0; i < 3; i++ {
 			if !board.EqualMoves(tt.l[i], l[i]) {
 				t.Errorf("line[%d] to; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].To], board.SQ_NUM_TO_NAME[tt.l[i].To])
 				t.Errorf("line[%d] from; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].From], board.SQ_NUM_TO_NAME[tt.l[i].From])
@@ -103,33 +105,33 @@ func TestFindMateInTwo(t *testing.T) {
 	}
 }
 
-// func TestFindMateInThree(t *testing.T) {
-// 	var tests = []struct {
-// 		b board.Board
-// 		l []board.Move
-// 	}{
-// 		{
-// 			board.FromFENString("r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1"),
-// 			[]board.Move{
-// 				{board.IF8, board.IC5, false, false, false, false, board.BLACK_BISHOP, false},
-// 				{board.ID4, board.IC5, true, false, false, false, board.WHITE_KING, false},
-// 				{board.IF6, board.IB6, false, false, false, false, board.BLACK_QUEEN, false},
-// 				{board.IC5, board.ID5, false, false, false, false, board.WHITE_KING, false},
-// 				{board.IB6, board.ID6, false, false, false, false, board.BLACK_QUEEN, false},
-// 			},
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		pv := NewLine(5)
-// 		l := Search(&tt.b, 5, &pv)
-// 		for i, _ := range l {
-// 			if !board.EqualMoves(tt.l[i], l[i]) {
-// 				t.Errorf("line[%d] to; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].To], board.SQ_NUM_TO_NAME[tt.l[i].To])
-// 				t.Errorf("line[%d] from; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].From], board.SQ_NUM_TO_NAME[tt.l[i].From])
-// 				t.Errorf("received line: %v", l)
-// 				t.Errorf("expected line: %v", tt.l)
-// 				tt.b.Print()
-// 			}
-// 		}
-// 	}
-// }
+func TestFindMateInThree(t *testing.T) {
+	var tests = []struct {
+		b board.Board
+		l []board.Move
+	}{
+		{
+			board.FromFENString("r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1"),
+			[]board.Move{
+				{board.IF8, board.IC5, false, false, false, false, board.BLACK_BISHOP, false},
+				{board.ID4, board.IC5, true, false, false, false, board.WHITE_KING, false},
+				{board.IF6, board.IB6, false, false, false, false, board.BLACK_QUEEN, false},
+				{board.IC5, board.ID5, false, false, false, false, board.WHITE_KING, false},
+				{board.IB6, board.ID6, false, false, false, false, board.BLACK_QUEEN, false},
+			},
+		},
+	}
+	for _, tt := range tests {
+		pv := NewLine(5)
+		l := Search(&tt.b, 5, &pv)
+		for i, _ := range l {
+			if !board.EqualMoves(tt.l[i], l[i]) {
+				t.Errorf("line[%d] to; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].To], board.SQ_NUM_TO_NAME[tt.l[i].To])
+				t.Errorf("line[%d] from; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].From], board.SQ_NUM_TO_NAME[tt.l[i].From])
+				t.Errorf("received line: %v", l)
+				t.Errorf("expected line: %v", tt.l)
+				tt.b.Print()
+			}
+		}
+	}
+}

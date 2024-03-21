@@ -41,6 +41,9 @@ func play(b board.Board) {
 	for true {
 		b.Print()
 		m := e.GenMove(&b)
+		fmt.Println(m)
+		m.Print()
+		fmt.Println(len(b.History))
 		b.MakeMove(m)
 		if b.Checkmate() {
 			b.Print()

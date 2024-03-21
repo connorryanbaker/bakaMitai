@@ -37,18 +37,17 @@ func Search(b *board.Board, depth int, pv *Line) []board.Move {
 
 func negamax(b *board.Board, depth int, alpha, beta float64, pv *Line) float64 {
 	lpv := NewLine(depth)
-	moves := siftPV(pv.Moves[0], b.LegalMoves())
+	moves := b.GenerateBitboardMoves()
 	if depth == 0 || len(moves) == 0 {
 		nodes += 1
 		pv.NumMoves = 0
 		return eval.NegamaxEval(*b)
 	}
-
 	for _, m := range moves {
-		b.MakeMove(m)
-		// todo: continue check on shortcircuiting if checkmate / draw here
+		b.MakeBBMove(m)
+		draw := b.Drawn()
 		var v float64
-		if !b.Drawn() {
+		if !draw {
 			v = -negamax(b, depth-1, -beta, -alpha, &lpv)
 		}
 		b.UnmakeMove()
@@ -58,7 +57,7 @@ func negamax(b *board.Board, depth int, alpha, beta float64, pv *Line) float64 {
 		if v > alpha {
 			alpha = v
 			pv.Moves[0] = m
-			for i := 0; i < lpv.NumMoves; i++ {
+			for i := 0; i < len(pv.Moves)-1; i++ {
 				pv.Moves[i+1] = lpv.Moves[i]
 			}
 			pv.NumMoves = lpv.NumMoves + 1

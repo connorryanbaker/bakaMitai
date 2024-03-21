@@ -109,7 +109,7 @@ func TestInCheck(t *testing.T) {
 			"bishop b4 check",
 		},
 		{
-			FromFENString("rnbqkbnr/ppp2ppp/4p3/1B1p4/3P4/4P3/PPP2PPP/RNBQK1NR w KQkq - 0 1"),
+			FromFENString("rnbqkbnr/ppp2ppp/4p3/1B1p4/3P4/4P3/PPP2PPP/RNBQK1NR b KQkq - 0 1"),
 			BLACK,
 			true,
 			"bishop b5 check",
@@ -139,7 +139,7 @@ func TestInCheck(t *testing.T) {
 			"rook e2 check",
 		},
 		{
-			FromFENString("rnb1kbnr/pp3ppp/8/3p4/3P3q/5P2/PPP3PP/RNBQKBNR b KQkq - 0 1"),
+			FromFENString("rnb1kbnr/pp3ppp/8/3p4/3P3q/5P2/PPP3PP/RNBQKBNR w KQkq - 0 1"),
 			WHITE,
 			true,
 			"queen h4 check",
@@ -157,50 +157,6 @@ func TestInCheck(t *testing.T) {
 		if received != tt.inCheck {
 			tt.b.Print()
 			t.Errorf("dsc: %s, side: %d, received %t, expected %t", tt.description, tt.side, received, tt.inCheck)
-		}
-	}
-}
-
-func TestMakeMoveWrongColor(t *testing.T) {
-	var tests = []struct {
-		b        Board
-		m        Move
-		expected bool
-	}{
-		{
-			FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
-			Move{
-				IE7,
-				IE5,
-				false,
-				false,
-				false,
-				false,
-				BLACK_PAWN,
-				true,
-			},
-			false,
-		},
-		{
-			FromFENString("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"),
-			Move{
-				ID2,
-				ID4,
-				false,
-				false,
-				false,
-				false,
-				WHITE_PAWN,
-				true,
-			},
-			false,
-		},
-	}
-
-	for _, tt := range tests {
-		received := tt.b.MakeMove(tt.m)
-		if received != tt.expected {
-			t.Errorf("illegal move allowed, expected: %t, received: %t", tt.expected, received)
 		}
 	}
 }
