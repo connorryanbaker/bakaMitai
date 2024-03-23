@@ -6,8 +6,6 @@ import (
 	"testing"
 )
 
-// TODO: test picking move in lost position
-// may benefit from switching to negamax eval calls in root
 func TestFindMateInOne(t *testing.T) {
 	var tests = []struct {
 		b            board.Board
@@ -37,8 +35,8 @@ func TestFindMateInOne(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		pv := NewLine(2)
-		l := Search(&tt.b, 2, &pv)
+		pv := NewLine(4)
+		l := Search(&tt.b, 4, &pv)
 		m := l[0]
 		if m.To != tt.expectedTo {
 			tt.b.Print()
@@ -90,9 +88,9 @@ func TestFindMateInTwo(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		pv := NewLine(3)
+		pv := NewLine(4)
 		tt.b.Print()
-		l := Search(&tt.b, 3, &pv)
+		l := Search(&tt.b, 4, &pv)
 		for i := 0; i < 3; i++ {
 			if !board.EqualMoves(tt.l[i], l[i]) {
 				t.Errorf("line[%d] to; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].To], board.SQ_NUM_TO_NAME[tt.l[i].To])
@@ -122,9 +120,9 @@ func TestFindMateInThree(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		pv := NewLine(5)
-		l := Search(&tt.b, 5, &pv)
-		for i, _ := range l {
+		pv := NewLine(6)
+		l := Search(&tt.b, 6, &pv)
+		for i := 0; i < 5; i++ {
 			if !board.EqualMoves(tt.l[i], l[i]) {
 				t.Errorf("line[%d] to; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].To], board.SQ_NUM_TO_NAME[tt.l[i].To])
 				t.Errorf("line[%d] from; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].From], board.SQ_NUM_TO_NAME[tt.l[i].From])
