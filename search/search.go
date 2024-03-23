@@ -55,7 +55,7 @@ func negamax(b *board.Board, depth int, alpha, beta float64, pv *Line) float64 {
 		if v >= beta {
 			return beta
 		}
-		if v > alpha || (v == alpha && lpv.NumMoves < depthBestEval) {
+		if v > alpha || (v == math.MaxFloat64 && lpv.NumMoves < depthBestEval) {
 			if lpv.NumMoves < depthBestEval {
 				depthBestEval = lpv.NumMoves
 			}
