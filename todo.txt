@@ -1,8 +1,16 @@
 TODO:
 
 SEARCH
+Better Move Sort [ ]
+  - generate captures
+  - check
+  - threat
 Static Exchange Evaluation [ ]
-  + fixup search tests [ ]
+  - could benefit from having bitboards of moves per piece available on bitboard available
+  - this could be generated at movegeneration time and live on the struct for eval?
+  - eventually will need to start updating bb in place when making moves instead
+    of creating from scratch
+
 Quiescence https://www.chessprogramming.org/Quiescence_Search [ ]
 Iterative Deepening https://www.chessprogramming.org/Iterative_Deepening [ ]
 Transposition Tables https://www.chessprogramming.org/Transposition_Table [ ]
@@ -20,5 +28,3 @@ UCI [ ]
 
 Misc
 PGN export edge cases [ ]
-Look into avoiding repetitions in winning positions [ ]
-Missing checkmates [ ]
