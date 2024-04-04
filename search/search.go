@@ -4,12 +4,15 @@ import (
 	"github.com/connorryanbaker/bakaMitai/board"
 	"github.com/connorryanbaker/bakaMitai/eval"
 
+	"fmt"
 	"math"
+	"sort"
 )
 
 // s/o bruce moreland pv collection
 
 var nodes int
+var totalnodes int
 var nc = make([]int, 0)
 
 type Line struct {
@@ -32,16 +35,23 @@ func Search(b *board.Board, depth int, pv *Line) []board.Move {
 	for _, v := range nc {
 		s += v
 	}
+	fmt.Println("NODES SEARCHED", nodes)
+	totalnodes += nodes
+	fmt.Println("TOTAL NODES SEARCHED", totalnodes)
 	return pv.Moves
 }
 
 func negamax(b *board.Board, depth int, alpha, beta float64, pv *Line) float64 {
 	lpv := NewLine(depth)
 	moves := b.GenerateBitboardMoves()
+	sort.Slice(moves, func(i, j int) bool {
+		return moves[i].Score(b) > moves[j].Score(b)
+	})
 	if depth == 0 || len(moves) == 0 {
 		nodes += 1
 		pv.NumMoves = 0
-		return eval.NegamaxEval(*b)
+		v := eval.NegamaxEval(*b)
+		return v
 	}
 	depthBestEval := depth
 	for _, m := range moves {

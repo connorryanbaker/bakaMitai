@@ -18,9 +18,6 @@ func New(depth int) Engine {
 }
 
 func (e *Engine) GenMove(b *board.Board) board.Move {
-	for _, m := range b.GenerateBitboardMoves() {
-		m.Print()
-	}
 	moves := search.Search(b, e.Depth, &e.PV)
 	m := moves[0]
 	e.siftPVMoves()
