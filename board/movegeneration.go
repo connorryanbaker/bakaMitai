@@ -1,8 +1,6 @@
 package board
 
-import (
-	"fmt"
-)
+import "fmt"
 
 var PIECE_COLORS = map[int]map[int]bool{
 	WHITE: map[int]bool{
@@ -89,11 +87,10 @@ func (m Move) Score(b *Board) int {
 		s += 1000
 	}
 	if m.Capture {
-		return see(m.To, b) * 10000
-		// s += 100
-		// mp := b.PieceAt(m.From)
-		// cp := b.PieceAt(m.To)
-		// s += CAPTURE_SCORE[mp][cp] * 100
+		s += 100
+		mp := b.PieceAt(m.From)
+		cp := b.PieceAt(m.To)
+		s += CAPTURE_SCORE[mp][cp] * 100
 	}
 	if m.CastleKingside || m.CastleQueenside {
 		s += 100
