@@ -81,6 +81,10 @@ func (m Move) IsNull() bool {
 	return false
 }
 
+func (m Move) See(b *Board) int {
+	return see(m.To, b)
+}
+
 func (m Move) Score(b *Board) int {
 	s := 0
 	if m.Promote {

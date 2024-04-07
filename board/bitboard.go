@@ -636,6 +636,15 @@ func (b Board) doubleCheck(bb bitboard) bool {
 	return popCount(attackers(bb, BLACK, bb.blackking, em, bp, wp)) > 1
 }
 
+var RAY_ATTACK_FNS = map[int]func(int, BB, BB, BB) BB{
+	WHITE_BISHOP: bishopAttacks,
+	BLACK_BISHOP: bishopAttacks,
+	WHITE_ROOK:   rookAttacks,
+	BLACK_ROOK:   rookAttacks,
+	WHITE_QUEEN:  queenAttacks,
+	BLACK_QUEEN:  queenAttacks,
+}
+
 func attackers(bb bitboard, side int, piece, empty, fpieces, opieces BB) BB {
 	var attackers BB
 	sq := deBruijnLSB(piece)
@@ -886,6 +895,57 @@ func (b Board) GenerateBitboardMoves() []Move {
 	return moves
 }
 
+func (b Board) GenerateCaptures() []Move {
+	bb := b.newBitboard()
+	moves := make([]Move, 0)
+
+	if b.inCheck(*bb) && b.doubleCheck(*bb) {
+		return b.generateBitboardKingMoves(*bb)
+	}
+
+	var bishop int
+	var bishops BB
+	var rook int
+	var rooks BB
+	var queen int
+	var queens BB
+	var king int
+	var kingBB BB
+	var opieces BB
+
+	if b.Side == WHITE {
+		bishop = WHITE_BISHOP
+		bishops = bb.whitebishops
+		rook = WHITE_ROOK
+		rooks = bb.whiterooks
+		queen = WHITE_QUEEN
+		queens = bb.whitequeens
+		king = WHITE_KING
+		kingBB = bb.whiteking
+		opieces = bb.blackPieces()
+	} else {
+		bishop = BLACK_BISHOP
+		bishops = bb.blackbishops
+		rook = BLACK_ROOK
+		rooks = bb.blackrooks
+		queen = BLACK_QUEEN
+		queens = bb.blackqueens
+		king = BLACK_KING
+		kingBB = bb.blackking
+		opieces = bb.whitePieces()
+	}
+
+	captureMask, pushMask, movesForPinned, pinnedPieces := b.pinMasks(*bb)
+	// excludes ep captures for now
+	moves = append(moves, b.generateBitboardPawnCaptures(*bb, captureMask, pushMask, pinnedPieces, movesForPinned)...)
+	moves = append(moves, b.generateBitboardKnightCaptures(*bb, captureMask, pushMask, pinnedPieces)...)
+	moves = append(moves, b.generateBitboardRayCaptures(bishop, *bb, bishops, captureMask, pushMask, pinnedPieces, movesForPinned)...)
+	moves = append(moves, b.generateBitboardRayCaptures(rook, *bb, rooks, captureMask, pushMask, pinnedPieces, movesForPinned)...)
+	moves = append(moves, b.generateBitboardRayCaptures(queen, *bb, queens, captureMask, pushMask, pinnedPieces, movesForPinned)...)
+	moves = append(moves, generateKingCaptures(kingBB, opieces, bb.emptySquares(), bb.tabooSquares(b.Side), king)...)
+	return moves
+}
+
 func (bb bitboard) tabooSquares(side int) BB {
 	wp := bb.whitePieces()
 	bp := bb.blackPieces()
@@ -1112,12 +1172,6 @@ func generateBitboardBishopMovesForSide(bishops, empty, fpieces, opieces, captur
 	return moves
 }
 
-// func (b Board) generateBishopCaptures(bb bitboard, captureMask, pushMask, pinnedPieces BB) []Move {
-//   if b.Side == WHITE {
-//     return b.generateBitboardRayCaptures(WHITE_BISHOP, bb, bb.whitebishops, captureMask, pushMask, pinnedPieces)
-//   }
-// }
-
 func (b Board) generateBitboardRayCaptures(piece int, bb bitboard, pieces, captureMask, pushMask, pinnedPieces, movesForPinned BB) []Move {
 	moves := make([]Move, 0)
 	var opieces BB
@@ -1131,8 +1185,8 @@ func (b Board) generateBitboardRayCaptures(piece int, bb bitboard, pieces, captu
 	}
 	for pieces > 0 {
 		lsb := deBruijnLSB(pieces)
-		// todo: this needs to be looked up by piece
-		attacks := bishopAttacks(lsb, bb.emptySquares(), fpieces, opieces) & captureMask
+		fn := RAY_ATTACK_FNS[piece]
+		attacks := fn(lsb, bb.emptySquares(), fpieces, opieces) & captureMask
 		attacks &= opieces
 		if BB(1<<lsb)&pinnedPieces > 0 {
 			attacks &= movesForPinned
@@ -1246,13 +1300,12 @@ func legalKingCapturesBB(king, opieces, taboo BB) BB {
 	return KING_ATTACKS[lsb] & opieces & ^taboo
 }
 
-func generateKingMovesForSide(king, oppPieces, emptySqs, taboo BB, piece int) []Move {
+func generateKingCaptures(king, oppPieces, emptySqs, taboo BB, piece int) []Move {
 	moves := make([]Move, 0)
 	for king > 0 {
 		lsb := deBruijnLSB(king)
 		sq := BB_TO_BOARDSQUARE[lsb]
 		captures := KING_ATTACKS[lsb] & oppPieces & ^taboo
-		quietmoves := KING_ATTACKS[lsb] & emptySqs & ^taboo
 		for captures > 0 {
 			clsb := deBruijnLSB(captures)
 			csq := BB_TO_BOARDSQUARE[clsb]
@@ -1262,6 +1315,17 @@ func generateKingMovesForSide(king, oppPieces, emptySqs, taboo BB, piece int) []
 			)
 			captures ^= BB(1 << clsb)
 		}
+		king ^= BB(1 << lsb)
+	}
+	return moves
+}
+
+func generateKingMovesForSide(king, oppPieces, emptySqs, taboo BB, piece int) []Move {
+	moves := generateKingCaptures(king, oppPieces, emptySqs, taboo, piece)
+	for king > 0 {
+		lsb := deBruijnLSB(king)
+		sq := BB_TO_BOARDSQUARE[lsb]
+		quietmoves := KING_ATTACKS[lsb] & emptySqs & ^taboo
 		for quietmoves > 0 {
 			qlsb := deBruijnLSB(quietmoves)
 			qsq := BB_TO_BOARDSQUARE[qlsb]

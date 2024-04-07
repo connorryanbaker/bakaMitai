@@ -46,7 +46,8 @@ func negamax(b *board.Board, depth int, alpha, beta float64, pv *Line) float64 {
 	if depth == 0 || len(moves) == 0 {
 		nodes += 1
 		pv.NumMoves = 0
-		return eval.NegamaxEval(*b)
+		// return eval.NegamaxEval(*b)
+		return quiesce(b, alpha, beta)
 	}
 	depthBestEval := depth
 	for _, m := range moves {
@@ -73,6 +74,32 @@ func negamax(b *board.Board, depth int, alpha, beta float64, pv *Line) float64 {
 			pv.NumMoves = lpv.NumMoves + 1
 		}
 	}
+	return alpha
+}
+
+func quiesce(b *board.Board, alpha, beta float64) float64 {
+	standPat := eval.NegamaxEval(*b)
+	if standPat >= beta {
+		return beta
+	}
+	if alpha < standPat {
+		alpha = standPat
+	}
+	captures := b.GenerateCaptures()
+	for _, capture := range captures {
+		if capture.See(b) >= 0 {
+			b.MakeBBMove(capture)
+			score := -1 * quiesce(b, -beta, -alpha)
+			b.UnmakeMove()
+			if score >= beta {
+				return beta
+			}
+			if score > alpha {
+				alpha = score
+			}
+		}
+	}
+
 	return alpha
 }
 
