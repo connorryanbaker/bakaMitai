@@ -1,9 +1,6 @@
 package board
 
-import (
-	"fmt"
-	"sort"
-)
+import "fmt"
 
 var PIECE_COLORS = map[int]map[int]bool{
 	WHITE: map[int]bool{
@@ -84,10 +81,14 @@ func (m Move) IsNull() bool {
 	return false
 }
 
-func (m Move) Score(b Board) int {
+func (m Move) See(b *Board) int {
+	return see(m.To, b)
+}
+
+func (m Move) Score(b *Board) int {
 	s := 0
 	if m.Promote {
-		s += 100
+		s += 1000
 	}
 	if m.Capture {
 		s += 100
@@ -153,10 +154,6 @@ func (b Board) LegalMoves() []Move {
 			moves = append(moves, m)
 		}
 	}
-
-	sort.Slice(moves, func(i, j int) bool {
-		return moves[i].Score(b) > moves[j].Score(b)
-	})
 
 	b.legalMoves = moves
 	return b.legalMoves
