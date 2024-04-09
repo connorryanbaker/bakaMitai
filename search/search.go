@@ -43,6 +43,7 @@ func Search(b *board.Board, depth int, pv *Line) []board.Move {
 func negamax(b *board.Board, depth int, alpha, beta float64, pv *Line) float64 {
 	lpv := NewLine(depth)
 	moves := b.GenerateBitboardMoves()
+	siftPV(pv.Moves[0], moves)
 	if depth == 0 || len(moves) == 0 {
 		nodes += 1
 		pv.NumMoves = 0
