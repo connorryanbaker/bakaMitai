@@ -4,8 +4,8 @@ import (
 	"github.com/connorryanbaker/bakaMitai/board"
 	"github.com/connorryanbaker/bakaMitai/eval"
 
-	// "fmt"
 	"math"
+	"time"
 )
 
 // s/o bruce moreland pv collection
@@ -26,37 +26,33 @@ func NewLine(depth int) Line {
 	}
 }
 
-func Search(b *board.Board, depth int, pv *Line) []board.Move {
-	// nodes = 0
-	negamax(b, depth, math.Inf(-1), math.Inf(1), pv)
-	nc = append(nc, nodes)
+func Search(b *board.Board, depth int, pv *Line, exp time.Time) []board.Move {
+	negamax(b, depth, math.Inf(-1), math.Inf(1), pv, exp)
 	s := 0
 	for _, v := range nc {
 		s += v
 	}
-	// fmt.Println("NODES SEARCHED", nodes)
-	// totalnodes += nodes
-	// fmt.Println("TOTAL NODES SEARCHED", totalnodes)
 	return pv.Moves
 }
 
-func negamax(b *board.Board, depth int, alpha, beta float64, pv *Line) float64 {
+func negamax(b *board.Board, depth int, alpha, beta float64, pv *Line, exp time.Time) float64 {
+	if time.Now().After(exp) {
+		return alpha
+	}
 	lpv := NewLine(depth)
 	moves := b.GenerateBitboardMoves()
-	siftPV(pv.Moves[0], moves)
 	if depth == 0 || len(moves) == 0 {
-		nodes += 1
 		pv.NumMoves = 0
-		// return eval.NegamaxEval(*b)
 		return quiesce(b, alpha, beta)
 	}
+	siftPV(pv.Moves[0], moves)
 	depthBestEval := depth
 	for _, m := range moves {
 		b.MakeBBMove(m)
 		draw := b.Drawn()
 		var v float64
 		if !draw {
-			v = -negamax(b, depth-1, -beta, -alpha, &lpv)
+			v = -negamax(b, depth-1, -beta, -alpha, &lpv, exp)
 		}
 		b.UnmakeMove()
 		if v >= beta {
@@ -69,7 +65,7 @@ func negamax(b *board.Board, depth int, alpha, beta float64, pv *Line) float64 {
 
 			alpha = v
 			pv.Moves[0] = m
-			for i := 0; i < len(pv.Moves)-1; i++ {
+			for i := 0; i < min(len(pv.Moves)-1, len(lpv.Moves)); i++ {
 				pv.Moves[i+1] = lpv.Moves[i]
 			}
 			pv.NumMoves = lpv.NumMoves + 1
