@@ -4,6 +4,7 @@ import (
 	"github.com/connorryanbaker/bakaMitai/board"
 
 	"testing"
+	"time"
 )
 
 func TestFindMateInOne(t *testing.T) {
@@ -36,7 +37,7 @@ func TestFindMateInOne(t *testing.T) {
 
 	for _, tt := range tests {
 		pv := NewLine(4)
-		l := Search(&tt.b, 4, &pv)
+		l := Search(&tt.b, 4, &pv, time.Now().Add(time.Second*30))
 		m := l[0]
 		if m.To != tt.expectedTo {
 			tt.b.Print()
@@ -91,7 +92,7 @@ func TestFindMateInTwo(t *testing.T) {
 	for _, tt := range tests {
 		pv := NewLine(4)
 		tt.b.Print()
-		l := Search(&tt.b, 4, &pv)
+		l := Search(&tt.b, 4, &pv, time.Now().Add(time.Second*30))
 		for i := 0; i < 3; i++ {
 			if !board.EqualMoves(tt.l[i], l[i]) {
 				t.Errorf("line[%d] to; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].To], board.SQ_NUM_TO_NAME[tt.l[i].To])
@@ -122,7 +123,7 @@ func TestFindMateInThree(t *testing.T) {
 	}
 	for _, tt := range tests {
 		pv := NewLine(6)
-		l := Search(&tt.b, 6, &pv)
+		l := Search(&tt.b, 6, &pv, time.Now().Add(time.Second*60))
 		for i := 0; i < 5; i++ {
 			if !board.EqualMoves(tt.l[i], l[i]) {
 				t.Errorf("line[%d] to; received: %s, expected: %s", i, board.SQ_NUM_TO_NAME[l[i].To], board.SQ_NUM_TO_NAME[tt.l[i].To])

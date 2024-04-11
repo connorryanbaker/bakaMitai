@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"runtime/pprof"
+	"time"
 
 	"github.com/connorryanbaker/bakaMitai/board"
 	"github.com/connorryanbaker/bakaMitai/engine"
@@ -37,7 +38,7 @@ func sum(n []int) int {
 }
 
 func play(b board.Board) {
-	e := engine.New(*depth)
+	e := engine.New()
 	for true {
 		b.Print()
 		m := e.GenMove(&b)
@@ -98,5 +99,5 @@ func profileSearch(b board.Board) {
 	}
 	defer pprof.StopCPUProfile()
 	pv := search.NewLine(*depth)
-	search.Search(&b, *depth, &pv)
+	search.Search(&b, *depth, &pv, time.Now())
 }
