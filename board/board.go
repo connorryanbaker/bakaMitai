@@ -10,11 +10,10 @@ type Board struct {
 	PieceSquares map[int][]int
 	History      []History
 	hashSeed     hash
-	legalMoves   []Move
 }
 
 func NewBoard() Board {
-	return Board{
+	b := Board{
 		INIT_PIECES,
 		INIT_CASTLE,
 		nil,
@@ -24,8 +23,8 @@ func NewBoard() Board {
 		INIT_PIECE_SQUARES, // we'll see if this works
 		make([]History, 0),
 		newHashSeed(),
-		nil,
 	}
+	return b
 }
 
 func (b Board) isEPCapture(m Move) bool {
@@ -96,13 +95,11 @@ func (b *Board) MakeBBMove(m Move) bool {
 
 	if m.CastleKingside {
 		b.castleKingside(m)
-		b.legalMoves = nil
 		return true
 	}
 
 	if m.CastleQueenside {
 		b.castleQueenside(m)
-		b.legalMoves = nil
 		return true
 	}
 
@@ -147,7 +144,6 @@ func (b *Board) MakeBBMove(m Move) bool {
 		b.Ply += 1
 	}
 	b.Side ^= 1
-	b.legalMoves = nil
 	return true
 }
 
@@ -160,13 +156,11 @@ func (b *Board) MakeMove(m Move) bool {
 
 	if m.CastleKingside {
 		b.castleKingside(m)
-		b.legalMoves = nil
 		return true
 	}
 
 	if m.CastleQueenside {
 		b.castleQueenside(m)
-		b.legalMoves = nil
 		return true
 	}
 
@@ -218,7 +212,6 @@ func (b *Board) MakeMove(m Move) bool {
 		b.Ply += 1
 	}
 	b.Side ^= 1
-	b.legalMoves = nil
 	return true
 }
 
@@ -236,7 +229,6 @@ func (b *Board) handleBBCapture(m Move) bool {
 		b.Ply += 1
 	}
 	b.Side ^= 1
-	b.legalMoves = nil
 	return true
 }
 
@@ -261,7 +253,6 @@ func (b *Board) handleCapture(m Move) bool {
 		b.Ply += 1
 	}
 	b.Side ^= 1
-	b.legalMoves = nil
 	return true
 }
 
@@ -276,7 +267,6 @@ func (b *Board) handleBBPromotion(m Move) bool {
 		b.Ply += 1
 	}
 	b.Side ^= 1
-	b.legalMoves = nil
 	return true
 }
 
@@ -300,7 +290,6 @@ func (b *Board) handlePromotion(m Move) bool {
 		b.Ply += 1
 	}
 	b.Side ^= 1
-	b.legalMoves = nil
 	return true
 }
 
@@ -399,7 +388,6 @@ func (b *Board) handleBBEPCapture(m Move) bool {
 		b.Ply += 1
 	}
 	b.Side ^= 1
-	b.legalMoves = nil
 	return true
 }
 
@@ -438,7 +426,6 @@ func (b *Board) handleEPCapture(m Move) bool {
 		b.Ply += 1
 	}
 	b.Side ^= 1
-	b.legalMoves = nil
 	return true
 }
 
@@ -561,11 +548,11 @@ func (b Board) InsufficientMaterial() bool {
 		if _, ok := b.PieceSquares[BLACK_KNIGHT]; ok {
 			return true
 		}
-		if _, ok := b.PieceSquares[WHITE_BISHOP]; ok {
-			return true
+		if p, ok := b.PieceSquares[WHITE_BISHOP]; ok {
+			return len(p) == 1
 		}
-		if _, ok := b.PieceSquares[BLACK_BISHOP]; ok {
-			return true
+		if p, ok := b.PieceSquares[BLACK_BISHOP]; ok {
+			return len(p) == 1
 		}
 	}
 	return false

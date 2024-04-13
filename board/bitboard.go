@@ -76,6 +76,37 @@ func (bb bitboard) blackPieces() BB {
 		bb.blackking
 }
 
+func (bb bitboard) bitboardForPiece(piece int) BB {
+	switch piece {
+	case WHITE_PAWN:
+		return bb.whitepawns
+	case BLACK_PAWN:
+		return bb.blackpawns
+	case WHITE_KNIGHT:
+		return bb.whiteknights
+	case BLACK_KNIGHT:
+		return bb.blackknights
+	case WHITE_BISHOP:
+		return bb.whitebishops
+	case BLACK_BISHOP:
+		return bb.blackbishops
+	case WHITE_ROOK:
+		return bb.whiterooks
+	case BLACK_ROOK:
+		return bb.blackrooks
+	case WHITE_QUEEN:
+		return bb.whitequeens
+	case BLACK_QUEEN:
+		return bb.blackqueens
+	case WHITE_KING:
+		return bb.whiteking
+	case BLACK_KING:
+		return bb.blackking
+	default:
+		return BB(0)
+	}
+}
+
 func (bb bitboard) allPieces() BB {
 	return bb.whitePieces() | bb.blackPieces()
 }
@@ -645,6 +676,41 @@ var RAY_ATTACK_FNS = map[int]func(int, BB, BB, BB) BB{
 	BLACK_QUEEN:  queenAttacks,
 }
 
+func friendlyAndOpposingPieces(bb bitboard, side int) (BB, BB) {
+	if side == WHITE {
+		return bb.whitePieces(), bb.blackPieces()
+	}
+	return bb.blackPieces(), bb.whitePieces()
+}
+
+func attacks(bb bitboard, side, piece, sq int) BB {
+	fpieces, opieces := friendlyAndOpposingPieces(bb, side)
+	empty := bb.emptySquares()
+	bsq := MAILBOX_TO_BB[sq]
+	pieceBitboard := BB(1 << bsq)
+	if piece == WHITE_KING || piece == BLACK_KING {
+		return KING_ATTACKS[bsq]
+	}
+	if piece == BLACK_KNIGHT || piece == WHITE_KNIGHT {
+		return KNIGHT_ATTACKS[bsq]
+	}
+
+	if piece == BLACK_PAWN {
+		return blackPawnAttacks(pieceBitboard)
+	}
+
+	if piece == WHITE_PAWN {
+		return whitePawnAttacks(pieceBitboard)
+	}
+
+	return RAY_ATTACK_FNS[piece](bsq, empty, fpieces, opieces)
+}
+
+func attacksSquare(bb bitboard, side, piece, startSq, destSq int) bool {
+	sqs := attacks(bb, side, piece, startSq)
+	return (BB(1<<MAILBOX_TO_BB[destSq]) & sqs) > 0
+}
+
 func attackers(bb bitboard, side int, piece, empty, fpieces, opieces BB) BB {
 	var attackers BB
 	sq := deBruijnLSB(piece)
@@ -889,7 +955,7 @@ func (b Board) GenerateBitboardMoves() []Move {
 
 	// undecided as of yet where to apply sorting
 	sort.Slice(moves, func(i, j int) bool {
-		return moves[i].Score(&b) > moves[j].Score(&b)
+		return moves[i].Score(&b, *bb) > moves[j].Score(&b, *bb)
 	})
 
 	return moves
@@ -1064,6 +1130,28 @@ func (b Board) legalRookCapturesBB(rooks, fpieces, opieces, empty, captureMask, 
 		rooks ^= BB(1 << lsb)
 	}
 	return res
+}
+
+func (b Board) RayMobility(side, piece int) int {
+	bb := b.newBitboard()
+	pieces := bb.bitboardForPiece(piece)
+	fn := RAY_ATTACK_FNS[piece]
+	var fpieces BB
+	var opieces BB
+	var moveCount int
+	if side == WHITE {
+		fpieces = bb.whitePieces()
+		opieces = bb.blackPieces()
+	} else {
+		fpieces = bb.blackPieces()
+		opieces = bb.whitePieces()
+	}
+	for pieces > 0 {
+		sq := deBruijnLSB(pieces)
+		moveCount += popCount(fn(sq, bb.emptySquares(), fpieces, opieces))
+		pieces ^= BB(1 << sq)
+	}
+	return moveCount
 }
 
 func (b Board) generateBitboardRookMoves(bb bitboard, captureMask, pushMask, pinnedPieces, movesForPinned BB) []Move {

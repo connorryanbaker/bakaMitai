@@ -21,7 +21,7 @@ func New() Engine {
 func (e *Engine) GenMove(b *board.Board) board.Move {
 	var m board.Move
 	now := time.Now()
-	exp := now.Add(time.Minute * 2)
+	exp := now.Add(time.Second * 180)
 	for depth := 1; ; depth++ {
 		prev := e.PV.Moves
 		if depth > len(e.PV.Moves) {

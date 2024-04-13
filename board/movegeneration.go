@@ -85,10 +85,13 @@ func (m Move) See(b *Board) int {
 	return see(m.To, b)
 }
 
-func (m Move) Score(b *Board) int {
+func (m Move) Score(b *Board, bb bitboard) int {
 	s := 0
 	if m.Promote {
 		s += 1000
+	}
+	if m.IsCheck(*b, bb) {
+		s += 10000
 	}
 	if m.Capture {
 		s += 100
@@ -103,6 +106,18 @@ func (m Move) Score(b *Board) int {
 		s += 100
 	}
 	return s
+}
+
+func (m Move) IsCheck(b Board, bb bitboard) bool {
+	piece := m.PromotionPiece
+	startSq := m.To
+	var kingSq int
+	if b.Side == WHITE {
+		kingSq = BB_TO_BOARDSQUARE[deBruijnLSB(bb.blackking)]
+	} else {
+		kingSq = BB_TO_BOARDSQUARE[deBruijnLSB(bb.whiteking)]
+	}
+	return attacksSquare(bb, b.Side, piece, startSq, kingSq)
 }
 
 func (m Move) Print() {
@@ -139,24 +154,6 @@ func EqualMoves(m1, m2 Move) bool {
 		return false
 	}
 	return true
-}
-
-func (b Board) LegalMoves() []Move {
-	if b.legalMoves != nil {
-		return b.legalMoves
-	}
-	moves := make([]Move, 0)
-	// for _, m := range b.Moves() {
-	for _, m := range b.genMoves() {
-		r := b.MakeMove(m)
-		if r == true {
-			b.UnmakeMove()
-			moves = append(moves, m)
-		}
-	}
-
-	b.legalMoves = moves
-	return b.legalMoves
 }
 
 func (b Board) genMoves() []Move {

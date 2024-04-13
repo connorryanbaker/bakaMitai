@@ -21,7 +21,8 @@ var depth = flag.Int("depth", 3, "perft movegeneration depth")
 func main() {
 	flag.Parse()
 
-	b := board.NewBoard()
+	// b := board.NewBoard()
+	b := board.FromFENString("rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1")
 	if *cpuprofile != "" {
 		profileBBPerft(b)
 		return
