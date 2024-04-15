@@ -54,6 +54,38 @@ var PGN_PIECE_TRANSLATION = map[int]string{
 	BLACK_KING:   "K",
 }
 
+func ToPGNWithFEN(h []History, f string) string {
+	moves := make([]string, 0)
+	mb := [2]string{"", ""}
+	b := FromFENString(f)
+	mn := 1
+
+	for i := 0; i < len(h); i++ {
+		m := h[i].Move
+		p := b.PieceAt(m.From)
+		switch p {
+		case WHITE_PAWN, BLACK_PAWN:
+			mb[i%2] = parsePawnMove(b, m)
+		case WHITE_BISHOP, BLACK_BISHOP, WHITE_QUEEN, BLACK_QUEEN:
+			mb[i%2] = parseQBMove(b, m)
+		case WHITE_KNIGHT, BLACK_KNIGHT:
+			mb[i%2] = parseQBMove(b, m)
+		case WHITE_ROOK, BLACK_ROOK:
+			mb[i%2] = parseQBMove(b, m)
+		case WHITE_KING, BLACK_KING:
+			mb[i%2] = parseKingMove(b, m)
+		}
+		b.MakeMove(m)
+
+		if i%2 != 0 || i == len(h)-1 {
+			moves = append(moves, fmt.Sprintf("%d. %s %s ", mn, mb[0], mb[1]))
+			mn += 1
+		}
+	}
+
+	return strings.Join(moves, " ")
+}
+
 func ToPGN(h []History) string {
 	moves := make([]string, 0)
 	mb := [2]string{"", ""}

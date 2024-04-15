@@ -5,12 +5,12 @@ import "github.com/connorryanbaker/bakaMitai/board"
 var PIECE_VALUES = map[int]float64{
 	board.WHITE_PAWN:   1000,
 	board.WHITE_KNIGHT: 3000,
-	board.WHITE_BISHOP: 3500,
+	board.WHITE_BISHOP: 3250,
 	board.WHITE_ROOK:   5000,
 	board.WHITE_QUEEN:  9000,
 	board.BLACK_PAWN:   -1000,
 	board.BLACK_KNIGHT: -3000,
-	board.BLACK_BISHOP: -3500,
+	board.BLACK_BISHOP: -3250,
 	board.BLACK_ROOK:   -5000,
 	board.BLACK_QUEEN:  -9000,
 }

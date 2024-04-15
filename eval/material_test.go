@@ -38,12 +38,12 @@ func TestEvalMaterial(t *testing.T) {
 		},
 		{
 			board.FromFENString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RN1QKBNR w KQkq - 0 1"),
-			float64(-3500),
+			float64(-3250),
 			"start position, BC1 missing",
 		},
 		{
 			board.FromFENString("rn1qkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
-			float64(3500),
+			float64(3250),
 			"start position, BC8 missing",
 		},
 		{
