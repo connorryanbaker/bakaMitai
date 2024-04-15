@@ -49,7 +49,8 @@ func play(b board.Board) {
 		if b.Checkmate() {
 			b.Print()
 			fmt.Println("checkmate!")
-			fmt.Println(board.ToPGN(b.History))
+			//fmt.Println(board.ToPGN(b.History))
+			fmt.Println(board.ToPGNWithFEN(b.History, "rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1"))
 			return
 		} else if b.Stalemate() {
 			b.Print()

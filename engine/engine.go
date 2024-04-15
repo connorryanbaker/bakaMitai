@@ -21,8 +21,9 @@ func New() Engine {
 func (e *Engine) GenMove(b *board.Board) board.Move {
 	var m board.Move
 	now := time.Now()
-	exp := now.Add(time.Minute * 2)
+	exp := now.Add(time.Second * 5)
 	for depth := 1; ; depth++ {
+		e.Depth = depth
 		prev := e.PV.Moves
 		if depth > len(e.PV.Moves) {
 			e.PV = search.NewLine(depth)
@@ -32,20 +33,9 @@ func (e *Engine) GenMove(b *board.Board) board.Move {
 		}
 		moves := search.Search(b, depth, &e.PV, exp)
 		m = moves[0]
-		e.siftPVMoves()
 		if time.Now().After(exp) {
 			break
 		}
 	}
 	return m
-}
-
-func (e *Engine) siftPVMoves() {
-	if e.Depth == 1 {
-		return
-	}
-
-	for i := 1; i < e.Depth; i++ {
-		e.PV.Moves[i-1] = e.PV.Moves[i]
-	}
 }

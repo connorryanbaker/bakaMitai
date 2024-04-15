@@ -18,7 +18,7 @@ func Eval(b board.Board) float64 {
 		return 0
 	}
 
-	return (evalMaterial(b) + evalPieceSquares(b) + evalPawnStructure(b)*100) / 1000
+	return (evalMaterial(b) + evalPieceSquares(b) + evalPawnStructure(b)*100 + evalMobility(b)*5) / 1000
 }
 
 func NegamaxEval(b board.Board) float64 {
@@ -28,4 +28,10 @@ func NegamaxEval(b board.Board) float64 {
 	}
 
 	return Eval(b) * mult
+}
+
+func evalMobility(b board.Board) float64 {
+	whiteMobility := b.RayMobility(board.WHITE, board.WHITE_ROOK) + b.RayMobility(board.WHITE, board.WHITE_BISHOP)
+	blackMobility := b.RayMobility(board.BLACK, board.BLACK_ROOK) + b.RayMobility(board.BLACK, board.BLACK_BISHOP)
+	return float64(whiteMobility - blackMobility)
 }
