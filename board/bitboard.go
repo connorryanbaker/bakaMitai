@@ -7,16 +7,10 @@ import (
 
 type BB uint64
 
-const INIT_BLACK_PAWN_BB BB = 0b0000000011111111000000000000000000000000000000000000000000000000
-const INIT_WHITE_PAWN_BB BB = 0b0000000000000000000000000000000000000000000000001111111100000000
-const INIT_BLACK_KNIGHT_BB BB = 0b0100001000000000000000000000000000000000000000000000000000000000
-const INIT_WHITE_KNIGHT_BB BB = 0b0000000000000000000000000000000000000000000000000000000001000010
-const INIT_BLACK_KING_BB BB = 0b0001000000000000000000000000000000000000000000000000000000000000
 const BCKMASK BB = 0b0111000000000000000000000000000000000000000000000000000000000000
 const BCQMASK BB = 0b0001110000000000000000000000000000000000000000000000000000000000
 const B8MASK BB = 0b0000001000000000000000000000000000000000000000000000000000000000
 const B1MASK BB = 0b0000000000000000000000000000000000000000000000000000000000000010
-const INIT_WHITE_KING_BB BB = 0b0000000000000000000000000000000000000000000000000000000000001000
 const WCQMASK BB = 0b0000000000000000000000000000000000000000000000000000000000011100
 const WCKMASK BB = 0b0000000000000000000000000000000000000000000000000000000001110000
 const BOARDMASK BB = 0xFFFFFFFFFFFFFFFF
@@ -282,14 +276,6 @@ func blackPawnAttacks(pawns BB) BB {
 	return (shiftBB(pawns, SOUTHWEST) & ^HFILE) | (shiftBB(pawns, SOUTHEAST) & ^AFILE)
 }
 
-func (bb bitboard) whiteKingMoves() BB {
-	return bb.kingMoves(bb.whiteking) & (bb.emptySquares() | bb.blackPieces())
-}
-
-func (bb bitboard) blackKingMoves() BB {
-	return bb.kingMoves(bb.blackking) & (bb.emptySquares() | bb.whitePieces())
-}
-
 func (bb bitboard) kingMoves(k BB) BB {
 	return shiftBB(k & ^AFILE, NORTHWEST) |
 		shiftBB(k & ^AFILE, WEST) |
@@ -338,45 +324,31 @@ var DIR_FILL_FUNCTIONS = [8]func(a, b BB) BB{fillNorth, fillNorthEast, fillEast,
 var RAY_ATTACKS [8][64]BB
 
 func initRayAttacks() {
-	bb := bitboard{} // empty board
+	e := BOARDMASK
 
 	for i := 0; i < 64; i++ {
 		sq := BB(1 << i)
 		for j := 0; j < 8; j++ {
 			switch j {
 			case 0:
-				RAY_ATTACKS[j][i] = bb.fillNorth(sq) ^ sq
+				RAY_ATTACKS[j][i] = fillNorth(e, sq) ^ sq
 			case 1:
-				RAY_ATTACKS[j][i] = bb.fillNorthEast(sq) ^ sq
+				RAY_ATTACKS[j][i] = fillNorthEast(e, sq) ^ sq
 			case 2:
-				RAY_ATTACKS[j][i] = bb.fillEast(sq) ^ sq
+				RAY_ATTACKS[j][i] = fillEast(e, sq) ^ sq
 			case 3:
-				RAY_ATTACKS[j][i] = bb.fillSouthEast(sq) ^ sq
+				RAY_ATTACKS[j][i] = fillSouthEast(e, sq) ^ sq
 			case 4:
-				RAY_ATTACKS[j][i] = bb.fillSouth(sq) ^ sq
+				RAY_ATTACKS[j][i] = fillSouth(e, sq) ^ sq
 			case 5:
-				RAY_ATTACKS[j][i] = bb.fillSouthWest(sq) ^ sq
+				RAY_ATTACKS[j][i] = fillSouthWest(e, sq) ^ sq
 			case 6:
-				RAY_ATTACKS[j][i] = bb.fillWest(sq) ^ sq
+				RAY_ATTACKS[j][i] = fillWest(e, sq) ^ sq
 			case 7:
-				RAY_ATTACKS[j][i] = bb.fillNorthWest(sq) ^ sq
+				RAY_ATTACKS[j][i] = fillNorthWest(e, sq) ^ sq
 			}
 		}
 	}
-}
-
-// starting w/ dumb7fil now
-// todo: these probably shouldn't be methods
-// will need to rethink bitboard struct purpose
-// this can be xor'd w/ origin square to give east moves, etc.
-
-// TODO: consolidate and generalize, duplication is unneccessary
-func (bb bitboard) fillEast(p BB) BB {
-	e := bb.emptySquares() & ^AFILE
-	for i := 0; i < 7; i++ {
-		p = p | (e & shiftBB(p, EAST))
-	}
-	return p
 }
 
 func fillEast(emptySquares, piece BB) BB {
@@ -387,28 +359,12 @@ func fillEast(emptySquares, piece BB) BB {
 	return piece
 }
 
-func (bb bitboard) fillNorthEast(p BB) BB {
-	e := bb.emptySquares() & ^AFILE
-	for i := 0; i < 7; i++ {
-		p = p | (e & shiftBB(p, NORTHEAST))
-	}
-	return p
-}
-
 func fillNorthEast(emptySquares, piece BB) BB {
 	emptySquares &= ^AFILE
 	for i := 0; i < 7; i++ {
 		piece = piece | (emptySquares & shiftBB(piece, NORTHEAST))
 	}
 	return piece
-}
-
-func (bb bitboard) fillSouthEast(p BB) BB {
-	e := bb.emptySquares() & ^AFILE
-	for i := 0; i < 7; i++ {
-		p = p | (e & shiftBB(p, SOUTHEAST))
-	}
-	return p
 }
 
 func fillSouthEast(emptySquares, piece BB) BB {
@@ -419,28 +375,12 @@ func fillSouthEast(emptySquares, piece BB) BB {
 	return piece
 }
 
-func (bb bitboard) fillWest(p BB) BB {
-	e := bb.emptySquares() & ^HFILE
-	for i := 0; i < 7; i++ {
-		p = p | (e & shiftBB(p, WEST))
-	}
-	return p
-}
-
 func fillWest(emptySquares, piece BB) BB {
 	emptySquares &= ^HFILE
 	for i := 0; i < 7; i++ {
 		piece = piece | (emptySquares & shiftBB(piece, WEST))
 	}
 	return piece
-}
-
-func (bb bitboard) fillNorthWest(p BB) BB {
-	e := bb.emptySquares() & ^HFILE
-	for i := 0; i < 7; i++ {
-		p = p | (e & shiftBB(p, NORTHWEST))
-	}
-	return p
 }
 
 func fillNorthWest(emptySquares, piece BB) BB {
@@ -451,14 +391,6 @@ func fillNorthWest(emptySquares, piece BB) BB {
 	return piece
 }
 
-func (bb bitboard) fillSouthWest(p BB) BB {
-	e := bb.emptySquares() & ^HFILE
-	for i := 0; i < 7; i++ {
-		p = p | (e & shiftBB(p, SOUTHWEST))
-	}
-	return p
-}
-
 func fillSouthWest(emptySquares, piece BB) BB {
 	emptySquares &= ^HFILE
 	for i := 0; i < 7; i++ {
@@ -467,27 +399,11 @@ func fillSouthWest(emptySquares, piece BB) BB {
 	return piece
 }
 
-func (bb bitboard) fillNorth(p BB) BB {
-	e := bb.emptySquares()
-	for i := 0; i < 7; i++ {
-		p = p | (e & shiftBB(p, NORTH))
-	}
-	return p
-}
-
 func fillNorth(emptySquares, piece BB) BB {
 	for i := 0; i < 7; i++ {
 		piece = piece | (emptySquares & shiftBB(piece, NORTH))
 	}
 	return piece
-}
-
-func (bb bitboard) fillSouth(p BB) BB {
-	e := bb.emptySquares()
-	for i := 0; i < 7; i++ {
-		p = p | (e & shiftBB(p, SOUTH))
-	}
-	return p
 }
 
 func fillSouth(emptySquares, piece BB) BB {
@@ -510,19 +426,17 @@ const SOUTHSOUTHEAST = -15
 var KNIGHT_ATTACKS [64]BB
 
 func initKnightAttacks() {
-	bb := bitboard{}
 	for i := 0; i < 64; i++ {
-		sq := BB(1 << i)
-		KNIGHT_ATTACKS[i] = bb.knightMoves(sq)
+		k := BB(1 << i)
+		KNIGHT_ATTACKS[i] = shiftBB(k&(^GFILE & ^HFILE), NORTHEASTEAST) |
+			shiftBB(k & ^HFILE, NORTHNORTHEAST) |
+			shiftBB(k&(^GFILE & ^HFILE), SOUTHEASTEAST) |
+			shiftBB(k & ^HFILE, SOUTHSOUTHEAST) |
+			shiftBB(k & ^AFILE, NORTHNORTHWEST) |
+			shiftBB(k&(^AFILE & ^BFILE), NORTHWESTWEST) |
+			shiftBB(k&(^AFILE & ^BFILE), SOUTHWESTWEST) |
+			shiftBB(k & ^AFILE, SOUTHSOUTHWEST)
 	}
-}
-
-func (bb bitboard) whiteKnightMoves() BB {
-	return bb.knightMoves(bb.whiteknights) & (bb.emptySquares() | bb.blackPieces())
-}
-
-func (bb bitboard) blackKnightMoves() BB {
-	return bb.knightMoves(bb.blackknights) & (bb.emptySquares() | bb.whitePieces())
 }
 
 func (bb bitboard) knightMoves(k BB) BB {
@@ -552,7 +466,7 @@ func printBB(b BB) {
 	r := 7
 
 	for i := 0; i < 64; i++ {
-		if b&(m<<i) != BB(0) {
+		if b&BB(m<<i) != BB(0) {
 			sqs[r][f] = 1
 		}
 		f += 1
@@ -598,11 +512,9 @@ var BB_TO_BOARDSQUARE = [64]int{
 	21, 22, 23, 24, 25, 26, 27, 28,
 }
 
-// tranform piecelist to bitboards
 func (b Board) newBitboard() *bitboard {
 	ep := BB(0)
 	if b.Ep != nil {
-		// convert ep square to 64, convert 64 to bit
 		ep = BB(1 << MAILBOX_TO_BB[*b.Ep])
 	}
 	return &bitboard{
@@ -641,8 +553,6 @@ func popCount(x BB) int {
 	return count
 }
 
-// for each piece, gen moves
-
 func (b Board) inCheck(bb bitboard) bool {
 	wp := bb.whitePieces()
 	bp := bb.blackPieces()
@@ -655,8 +565,6 @@ func (b Board) inCheck(bb bitboard) bool {
 }
 
 func (b Board) doubleCheck(bb bitboard) bool {
-	// TODO: organize to minimize these calls
-	// could potentially return two values from inCheck
 	wp := bb.whitePieces()
 	bp := bb.blackPieces()
 	em := bb.emptySquares()
@@ -775,7 +683,6 @@ func generateBlockingMask(moveRay, attackingSquare BB, dir int) BB {
 		oppUnionLsb := cutoffBitboard(moveRay&attackingSquare, false)
 		return moveRay & ^fillWest(BOARDMASK, shiftBB(oppUnionLsb, WEST))
 	}
-	// TODO: raise error here?
 	return BB(0)
 }
 
@@ -794,7 +701,6 @@ func (b Board) absolutePinnedPiecesSideToMove(bb bitboard) BB {
 	wp := bb.whitePieces()
 	bp := bb.blackPieces()
 
-	// TODO: sucks
 	var pinnedPieces BB
 	if b.Side == WHITE {
 		ksq := deBruijnLSB(bb.whiteking)
@@ -864,12 +770,6 @@ func (b Board) absolutePinnedPiecesSideToMove(bb bitboard) BB {
 	return pinnedPieces
 }
 
-// Moves for pinned pieces:
-// remove pinned pieces from board
-// how to differentiate pinning pieces from sliding pieces giving check?
-// (replace king with queen?) and calculate moves
-// from king square to pinning piece(s)
-
 func (b Board) movesForPinnedPieces(bb bitboard, pinnedPieces BB) BB {
 	em := bb.emptySquares()
 	wp := bb.whitePieces()
@@ -899,14 +799,6 @@ func (b Board) movesForPinnedPieces(bb bitboard, pinnedPieces BB) BB {
 		}
 	}
 	return moveRay
-}
-
-func slidingRayAttacksFromSquare(sq int) BB {
-	var ray BB
-	for i := 0; i < 8; i++ {
-		ray |= RAY_ATTACKS[i][sq]
-	}
-	return ray
 }
 
 func (b Board) pinMasks(bb bitboard) (BB, BB, BB, BB) {
@@ -953,7 +845,6 @@ func (b Board) GenerateBitboardMoves() []Move {
 	moves = append(moves, b.generateBitboardQueenMoves(*bb, captureMask, pushMask, pinnedPieces, movesForPinned)...)
 	moves = append(moves, b.generateBitboardKingMoves(*bb)...)
 
-	// undecided as of yet where to apply sorting
 	sort.Slice(moves, func(i, j int) bool {
 		return moves[i].Score(&b, *bb) > moves[j].Score(&b, *bb)
 	})
@@ -1047,16 +938,6 @@ func queenAttacks(sq int, empty, fpieces, opieces BB) BB {
 
 func queenTabooAttacks(sq int, empty, fpieces, opieces BB) BB {
 	return bishopTabooAttacks(sq, empty, fpieces, opieces) | rookTabooAttacks(sq, empty, fpieces, opieces)
-}
-
-func allQueenAttacks(queens, empty, fpieces, opieces BB) BB {
-	var attacks BB
-	for queens > 0 {
-		lsb := deBruijnLSB(queens)
-		attacks |= queenAttacks(lsb, empty, fpieces, opieces)
-		queens ^= BB(1 << lsb)
-	}
-	return attacks
 }
 
 func rayTabooAttacks(pieces, empty, fpieces, opieces BB, f func(s int, e, f, o BB) BB) BB {
@@ -1175,16 +1056,6 @@ func rookTabooAttacks(sq int, empty, fpieces, opieces BB) BB {
 		generateRayTabooAttacks(sq, EAST_IDX, EAST, empty, fpieces, opieces, fillEast)
 }
 
-func allRookAttacks(rooks, empty, fpieces, opieces BB) BB {
-	var attacks BB
-	for rooks > 0 {
-		lsb := deBruijnLSB(rooks)
-		attacks |= rookAttacks(lsb, empty, fpieces, opieces)
-		rooks ^= BB(1 << lsb)
-	}
-	return attacks
-}
-
 func generateBitboardRookMovesForSide(rooks, empty, fpieces, opieces, captureMask, pushMask, pinnedPieces, movesForPinned BB, piece int) []Move {
 	moves := make([]Move, 0)
 	for rooks > 0 {
@@ -1236,16 +1107,6 @@ func bishopTabooAttacks(sq int, empty, fpieces, opieces BB) BB {
 		generateRayTabooAttacks(sq, SOUTHEAST_IDX, SOUTHEAST, empty, fpieces, opieces, fillSouthEast)
 }
 
-func allBishopAttacks(bishops, empty, fpieces, opieces BB) BB {
-	var attacks BB
-	for bishops > 0 {
-		lsb := deBruijnLSB(bishops)
-		attacks |= bishopAttacks(lsb, empty, fpieces, opieces)
-		bishops ^= BB(1 << lsb)
-	}
-	return attacks
-}
-
 func generateBitboardBishopMovesForSide(bishops, empty, fpieces, opieces, captureMask, pushMask, pinnedPieces, movesForPinned BB, piece int) []Move {
 	moves := make([]Move, 0)
 	for bishops > 0 {
@@ -1282,25 +1143,6 @@ func (b Board) generateBitboardRayCaptures(piece int, bb bitboard, pieces, captu
 		moves = append(moves, movesFromAttacks(BB_TO_BOARDSQUARE[lsb], piece, attacks, opieces)...)
 		pieces ^= BB(1 << lsb)
 	}
-	return moves
-}
-
-func generateRayAttackMoves(lsb int, empty, fpieces, opieces BB, pieceType, rayIdx, shiftDelta int, fill func(e, p BB) BB) []Move {
-	moves := make([]Move, 0)
-
-	moveRay := generateRayAttacks(lsb, rayIdx, shiftDelta, empty, fpieces, opieces, fill)
-	sq := BB_TO_BOARDSQUARE[lsb]
-	for moveRay > 0 {
-		moveLsb := deBruijnLSB(moveRay)
-		isCapture := (opieces & BB(1<<moveLsb)) > 0
-		destSq := BB_TO_BOARDSQUARE[moveLsb]
-		moves = append(
-			moves,
-			Move{sq, destSq, isCapture, false, false, false, pieceType, false},
-		)
-		moveRay ^= BB(1 << moveLsb)
-	}
-
 	return moves
 }
 
@@ -1379,10 +1221,6 @@ func (b Board) generateBlackCastleMoves(k, em, taboo BB) []Move {
 	return moves
 }
 
-func kingAttacks(lsb int, fpieces BB) BB {
-	return KING_ATTACKS[lsb] & ^fpieces
-}
-
 func legalKingCapturesBB(king, opieces, taboo BB) BB {
 	lsb := deBruijnLSB(king)
 	return KING_ATTACKS[lsb] & opieces & ^taboo
@@ -1439,25 +1277,11 @@ func (b Board) generateBitboardKnightMoves(bb bitboard, captureMask, pushMask, p
 	)
 }
 
-func knightAttacks(lsb int, fpieces BB) BB {
-	return KNIGHT_ATTACKS[lsb] & ^fpieces
-}
-
 func allKnightTabooAttacks(knights BB) BB {
 	var attacks BB
 	for knights > 0 {
 		lsb := deBruijnLSB(knights)
 		attacks |= KNIGHT_ATTACKS[lsb]
-		knights ^= BB(1 << lsb)
-	}
-	return attacks
-}
-
-func allKnightAttacks(knights, fpieces BB) BB {
-	var attacks BB
-	for knights > 0 {
-		lsb := deBruijnLSB(knights)
-		attacks |= knightAttacks(lsb, fpieces)
 		knights ^= BB(1 << lsb)
 	}
 	return attacks
