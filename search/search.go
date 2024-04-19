@@ -4,7 +4,6 @@ import (
 	"github.com/connorryanbaker/bakaMitai/board"
 	"github.com/connorryanbaker/bakaMitai/eval"
 
-	"fmt"
 	"math"
 	"time"
 )
@@ -28,15 +27,7 @@ func NewLine(depth int) Line {
 }
 
 func Search(b *board.Board, depth int, pv *Line, exp time.Time) []board.Move {
-	v := negamax(b, depth, math.Inf(-1), math.Inf(1), pv, exp)
-	mult := 1
-	if b.Side == board.BLACK {
-		mult = -1
-	}
-	fmt.Println("EVAL :", v*float64(mult))
-	for _, m := range pv.Moves {
-		m.Print()
-	}
+	negamax(b, depth, math.Inf(-1), math.Inf(1), pv, exp)
 	return pv.Moves
 }
 

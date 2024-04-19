@@ -29,28 +29,17 @@ func main() {
 	play(b)
 }
 
-func sum(n []int) int {
-	s := 0
-	for _, v := range n {
-		s += v
-	}
-	return s
-}
-
 func play(b board.Board) {
 	e := engine.New()
-	for true {
+	for {
 		b.Print()
 		m := e.GenMove(&b)
-		fmt.Println(m)
 		m.Print()
-		fmt.Println(len(b.History))
 		b.MakeMove(m)
 		if b.Checkmate() {
 			b.Print()
 			fmt.Println("checkmate!")
-			//fmt.Println(board.ToPGN(b.History))
-			fmt.Println(board.ToPGNWithFEN(b.History, "rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1"))
+			fmt.Println(board.ToPGN(b.History))
 			return
 		} else if b.Stalemate() {
 			b.Print()
