@@ -11,6 +11,7 @@ import (
 	"github.com/connorryanbaker/bakaMitai/board"
 	"github.com/connorryanbaker/bakaMitai/engine"
 	"github.com/connorryanbaker/bakaMitai/search"
+	"github.com/connorryanbaker/bakaMitai/uci"
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
@@ -19,14 +20,7 @@ var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 var depth = flag.Int("depth", 3, "perft movegeneration depth")
 
 func main() {
-	flag.Parse()
-
-	b := board.NewBoard()
-	if *cpuprofile != "" {
-		profileBBPerft(b)
-		return
-	}
-	play(b)
+	uci.Run()
 }
 
 func play(b board.Board) {
