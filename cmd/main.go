@@ -27,7 +27,7 @@ func play(b board.Board) {
 	e := engine.New()
 	for {
 		b.Print()
-		m := e.GenMove(&b)
+		m := e.GenMove(&b, 5000)
 		m.Print()
 		b.MakeMove(m)
 		if b.Checkmate() {
