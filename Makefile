@@ -1,5 +1,8 @@
 DEPTH=3
 
+build:
+	go build -o baka cmd/main.go
+
 fmt:
 	go fmt ./...
 

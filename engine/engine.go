@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const TIME_REMAINING_DIVISOR = 25
+
 type Engine struct {
 	Depth int
 	PV    search.Line
@@ -18,10 +20,10 @@ func New() Engine {
 	}
 }
 
-func (e *Engine) GenMove(b *board.Board) board.Move {
+func (e *Engine) GenMove(b *board.Board, ms int) board.Move {
 	var m board.Move
 	now := time.Now()
-	exp := now.Add(time.Second * 5)
+	exp := now.Add(time.Millisecond * time.Duration(ms/TIME_REMAINING_DIVISOR))
 	for depth := 1; ; depth++ {
 		e.Depth = depth
 		prev := e.PV.Moves

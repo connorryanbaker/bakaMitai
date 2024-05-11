@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/connorryanbaker/bakaMitai/board"
@@ -75,7 +76,6 @@ func (u *uci) bestMove(m board.Move) {
 func (u *uci) handleInput(input string) {
 	commands := strings.Fields(input)
 	command := commands[0]
-	fmt.Println(command)
 	switch command {
 	case "uci":
 		fmt.Println("id name BakaMitai")
@@ -86,14 +86,40 @@ func (u *uci) handleInput(input string) {
 	case "position":
 		u.parsePosition(commands[1:])
 	case "go":
+		timeRemaining := u.parseTimeRemaining(commands)
 		go func() {
-			m := u.engine.GenMove(u.board)
+			m := u.engine.GenMove(u.board, timeRemaining)
 			u.output <- m
 		}()
 	case "stop":
 		// stop and return best move
-		u.bestMove(u.engine.PV.Moves[0])
+		return
 	}
+}
+
+func (u *uci) parseTimeRemaining(commands []string) int {
+	side := u.board.Side
+	var idx int
+	if side == board.WHITE {
+		idx = indexOf("wtime", commands)
+	} else {
+		idx = indexOf("btime", commands)
+	}
+	ms, err := strconv.Atoi(commands[idx+1])
+	if err != nil {
+		return 1000
+	}
+	return ms
+}
+
+func indexOf(s string, strs []string) int {
+	for i, e := range strs {
+		if e == s {
+			return i
+		}
+	}
+	// shouldn't happen
+	return -1
 }
 
 func (u *uci) parsePosition(fenAndMoves []string) {
