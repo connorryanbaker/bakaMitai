@@ -54,7 +54,7 @@ func Run() {
 			}
 			u.bestMove(move)
 		case command, ok := <-input:
-			if !ok {
+			if !ok || command == "quit" {
 				return
 			}
 			u.handleInput(command)
@@ -93,7 +93,7 @@ func (u *uci) handleInput(input string) {
 		}()
 	case "stop":
 		// stop and return best move
-		return
+		u.bestMove(u.engine.PV.Moves[0])
 	}
 }
 
