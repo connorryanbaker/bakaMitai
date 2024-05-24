@@ -178,8 +178,8 @@ var promoTranslate = map[int]map[int]string{
 
 func findPromotionMove(move string, moves []board.Move, side int) board.Move {
 	for _, m := range moves {
-		if board.SQ_NUM_TO_NAME[m.From] == move[0:2] && board.SQ_NUM_TO_NAME[m.To] == move[2:5] {
-			if m.PromotionPiece == promoLookup[side][move[5:]] {
+		if board.SQ_NUM_TO_NAME[m.From] == move[0:2] && board.SQ_NUM_TO_NAME[m.To] == move[2:4] {
+			if m.PromotionPiece == promoLookup[side][move[4:]] {
 				return m
 			}
 		}
