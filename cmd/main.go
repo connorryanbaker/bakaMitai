@@ -15,11 +15,17 @@ import (
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
-
-// var depth = flag.Int("depth", 3, "engine halfply search depth")
 var depth = flag.Int("depth", 3, "perft movegeneration depth")
+var selfPlay = flag.Bool("selfPlay", false, "play against self, print board to console")
 
 func main() {
+	flag.Parse()
+
+	if *selfPlay {
+		b := board.NewBoard()
+		play(b)
+		return
+	}
 	uci.Run()
 }
 

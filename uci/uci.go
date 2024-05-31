@@ -142,7 +142,7 @@ func (u *uci) playMoves(moves []string) {
 		} else {
 			toPlay = findMove(m, legals)
 		}
-		u.board.MakeBBMove(toPlay)
+		u.board.MakeMove(toPlay)
 	}
 }
 
