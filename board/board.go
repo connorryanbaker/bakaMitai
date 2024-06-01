@@ -87,7 +87,7 @@ func (b *Board) UnmakeMove() {
 	b.updatePieceSquares()
 }
 
-func (b *Board) MakeBBMove(m Move) bool {
+func (b *Board) MakeMove(m Move) bool {
 	movingPiece := b.PieceAt(m.From)
 	if b.PieceColor(movingPiece) != b.Side {
 		panic(1)
@@ -147,74 +147,6 @@ func (b *Board) MakeBBMove(m Move) bool {
 	return true
 }
 
-func (b *Board) MakeMove(m Move) bool {
-	movingPiece := b.PieceAt(m.From)
-	pieceAtDestSq := b.PieceAt(m.To)
-	if b.PieceColor(movingPiece) != b.Side {
-		panic(1)
-	}
-
-	if m.CastleKingside {
-		b.castleKingside(m)
-		return true
-	}
-
-	if m.CastleQueenside {
-		b.castleQueenside(m)
-		return true
-	}
-
-	if m.Promote {
-		return b.handlePromotion(m)
-	}
-
-	if b.isEPCapture(m) {
-		return b.handleEPCapture(m)
-	}
-
-	if m.Capture {
-		return b.handleCapture(m)
-	}
-
-	// "quiet move"
-
-	b.pushHistory(m)
-	b.pieces[m.To] = movingPiece
-	b.pieces[m.From] = EMPTY_SQUARE
-	b.updatePieceSquares()
-	if b.InCheck(b.Side) {
-		b.popHistory()
-		b.pieces[m.From] = movingPiece
-		b.pieces[m.To] = pieceAtDestSq
-		b.updatePieceSquares()
-		return false
-	}
-
-	if m.DoublePawnPush {
-		if b.Side == WHITE {
-			s := m.To + 10
-			b.Ep = &s
-		} else {
-			s := m.To - 10
-			b.Ep = &s
-		}
-	} else {
-		b.Ep = nil
-	}
-
-	b.updateCastlePermissions(m, movingPiece, pieceAtDestSq)
-	if movingPiece == WHITE_PAWN || movingPiece == BLACK_PAWN {
-		b.Hply = 0
-	} else {
-		b.Hply += 1
-	}
-	if b.Side == BLACK {
-		b.Ply += 1
-	}
-	b.Side ^= 1
-	return true
-}
-
 func (b *Board) handleBBCapture(m Move) bool {
 	movingPiece := b.PieceAt(m.From)
 	capturedPiece := b.PieceAt(m.To)
@@ -232,58 +164,11 @@ func (b *Board) handleBBCapture(m Move) bool {
 	return true
 }
 
-func (b *Board) handleCapture(m Move) bool {
-	movingPiece := b.PieceAt(m.From)
-	capturedPiece := b.PieceAt(m.To)
-	b.pushHistory(m)
-	b.pieces[m.To] = movingPiece
-	b.pieces[m.From] = EMPTY_SQUARE
-	b.updatePieceSquares()
-	if b.InCheck(b.Side) {
-		b.popHistory()
-		b.pieces[m.To] = capturedPiece
-		b.pieces[m.From] = movingPiece
-		b.updatePieceSquares()
-		return false
-	}
-	b.updateCastlePermissions(m, movingPiece, capturedPiece)
-	b.Ep = nil
-	b.Hply = 0
-	if b.Side == BLACK {
-		b.Ply += 1
-	}
-	b.Side ^= 1
-	return true
-}
-
 func (b *Board) handleBBPromotion(m Move) bool {
 	b.pushHistory(m)
 	b.pieces[m.To] = m.PromotionPiece
 	b.pieces[m.From] = EMPTY_SQUARE
 	b.updatePieceSquares()
-	b.Ep = nil
-	b.Hply = 0
-	if b.Side == BLACK {
-		b.Ply += 1
-	}
-	b.Side ^= 1
-	return true
-}
-
-func (b *Board) handlePromotion(m Move) bool {
-	prevSq := b.PieceAt(m.To)
-	movingPiece := b.PieceAt(m.From)
-	b.pushHistory(m)
-	b.pieces[m.To] = m.PromotionPiece
-	b.pieces[m.From] = EMPTY_SQUARE
-	b.updatePieceSquares()
-	if b.InCheck(b.Side) {
-		b.popHistory()
-		b.pieces[m.To] = prevSq
-		b.pieces[m.From] = movingPiece
-		b.updatePieceSquares()
-		return false
-	}
 	b.Ep = nil
 	b.Hply = 0
 	if b.Side == BLACK {
@@ -336,7 +221,7 @@ func (b *Board) updateCastleMovingPiece(m Move, p int) {
 }
 
 func (b *Board) updateCastleCapturedPiece(m Move, p int) {
-	if m.Capture == false {
+	if !m.Capture {
 		return
 	}
 
@@ -363,7 +248,6 @@ func (b *Board) updateCastleCapturedPiece(m Move, p int) {
 	}
 }
 
-// TODO: explicit tests and cleanup this is ugly
 func (b *Board) updateCastlePermissions(m Move, mp, cp int) {
 	b.updateCastleMovingPiece(m, mp)
 	b.updateCastleCapturedPiece(m, cp)
@@ -381,44 +265,6 @@ func (b *Board) handleBBEPCapture(m Move) bool {
 		b.pieces[m.From] = EMPTY_SQUARE
 		b.pieces[m.To-10] = EMPTY_SQUARE
 		b.updatePieceSquares()
-	}
-	b.Hply = 0
-	b.Ep = nil
-	if b.Side == BLACK {
-		b.Ply += 1
-	}
-	b.Side ^= 1
-	return true
-}
-
-func (b *Board) handleEPCapture(m Move) bool {
-	b.pushHistory(m)
-	if b.Side == WHITE {
-		b.pieces[m.To] = WHITE_PAWN
-		b.pieces[m.From] = EMPTY_SQUARE
-		b.pieces[m.To+10] = EMPTY_SQUARE
-		b.updatePieceSquares()
-		if b.InCheck(b.Side) {
-			b.popHistory()
-			b.pieces[m.To+10] = BLACK_PAWN
-			b.pieces[m.To] = EMPTY_SQUARE
-			b.pieces[m.From] = WHITE_PAWN
-			b.updatePieceSquares()
-			return false
-		}
-	} else {
-		b.pieces[m.To] = BLACK_PAWN
-		b.pieces[m.From] = EMPTY_SQUARE
-		b.pieces[m.To-10] = EMPTY_SQUARE
-		b.updatePieceSquares()
-		if b.InCheck(b.Side) {
-			b.popHistory()
-			b.pieces[m.To-10] = WHITE_PAWN
-			b.pieces[m.To] = EMPTY_SQUARE
-			b.pieces[m.From] = BLACK_PAWN
-			b.updatePieceSquares()
-			return false
-		}
 	}
 	b.Hply = 0
 	b.Ep = nil
@@ -497,15 +343,6 @@ func (b Board) InCheck(side int) bool {
 	// TODO: cleanup
 	bb := b.newBitboard()
 	return b.inCheck(*bb)
-}
-
-func (b Board) pos(p int) int {
-	for i := 0; i < 64; i++ {
-		if b.PieceAt(MAILBOX_64[i]) == p {
-			return MAILBOX_64[i]
-		}
-	}
-	return -1
 }
 
 func (b Board) Checkmate() bool {

@@ -44,7 +44,7 @@ func negamax(b *board.Board, depth int, alpha, beta float64, pv *Line, exp time.
 	siftPV(pv.Moves[0], moves)
 	depthBestEval := depth
 	for _, m := range moves {
-		b.MakeBBMove(m)
+		b.MakeMove(m)
 		draw := b.Drawn()
 		var v float64
 		if !draw {
@@ -81,7 +81,7 @@ func quiesce(b *board.Board, alpha, beta float64) float64 {
 	captures := b.GenerateCaptures()
 	for _, capture := range captures {
 		if capture.See(b) >= 0 {
-			b.MakeBBMove(capture)
+			b.MakeMove(capture)
 			score := -1 * quiesce(b, -beta, -alpha)
 			b.UnmakeMove()
 			if score >= beta {

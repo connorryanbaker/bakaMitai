@@ -6,7 +6,7 @@ func see(sq int, b *Board) int {
 
 	if !move.IsNull() {
 		capturedPiece := b.PieceAt(move.To)
-		b.MakeBBMove(move)
+		b.MakeMove(move)
 		value = values[capturedPiece] - see(sq, b)
 		b.UnmakeMove()
 	}
